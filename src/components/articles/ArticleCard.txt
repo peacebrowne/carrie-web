@@ -1,0 +1,202 @@
+<template>
+  <DataView
+    :value="articles"
+    :layout="layout"
+    :sortOrder="sortOrder"
+    :sortField="sortField"
+    class="w-full"
+    paginator
+    :rows="5"
+    :data-key="1"
+  >
+    <template #header>
+      <div class="w-full flex justify-between items-center">
+        <Select
+          v-model="sortKey"
+          :options="sortOptions"
+          optionLabel="label"
+          placeholder="Sort by"
+          @change="onSortChange($event)"
+          class="text-xs flex items-center py-0 h-[30px]"
+          dropdownIcon="pi pi-angle-down text-xs"
+        />
+
+        <div class="flex items-center gap-3">
+          <InputText
+            placeholder="Search"
+            type="search"
+            class="py-1 text-sm h-[30px]"
+          />
+
+          <SelectButton
+            class=""
+            v-model="layout"
+            :options="options"
+            :allowEmpty="false"
+          >
+            <template #option="{ option }">
+              <i
+                :class="[
+                  option === 'list' ? 'pi pi-bars' : 'pi pi-table',
+                  'text-xs',
+                ]"
+              />
+            </template>
+          </SelectButton>
+        </div>
+      </div>
+    </template>
+
+    <template #list>
+      <div class="flex flex-col">
+        <div v-for="i in 8" :key="i">
+          <div
+            class="flex flex-col xl:flex-row xl:items-start p-6 gap-6 card"
+            :class="{
+              'border-t border-surface-200 dark:border-surface-700': i !== 0,
+            }"
+          >
+            <Skeleton class="!w-9/12 sm:!w-64 xl:!w-40 !h-24 mx-auto" />
+            <div
+              class="flex flex-col sm:flex-row justify-between items-center xl:items-start flex-1 gap-6"
+            >
+              <div class="flex flex-col items-center sm:items-start gap-4">
+                <Skeleton width="8rem" height="2rem" />
+                <Skeleton width="6rem" height="1rem" />
+
+                <div class="flex items-center gap-4">
+                  <Skeleton width="6rem" height="1rem" />
+                  <Skeleton width="3rem" height="1rem" />
+                </div>
+              </div>
+              <div
+                class="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-2"
+              >
+                <Skeleton width="4rem" height="2rem" />
+                <Skeleton size="3rem" shape="circle" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template #grid>
+      <div class="grid grid-cols-12 gap-4">
+        <div
+          v-for="i in 6"
+          :key="i"
+          class="col-span-12 gap-4 sm:col-span-6 xl:col-span-4 p-2"
+        >
+          <router-link>
+            <Card class="max-w-sm mx-auto relative overflow-hidden rounded-lg">
+              <!-- Image -->
+              <template #header>
+                <img
+                  src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
+                  alt="Mock Negotiation"
+                  class="w-full object-cover contrast-125 brightness-[0.4]"
+                />
+              </template>
+
+              <!-- Text Content -->
+              <template #content>
+                <Chip
+                  class="text-black bg-white absolute z-50 text-xs top-2 right-2 py-1 px-2"
+                >
+                  <i class="pi pi-clock"></i>
+                  <span>01-11-2025</span>
+                </Chip>
+
+                <div class="text-start p-4 text-white">
+                  <h3 class="font-black text-primary md:text-sm">
+                    HPA Hosts Mock Negotiation
+                  </h3>
+                  <p class="text-xs font-semibold">
+                    On The Small-Scale Commercial-Use Commercial
+                  </p>
+                </div>
+              </template>
+            </Card>
+          </router-link>
+        </div>
+      </div>
+    </template>
+  </DataView>
+</template>
+
+<script setup>
+import { ref, onMounted } from "vue";
+import { addArticle } from "../../assets/js/service/ArticleService.js";
+
+const articles = ref("");
+const layout = ref("grid");
+const options = ref(["list", "grid"]);
+const sortKey = ref();
+const sortOrder = ref();
+const sortField = ref();
+
+const sortOptions = ref([
+  { label: "Created", value: "created_at" },
+  { label: "Last Updated", value: "updated_at" },
+  { label: "Title", value: "updated_at" },
+]);
+
+const onSortChange = (event) => {
+  const value = event.value.value;
+  const sortValue = event.value;
+
+  if (value.indexOf("!") === 0) {
+    sortOrder.value = -1;
+    sortField.value = value.substring(1, value.length);
+    sortKey.value = sortValue;
+  } else {
+    sortOrder.value = 1;
+    sortField.value = value;
+    sortKey.value = sortValue;
+  }
+};
+
+onMounted(() => {
+  // ProductService.getProductsSmall().then(
+  //   (data) => (products.value = data.slice(0, 6))
+  // );
+});
+
+const getSeverity = (product) => {
+  switch (product.inventoryStatus) {
+    case "INSTOCK":
+      return "success";
+
+    case "LOWSTOCK":
+      return "warn";
+
+    case "OUTOFSTOCK":
+      return "danger";
+
+    default:
+      return null;
+  }
+};
+</script>
+
+<style>
+.p-card-body {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  justify-content: end;
+  padding: 0 !important;
+}
+
+.p-select-option {
+  font-size: small !important;
+}
+
+/* .p-tag-icon {
+  line-height: 0.8rem !important;
+}
+.p-tag-label {
+  font-size: smaller !important;
+} */
+</style>
