@@ -87,18 +87,18 @@ const items = ref([
     ],
   },
 
-  {
-    label: "Account",
-    icon: "pi pi-user",
-    name: "account",
-  },
-  {
-    label: "Logout",
-    icon: "pi pi-sign-out",
-    command: () => {
-      router.push("/logout");
-    },
-  },
+  // {
+  //   label: "Account",
+  //   icon: "pi pi-user",
+  //   name: "account",
+  // },
+  // {
+  //   label: "Logout",
+  //   icon: "pi pi-sign-out",
+  //   command: () => {
+  //     router.push("/logout");
+  //   },
+  // },
 ]);
 
 const visible = ref(false);
