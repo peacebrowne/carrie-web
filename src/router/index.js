@@ -22,13 +22,16 @@ const routes = [
       },
       {
         path: "articles",
-        // TODO add articles component.
-
         children: [
           {
             path: "list",
-            component: ArticleList,
-            name: "list",
+            children: [
+              {
+                path: "",
+                component: ArticleList,
+                name: "list",
+              },
+            ],
           },
           {
             path: "edit",
@@ -44,7 +47,6 @@ const routes = [
       },
     ],
   },
-
   {
     path: "/dialog",
     component: Dialog,

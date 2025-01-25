@@ -18,6 +18,8 @@ export const addArticle = async (data) => {
 export const getAuthorArticles = async (id, params = {}) => {
   try {
     const url = new URL(`${API_URL}/articles/authors/${id}`);
+    if (params.term) url.pathname += "/search";
+    
     url.search = new URLSearchParams(params).toString();
 
     console.log({ url });

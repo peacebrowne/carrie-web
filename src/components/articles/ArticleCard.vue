@@ -27,8 +27,9 @@
           <div class="flex items-center gap-3">
             <InputText
               placeholder="Search"
-              type="search"
+              type="text"
               class="py-1 text-sm h-[30px]"
+              v-model="search"
             />
 
             <SelectButton
@@ -124,7 +125,7 @@
         </div>
       </template>
 
-      <template #grid="">
+      <template #grid>
         <div class="grid grid-cols-12 gap-4" id="grid-template">
           <div
             v-for="article in articles"
@@ -191,7 +192,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import {
   getAuthorArticles,
   getImage,
@@ -202,32 +203,37 @@ const articles = ref([]);
 const layout = ref("grid");
 const options = ref(["list", "grid"]);
 const sortKey = ref();
-const sortOrder = ref();
-const sortField = ref();
+const sortField = ref("updatedAt");
 const totalRecords = ref();
+const search = ref("");
 const dataKey = ref("1");
 const first = ref(0);
 const rows = ref(6);
 
+const params = computed(() => ({
+  start: first.value,
+  limit: rows.value,
+  sort: sortField.value,
+}));
+
 const sortOptions = ref([
-  { label: "Created", value: "created_at" },
-  { label: "Last Updated", value: "updated_at" },
-  { label: "Title", value: "updated_at" },
+  { label: "Last Updated", value: "updatedAt" },
+  { label: "Title", value: "title" },
 ]);
 
-const onSortChange = (event) => {
-  const value = event.value.value;
-  const sortValue = event.value;
+const onSearchTerm = async (term) => {
+  params.value.term = term;
+  await fetchAuthorArticles();
+};
 
-  if (value.indexOf("!") === 0) {
-    sortOrder.value = -1;
-    sortField.value = value.substring(1, value.length);
-    sortKey.value = sortValue;
-  } else {
-    sortOrder.value = 1;
-    sortField.value = value;
-    sortKey.value = sortValue;
-  }
+watch(search, async (newTerm) => {
+    await onSearchTerm(newTerm);
+  
+});
+
+const onSortChange = async (event) => {
+  sortField.value = event.value.value;
+  await fetchAuthorArticles();
 };
 
 const handleArticleImage = async (articleData) => {
@@ -287,11 +293,7 @@ const handleDescriptionFormat = (description, layout) => {
 const fetchAuthorArticles = async () => {
   const result = await getAuthorArticles(
     "149ebfda-a27e-4cef-9882-ee7ec44ac349",
-    {
-      start: first.value,
-      limit: rows.value,
-      sort: "updatedAt",
-    }
+    params.value
   );
 
   if (result.data) {
