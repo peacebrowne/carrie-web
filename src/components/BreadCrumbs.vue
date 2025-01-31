@@ -1,38 +1,47 @@
 <template>
-  <div class="card flex justify-center">
-    <Breadcrumb :home="home" :model="items">
-      <template #item="{ item, props }">
-        <router-link
-          v-if="item.route"
-          v-slot="{ href, navigate }"
-          :to="item.route"
-          custom
-        >
-          <a :href="href" v-bind="props.action" @click="navigate">
-            <i :class="[item.icon, 'text-color']"></i>
-            <span class="text-primary font-semibold">{{ item.label }}</span>
-          </a>
-        </router-link>
-        <a v-else :href="item.url" :target="item.target" v-bind="props.action">
-          <span class="text-surface-700 text-sm dark:text-surface-0">{{
-            item.label
-          }}</span>
-        </a>
-      </template>
-    </Breadcrumb>
-  </div>
+  <Breadcrumb :model="items">
+    <template #item="{ item, props }">
+      <a :href="item.url" :target="item.target" v-bind="props.action">
+        <span class="text-surface-700 text-xs dark:text-surface-0">{{
+          item.label
+        }}</span>
+      </a>
+    </template>
+    <template #separator> / </template>
+  </Breadcrumb>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 
 const home = ref({
   icon: "pi pi-home",
   route: "/introduction",
 });
-const items = ref([
-  { label: "Components" },
-  { label: "Form" },
-  { label: "InputText", route: "/inputtext" },
-]);
+const items = ref([]);
+const route = useRoute();
+
+watch(
+  () => route,
+  (newRoute, oldRoute) => {
+    handleBreadCrumbs(newRoute.fullPath);
+  },
+  { deep: true }
+);
+
+const handleBreadCrumbs = (routes) => {
+  items.value = routes
+    .split("/")
+    .slice(2)
+    .map((path) => {
+      return {
+        label: decodeURIComponent(decodeURIComponent(path)),
+      };
+    });
+};
+
+onMounted(() => {
+  handleBreadCrumbs(route.fullPath);
+});
 </script>

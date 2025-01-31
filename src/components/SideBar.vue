@@ -46,6 +46,7 @@
       size="small"
       variant="outlined"
       severity="contrast"
+      raised
       aria-label="Filter"
     >
       <span
@@ -80,9 +81,9 @@ const items = ref([
         name: "list",
       },
       {
-        label: "Edit",
+        label: "Write",
         icon: "pi pi-pencil",
-        name: "edit",
+        name: "write",
       },
     ],
   },

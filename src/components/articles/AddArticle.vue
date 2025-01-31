@@ -69,6 +69,7 @@
                 }"
                 @click="toggleTagInput"
                 size="small"
+                raised
                 severity="contrast"
               >
                 <span
@@ -94,6 +95,7 @@
                   @click="addTags"
                   icon="pi pi-plus text-xs"
                   label="Add"
+                  raised
                   class="py-1 gap-1 text-xs"
                 />
               </div>
@@ -137,6 +139,7 @@
             icon="pi pi-trash text-xs"
             label="Discard"
             class="py-1 w-[50%] text-xs"
+            raised
           />
 
           <Button
@@ -145,6 +148,7 @@
             icon="pi pi-check text-xs"
             class="py-1 w-[50%] text-xs"
             :loading="loading"
+            raised
           />
         </div>
       </div>
@@ -153,9 +157,13 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
 import { useToast } from "primevue/usetoast";
-import { ref, watch } from "vue";
+import { ref, reactive } from "vue";
+import { z } from "zod";
+import { zodResolver } from "@primevue/forms/resolvers/zod";
+import UploadArticleImage from "./UploadArticleImage.vue";
+import Editor from "./Editor.vue";
+import { addArticle } from "@/assets/js/service.js";
 
 const published = ref(false);
 const tempTag = ref(null);
@@ -166,10 +174,6 @@ const loading = ref(false);
 const image = defineModel("image");
 const src = defineModel("src");
 const content = defineModel("content");
-
-import UploadArticleImage from "./UploadArticleImage.vue";
-import Editor from "./Editor.vue";
-import { addArticle } from "@/assets/js/service/ArticleService.js";
 const toast = useToast();
 
 const initialValues = reactive({
@@ -177,25 +181,14 @@ const initialValues = reactive({
   content: "",
 });
 
-const resolver = ({ values }) => {
-  const errors = {};
-
-  if (!values.title) {
-    errors.title = [{ message: "Title is required." }];
-  }
-
-  if (!values.content) {
-    errors.content = [{ message: "Content is required." }];
-  }
-
-  return {
-    errors,
-  };
-};
-
-watch(image, (n, o) => {
-  console.log({ n });
-});
+const resolver = ref(
+  zodResolver(
+    z.object({
+      title: z.string().min(1, { message: "Title is required." }),
+      content: z.string().min(1, { message: "Content is required." }),
+    })
+  )
+);
 
 const handleArticleData = (states) => {
   return {

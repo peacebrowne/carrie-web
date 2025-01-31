@@ -18,6 +18,7 @@
             rounded
             outlined
             severity="secondary"
+            raised
           ></Button>
 
           <Button
@@ -27,6 +28,7 @@
             outlined
             severity="danger"
             :disabled="!src"
+            raised
           ></Button>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import AppView from "@/views/AppView.vue";
 import ArticleList from "@/components/articles/ArticleList.vue";
 import AddArticle from "@/components/articles/AddArticle.vue";
-import Dialog from "@/components/articles/Editor.vue";
+import ArticleDetail from "@/components/articles/ArticleDetail.vue";
 
 const routes = [
   {
@@ -31,12 +31,17 @@ const routes = [
                 component: ArticleList,
                 name: "list",
               },
+              {
+                path: ":title",
+                component: ArticleDetail,
+                name: "article-detail",
+              },
             ],
           },
           {
-            path: "edit",
+            path: "write",
             component: AddArticle,
-            name: "edit",
+            name: "write",
           },
         ],
       },
@@ -48,9 +53,8 @@ const routes = [
     ],
   },
   {
-    path: "/dialog",
-    component: Dialog,
-    name: "dialog",
+    // path: "*", // Catch-all route for 404
+    // component: NotFound,
   },
 ];
 

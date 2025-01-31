@@ -60,7 +60,13 @@
                 'border-t border-surface-200 dark:border-surface-700': i !== 0,
               }"
             >
-              <router-link>
+              <router-link
+                :to="{
+                  name: 'article-detail',
+                  params: { title: article.title },
+                }"
+                @click="handleArticleStore(article)"
+              >
                 <Card
                   class="mx-auto relative overflow-hidden rounded-lg flex-row w-full h-[12rem]"
                 >
@@ -74,7 +80,7 @@
                     />
                     <img
                       v-else
-                      src="../../assets/images/galleria10.jpg"
+                      src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg"
                       alt="Mock Negotiation"
                       class="w-full h-full object-cover contrast-100 brightness-75"
                     />
@@ -132,7 +138,13 @@
             :key="article.id"
             class="col-span-12 gap-4 sm:col-span-6 xl:col-span-4 p-2"
           >
-            <router-link>
+            <router-link
+              :to="{
+                name: 'article-detail',
+                params: { title: article.title },
+              }"
+              @click="handleArticleStore(article)"
+            >
               <Card class="w-full mx-auto relative overflow-hidden rounded-lg">
                 <!-- Image -->
                 <template #header>
@@ -143,7 +155,7 @@
                   />
                   <img
                     v-else
-                    src="../../assets/images/galleria10.jpg"
+                    src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg"
                     class="w-full object-cover contrast-100 brightness-50"
                   />
                 </template>
@@ -196,8 +208,10 @@ import { ref, onMounted, watch, computed } from "vue";
 import {
   getAuthorArticles,
   getImage,
-} from "../../assets/js/service/ArticleService.js";
-import dayjs from "dayjs";
+} from "../../assets/js/service.js";
+
+import { articleStore } from "../../stores/article.store.js";
+import { handleDateFormat } from "@/assets/js/util.js";
 
 const articles = ref([]);
 const layout = ref("grid");
@@ -227,8 +241,7 @@ const onSearchTerm = async (term) => {
 };
 
 watch(search, async (newTerm) => {
-    await onSearchTerm(newTerm);
-  
+  await onSearchTerm(newTerm);
 });
 
 const onSortChange = async (event) => {
@@ -236,7 +249,7 @@ const onSortChange = async (event) => {
   await fetchAuthorArticles();
 };
 
-const handleArticleImage = async (articleData) => {
+const attachArticleImage = async (articleData) => {
   try {
     return await Promise.all(
       articleData.map(async (article) => {
@@ -253,8 +266,6 @@ const handleArticleImage = async (articleData) => {
     return articleData;
   }
 };
-
-const handleDateFormat = (date) => dayjs(date).format("MMM DD, YYYY");
 
 const handleTitleFormat = (title, layout) => {
   let character;
@@ -298,7 +309,7 @@ const fetchAuthorArticles = async () => {
 
   if (result.data) {
     const { total, values } = result.data;
-    articles.value = await handleArticleImage(values);
+    articles.value = await attachArticleImage(values);
     totalRecords.value = total;
     dataKey.value += 1;
   } else {
@@ -314,11 +325,18 @@ const onPage = async (event) => {
   first.value = event.first;
   await fetchAuthorArticles();
 };
+
+const handleArticleStore = (data) => {
+  const { setArticle } = articleStore();
+  setArticle(data);
+};
 </script>
 
 <style>
 #grid-template .p-card-header {
+  height: 11.2rem;
   max-height: 11.2rem;
+  background-color: #000000eb;
 }
 #grid-template .p-card-body {
   position: absolute;
