@@ -79,7 +79,7 @@ export const addClaps = async (data) => {
     const result = await response.json();
     return { ok: response.ok, result };
   } catch (error) {
-    console.error("Error adding clap:", error);
+    console.error("Error adding clap: ", error);
   }
 };
 
@@ -89,5 +89,23 @@ export const getCommentReplies = async (id) => {
     return await response.json();
   } catch (error) {
     console.error("Error fetching comment replies");
+  }
+};
+
+export const addComment = async (data) => {
+  try {
+    const options = {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
+
+    const response = await fetch(`${API_URL}/comments`, options);
+    const result = await response.json();
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error adding comment: ", error);
   }
 };

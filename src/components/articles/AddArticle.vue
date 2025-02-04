@@ -215,8 +215,6 @@ const onFormSubmit = async ({ valid, states }) => {
   if (valid) {
     const { ok, result } = await addArticle(data);
 
-    console.log({ result });
-
     toast.add({
       severity: ok ? "success" : "error",
       summary: result.message,
