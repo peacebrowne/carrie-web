@@ -1,13 +1,15 @@
 <template>
-  <Fieldset class="w-full">
-    <template #legend>
-      <div class="flex items-center pl-2">
+  <Panel pt:footer:class="pb-0">
+    <template #header>
+      <div class="flex items-center gap-2">
         <Avatar
-          image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+          icon="pi pi-user text-xs"
+          size="small"
+          style="background-color: #ece9fc; color: #2a1261"
           shape="circle"
         />
-        <div class="flex flex-col ml-2">
-          <span class="font-black text-surface-900 dark:text-surface-0 text-sm"
+        <div class="flex flex-col">
+          <span class="font-black text-surface-900 dark:text-surface-0 text-xs"
             >{{ comment.author.firstName }} {{ comment.author.lastName }}</span
           >
           <span
@@ -17,19 +19,15 @@
         </div>
       </div>
     </template>
-
-    <div class="flex flex-col gap-2">
-      <p class="m-0">
-        {{ comment.content }}
-      </p>
-
-      <div class="comment-action-btn flex flex-col gap-4">
-        <div class="flex gap-1 items-center">
-          <!-- CLAP COMMENTS -->
+    <template #footer>
+      <div class="flex flex-wrap items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <!-- LIKE COMMENTS -->
           <Button
-            variant="text"
+            class="py-1"
             size="small"
-            class="text-xs py-1"
+            severity="secondary"
+            text
             @click="handleCommentClaps(comment)"
           >
             <i class="pi pi-thumbs-up text-xs"></i>
@@ -38,21 +36,27 @@
 
           <!-- TOGGLE REPLIES -->
           <Button
-            variant="text"
+            severity="secondary"
+            class="py-1"
             size="small"
-            class="text-xs py-1 capitalize"
-            @click="fetchCommentReplies(comment)"
-            :disabled="comment.totalReplies ? false : true"
+            text
+            @click="fetchCommentReplies(comment, 'comment')"
+            :disabled="!comment.totalReplies"
           >
-            <i class="pi pi-comments text-xs"></i>
-            <span> {{ comment.totalReplies }}</span>
+            <i class="pi pi-comments text-sm"></i>
+            <span>
+              {{
+                !comment.repliesVisible ? comment.totalReplies : "Hide Replies"
+              }}</span
+            >
           </Button>
 
           <!-- POST COMMENT BUTTON -->
           <Button
-            variant="text"
+            severity="secondary"
+            text
             size="small"
-            class="text-xs py-1 capitalize"
+            class="text-xs py-1"
             label="Reply"
             v-styleclass="{
               selector: `#_${comment.id}`,
@@ -60,12 +64,13 @@
             }"
           />
         </div>
+      </div>
 
+      <div class="comment-action-btn flex flex-col gap-4">
         <!-- COMMENT FORM -->
-        <div :id="`_${comment.id}`" class="hidden">
+        <div :id="`_${comment.id}`" class="hidden pb-4">
           <Form
             v-slot="$form"
-            :resolver="resolver"
             :initialValues="initialValues"
             @submit="onFormSubmit"
             class="flex flex-col gap-4"
@@ -75,53 +80,65 @@
                 name="comment"
                 rows="2"
                 cols="30"
-                style="resize: none"
-                placeholder="Your comment"
+                class="resize-none text-sm"
+                :placeholder="`Replying to ${comment.author.firstName}'s`"
               />
-              <Message
-                v-if="$form.comment?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-                >{{ $form.comment.error?.message }}</Message
-              >
             </div>
             <div class="flex justify-end">
               <Button
                 class="py-1 text-xs"
                 type="submit"
                 severity="primary"
+                :disabled="$form.comment?.value ? false : true"
                 label="Post Comment"
-                @click="updateCommentTarget(comment.id, 'comment')"
+                @click="fetchCommentReplies(comment, 'comment')"
               />
             </div>
           </Form>
         </div>
 
         <!-- COMMENT REPLIES -->
-        <div v-if="comment.repliesVisible">
-          <Comments
+        <div
+          v-if="comment.repliesVisible"
+          class="flex flex-col gap-3 pb-4"
+          id="replies"
+        >
+          <CommentItem
             v-for="reply in comment.replies"
             :key="reply.id"
-            class="pl-6"
             :comment="reply"
             :attachAuthorToComments="attachAuthorToComments"
           />
         </div>
       </div>
+    </template>
+
+    <template #icons>
+      <Button
+        icon="pi pi-ellipsis-h text-sm"
+        severity="secondary"
+        rounded
+        text
+        @click="toggle"
+      />
+      <Menu ref="menu" id="config_menu" :model="items" popup />
+    </template>
+    <div class="flex flex-col gap-2">
+      <p class="m-0">
+        {{ comment.content }}
+      </p>
     </div>
-  </Fieldset>
+  </Panel>
 </template>
 
 <script setup>
 import { addClaps, addComment, getCommentReplies } from "@/assets/js/service";
 import { ref } from "vue";
 import { handleDateFormat } from "@/assets/js/util.js";
-import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { useToast } from "primevue/usetoast";
-import { z } from "zod";
+import Menu from "primevue/menu";
 
-defineOptions({ name: "Comments" });
+defineOptions({ name: "CommentItem" });
 
 const props = defineProps({
   comment: {
@@ -145,25 +162,49 @@ const handleCommentClaps = async (comment) => {
   if (ok) comment.totalClaps++;
 };
 
+const menu = ref(null);
 const toast = useToast();
 const initialValues = ref({
   comment: "",
 });
 
-const resolver = ref(
-  zodResolver(
-    z.object({
-      comment: z.string().min(1, { message: "Comment is required." }),
-    })
-  )
-);
+const items = ref([
+  {
+    label: "Refresh",
+    icon: "pi pi-refresh text-sm",
+  },
+  {
+    label: "Search",
+    icon: "pi pi-search text-sm",
+  },
+  {
+    separator: true,
+  },
+  {
+    label: "Delete",
+    icon: "pi pi-times text-sm",
+  },
+]);
+
+const toggle = (event) => {
+  menu.value.toggle(event);
+};
+
+const save = () => {
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: "Data Saved",
+    life: 3000,
+  });
+};
 
 const updateCommentTarget = (id, type) => {
   postCommentId.value = id;
   postCommentType.value = type;
 };
 
-const onFormSubmit = async ({ valid, states }) => {
+const onFormSubmit = async ({ valid, states, reset }) => {
   load();
 
   const data = handleCommentData(
@@ -180,6 +221,8 @@ const onFormSubmit = async ({ valid, states }) => {
       summary: result.message,
       life: 10000,
     });
+
+    reset(states.comment);
   }
 };
 
@@ -196,10 +239,14 @@ const handleCommentData = (content, type, targetID) => {
   };
 };
 
-const fetchCommentReplies = async (comment) => {
-  const replies = await getCommentReplies(comment.id);
-  comment.replies = await props.attachAuthorToComments(replies.data.values);
-  comment.repliesVisible = !comment.repliesVisible;
+const fetchCommentReplies = async (comment, type) => {
+  updateCommentTarget(comment.id, type);
+
+  setTimeout(async () => {
+    const replies = await getCommentReplies(comment.id);
+    comment.replies = await props.attachAuthorToComments(replies.data.values);
+    comment.repliesVisible = !comment.repliesVisible;
+  }, 2000);
 };
 
 const load = () => {
@@ -209,3 +256,17 @@ const load = () => {
   }, 2000);
 };
 </script>
+
+<style>
+#replies .p-panel {
+  border: none;
+  border-left: 2px solid
+    color-mix(
+      in srgb,
+      var(--p-surface-700) calc(100% * var(--tw-border-opacity, 1)),
+      transparent
+    );
+  border-radius: 0;
+  margin-left: 1rem;
+}
+</style>

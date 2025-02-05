@@ -28,7 +28,7 @@
             :class="[
               'pi',
               dropdown ? ' pi-angle-up' : 'pi-angle-down',
-              'text-primary ml-auto',
+              'text-secondary ml-auto',
             ]"
           />
         </a>
@@ -42,17 +42,14 @@
         toggleClass: 'hidden',
       }"
       @click="toggleSideBar"
+      severity="secondary"
+      text
       rounded
-      size="small"
-      variant="outlined"
-      severity="contrast"
-      raised
-      aria-label="Filter"
     >
       <span
         :class="[
-          visible ? 'pi pi-angle-double-right' : 'pi pi-angle-double-left',
-          '!text-xs ',
+          'pi',
+          visible ? ' pi-angle-double-right' : 'pi pi-angle-double-left',
         ]"
       ></span>
     </Button>

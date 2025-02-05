@@ -7,6 +7,8 @@ import Editor from "primevue/editor";
 // import Toast from "primevue/toast";
 // import ToggleSwitch from "primevue/toggleswitch";
 
+import Fieldset from "primevue/fieldset";
+
 // import "quill/dist/quill.core.css";
 // import "quill/dist/quill.bubble.css";
 import "primeicons/primeicons.css";
@@ -34,6 +36,7 @@ app.use(pinia);
 // app.component("InputText", InputText);
 // app.component("Button", Button);
 app.component("Editor", Editor);
+app.component("Fieldset", Fieldset);
 // app.component("FloatLabel", FloatLabel);
 // app.component("Toast", Toast);
 // app.component("ToggleSwitch", ToggleSwitch);

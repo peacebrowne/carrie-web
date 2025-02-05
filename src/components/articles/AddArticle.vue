@@ -190,10 +190,10 @@ const resolver = ref(
   )
 );
 
-const handleArticleData = (states) => {
+const handleArticleData = (values) => {
   return {
-    title: states.title.value,
-    content: states.content.value,
+    title: values.title,
+    content: values.content,
     description: description.value,
     tags: tags.value,
     isPublished: published.value,
@@ -201,10 +201,11 @@ const handleArticleData = (states) => {
   };
 };
 
-const onFormSubmit = async ({ valid, states }) => {
+const onFormSubmit = async ({ valid, values }) => {
   load();
 
-  const article = handleArticleData(states);
+  const article = handleArticleData(values);
+
   const data = new FormData();
   data.append("image", image.value);
   data.append(

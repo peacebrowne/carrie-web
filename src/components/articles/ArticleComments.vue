@@ -18,18 +18,14 @@
       :key="comment.id"
       :comment="comment"
       :attachAuthorToComments="attachAuthorToComments"
-      class="p-menubar w-full border-none"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from "vue";
-import Comments from "./Comments.vue";
-import {
-  getAuthorById,
-  getComments,
-} from "@/assets/js/service";
+import Comments from "./CommentItem.vue";
+import { getAuthorById, getComments } from "@/assets/js/service";
 
 const props = defineProps({
   commentData: {
