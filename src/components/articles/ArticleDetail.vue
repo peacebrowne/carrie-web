@@ -50,7 +50,7 @@
 
 <script setup>
 import { getArticleById, getImage } from "@/assets/js/service.js";
-import { articleStore } from "../../stores/article.store.js";
+import { articleStore } from "../../stores/index.js";
 import { onMounted, ref } from "vue";
 
 import ArticleComments from "./ArticleComments.vue";

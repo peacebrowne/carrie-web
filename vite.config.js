@@ -8,6 +8,10 @@ import { PrimeVueResolver } from "@primevue/auto-import-resolver";
 
 // https://vite.dev/config/
 export default defineConfig({
+  // server: {
+  //   port: 8080,
+  //   host: "localhost",
+  // },
   plugins: [
     vue(),
     vueDevTools(),

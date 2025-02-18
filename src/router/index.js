@@ -1,14 +1,21 @@
 import { createRouter, createWebHistory } from "vue-router";
 import AppView from "@/views/AppView.vue";
+import LoginView from "@/views/LoginView.vue";
 import ArticleList from "@/components/articles/ArticleList.vue";
 import AddArticle from "@/components/articles/AddArticle.vue";
 import ArticleDetail from "@/components/articles/ArticleDetail.vue";
+import LoginForm from "@/components/forms/LoginForm.vue";
+import RegistrationForm from "@/components/forms/RegistrationForm.vue";
+import DashBoard from "@/components/dashboard/DashBoard.vue";
 
 const routes = [
   {
     path: "/app",
     component: AppView,
     name: "app",
+    meta: {
+      requiresAuth: true,
+    },
     children: [
       {
         path: "",
@@ -18,37 +25,83 @@ const routes = [
       {
         path: "dashboard",
         // TODO add dashboard component.
+        component: DashBoard,
         name: "dashboard",
       },
       {
-        path: "articles",
+        path: "list",
+        // TODO add dashboard component.
         children: [
           {
-            path: "list",
-            children: [
-              {
-                path: "",
-                component: ArticleList,
-                name: "list",
-              },
-              {
-                path: ":title",
-                component: ArticleDetail,
-                name: "article-detail",
-              },
-            ],
+            path: "",
+            component: ArticleList,
+            name: "list",
           },
           {
-            path: "write",
-            component: AddArticle,
-            name: "write",
+            path: ":title",
+            component: ArticleDetail,
+            name: "article-detail",
           },
         ],
       },
       {
-        path: "account",
+        path: "write",
+        component: AddArticle,
+        name: "write",
+      },
+      // {
+      //   path: "articles",
+      //   children: [
+      //     {
+      //       path: "list",
+      //       children: [
+      //         {
+      //           path: "",
+      //           component: ArticleList,
+      //           name: "list",
+      //         },
+      //         {
+      //           path: ":title",
+      //           component: ArticleDetail,
+      //           name: "article-detail",
+      //         },
+      //       ],
+      //     },
+      // {
+      //   path: "write",
+      //   component: AddArticle,
+      //   name: "write",
+      // },
+      //   ],
+      // },
+      {
+        path: "trash",
+        // TODO add trash component.
+        name: "trash",
+      },
+      {
+        path: "profile",
         // TODO add author profile component.
-        name: "account",
+        name: "profile",
+      },
+    ],
+  },
+  {
+    path: "/",
+    component: LoginView,
+    children: [
+      {
+        path: "login",
+        component: LoginForm,
+        name: "login",
+        meta: {
+          logoutRequired: true,
+        },
+      },
+      {
+        path: "register",
+        component: RegistrationForm,
+        name: "register",
       },
     ],
   },

@@ -2,10 +2,10 @@
   <div class="p-menubar border-0 rounded-none py-0">
     <Menubar
       :model="items"
-      class="container border-0 rounded-none mx-auto px-10 w-full"
+      class="container border-0 rounded-none mx-auto mt-1 px-10 w-full"
     >
       <template #start> <span class="font-black">Carrie</span> </template>
-      <template #item="{ item, props, hasSubmenu, root }">
+      <!-- <template #item="{ item, props, hasSubmenu, root }">
         <a v-ripple class="flex items-center" v-bind="props.action">
           <span class="text-sm">{{ item.label }}</span>
           <Badge
@@ -26,7 +26,7 @@
             ]"
           ></i>
         </a>
-      </template>
+      </template> -->
       <template #end>
         <div class="flex items-center gap-2 ml-auto">
           <InputText
@@ -34,7 +34,33 @@
             type="search"
             class="w-32 py-1 text-sm min-w-0 grow sm:w-auto"
           />
-          <Avatar image="/images/avatar/amyelsner.png" shape="circle" />
+
+          <OverlayBadge
+            value="4"
+            @click="toggle"
+            aria-haspopup="true"
+            aria-controls="overlay_tmenu"
+            severity="info"
+            class="inline-flex cursor-pointer"
+            size="small"
+          >
+            <Avatar
+              icon="pi pi-user text-white text-xs"
+              shape="circle"
+              class="bg-[#1B4D3E]"
+            />
+          </OverlayBadge>
+
+          <TieredMenu
+            ref="menu"
+            id="overlay_tmenu"
+            class="text-xs"
+            :model="userItems"
+            popup
+            :pt="{
+              root: { class: 'min-w-[11rem] top-[2.875rem] left-[69.375rem]' },
+            }"
+          />
         </div>
       </template>
     </Menubar>
@@ -42,49 +68,40 @@
 </template>
 
 <script setup>
+import { cookiesStore } from "@/stores";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
-const items = ref([
-  // {
-  //   separator: true,
-  // },
-  // {
-  //   label: "Documents",
-  //   items: [
-  //     {
-  //       label: "New",
-  //       icon: "pi pi-plus",
-  //       shortcut: "⌘+N",
-  //     },
-  //     {
-  //       label: "Search",
-  //       icon: "pi pi-search",
-  //       shortcut: "⌘+S",
-  //     },
-  //   ],
-  // },
-  // {
-  //   label: "Profile",
-  //   items: [
-  //     {
-  //       label: "Settings",
-  //       icon: "pi pi-cog",
-  //       shortcut: "⌘+O",
-  //     },
-  //     {
-  //       label: "Messages",
-  //       icon: "pi pi-inbox",
-  //       badge: 2,
-  //     },
-  //     {
-  //       label: "Logout",
-  //       icon: "pi pi-sign-out",
-  //       shortcut: "⌘+Q",
-  //     },
-  //   ],
-  // },
-  // {
-  //   separator: true,
-  // },
+const router = useRouter();
+const menu = ref();
+const userItems = ref([
+  {
+    label: "Notification",
+    icon: "pi pi-bell",
+  },
+  {
+    separator: true,
+  },
+  {
+    label: "Logout",
+    icon: "pi pi-power-off",
+    command: () => {
+      logOut();
+    },
+  },
 ]);
+
+const logOut = () => {
+  const { removeCookie } = cookiesStore();
+  removeCookie();
+  Array.of("app-author-id", "app-article-id").forEach((item) =>
+    localStorage.removeItem(item)
+  );
+
+  router.push("/login");
+};
+
+const toggle = (event) => {
+  menu.value.toggle(event);
+};
 </script>

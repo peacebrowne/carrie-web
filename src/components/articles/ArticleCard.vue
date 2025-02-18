@@ -89,7 +89,7 @@
                   <!-- Text Content -->
                   <template #content>
                     <div class="text-start text-white">
-                      <h3 class="font-black text-primary text-3xl">
+                      <h3 class="font-black text-[#1B4D3E] text-3xl">
                         {{ handleTitleFormat(article.title, "list") }}
                       </h3>
                       <p class="text-1xl">
@@ -115,10 +115,12 @@
                       <div class="flex gap-1">
                         <Tag
                           icon="pi pi-thumbs-up"
+                          severity="warn"
                           :value="article.totalClaps"
                         ></Tag>
                         <Tag
                           icon="pi pi-comments"
+                          severity="warn"
                           :value="article.totalComments"
                         ></Tag>
                       </div>
@@ -151,7 +153,7 @@
                   <img
                     v-if="article.image"
                     :src="article.image"
-                    class="w-full object-cover contrast-100 brightness-50"
+                    class="w-full object-cover contrast-100 brightness-75"
                   />
                   <img
                     v-else
@@ -167,10 +169,12 @@
                   >
                     <div class="flex gap-1">
                       <Tag
+                        severity="warn"
                         icon="pi pi-thumbs-up"
                         :value="article.totalClaps"
                       ></Tag>
                       <Tag
+                        severity="warn"
                         icon="pi pi-comments"
                         :value="article.totalComments"
                       ></Tag>
@@ -185,13 +189,13 @@
 
                   <div class="text-start p-4 text-white">
                     <h3
-                      class="font-black text-primary text ms:text-sm md:text-lg md:leading-4"
+                      class="font-black text-white text ms:text-sm md:text-lg "
                     >
                       {{ handleTitleFormat(article.title, "grid") }}
                     </h3>
-                    <p class="text-sm leading-4">
+                    <!-- <p class="text-sm leading-4">
                       {{ handleDescriptionFormat(article.description, "grid") }}
-                    </p>
+                    </p> -->
                   </div>
                 </template>
               </Card>
@@ -205,12 +209,9 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
-import {
-  getAuthorArticles,
-  getImage,
-} from "../../assets/js/service.js";
+import { getAuthorArticles, getImage } from "../../assets/js/service.js";
 
-import { articleStore } from "../../stores/article.store.js";
+import { articleStore } from "../../stores/index.js";
 import { handleDateFormat } from "@/assets/js/util.js";
 
 const articles = ref([]);
@@ -272,7 +273,7 @@ const handleTitleFormat = (title, layout) => {
 
   switch (layout) {
     case "grid":
-      character = 25;
+      character = 50;
       break;
     case "list":
       character = 50;
@@ -303,7 +304,7 @@ const handleDescriptionFormat = (description, layout) => {
 
 const fetchAuthorArticles = async () => {
   const result = await getAuthorArticles(
-    "149ebfda-a27e-4cef-9882-ee7ec44ac349",
+    localStorage.getItem("app-author-id"),
     params.value
   );
 

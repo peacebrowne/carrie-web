@@ -7,10 +7,20 @@
           v-if="item.name"
           :to="{ name: item.name }"
           class="flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
+          :class="{ 'p-panelmenu-item-active': isActive(item.name) }"
         >
           <!-- <a v-ripple :href="href" @click="navigate"> -->
-          <span :class="item.icon" />
-          <span class="ml-2 text-sm">{{ item.label }}</span>
+          <span
+            :class="[
+              isActive(item.name) ? 'p-panelmenu-item-icon' : '',
+              item.icon,
+            ]"
+          />
+          <span
+            :class="{ 'p-panelmenu-item-icon': isActive(item.name) }"
+            class="ml-2 text-xs"
+            >{{ item.label }}</span
+          >
           <!-- </a> -->
         </router-link>
         <a
@@ -22,7 +32,7 @@
           @click="toggleDropdownIcon"
         >
           <span :class="item.icon" />
-          <span class="ml-2">{{ item.label }}</span>
+          <span class="ml-2 text-xs">{{ item.label }}</span>
           <span
             v-if="item.items"
             :class="[
@@ -34,6 +44,14 @@
         </a>
       </template>
     </PanelMenu>
+    <div class="pt-8 w-full md:w-[12rem]">
+      <router-link :to="{ name: 'write' }">
+        <Button class="py-1" severity="warn" raised>
+          <span class="text-xs">New article</span>
+          <span class="pi pi-plus text-sm"></span>
+        </Button>
+      </router-link>
+    </div>
   </ScrollPanel>
   <div class="">
     <Button
@@ -58,10 +76,11 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
-const router = useRouter();
+const route = useRoute();
 
+const isActive = (path) => route.path.split("/")[2] === path;
 const items = ref([
   {
     label: "Dashboard",
@@ -69,34 +88,21 @@ const items = ref([
     name: "dashboard",
   },
   {
-    label: "Article",
-    icon: "pi pi-comment",
-    items: [
-      {
-        label: "List",
-        icon: "pi pi-image",
-        name: "list",
-      },
-      {
-        label: "Write",
-        icon: "pi pi-pencil",
-        name: "write",
-      },
-    ],
+    label: "My articles",
+    icon: "pi pi-book",
+    name: "list",
   },
 
-  // {
-  //   label: "Account",
-  //   icon: "pi pi-user",
-  //   name: "account",
-  // },
-  // {
-  //   label: "Logout",
-  //   icon: "pi pi-sign-out",
-  //   command: () => {
-  //     router.push("/logout");
-  //   },
-  // },
+  {
+    label: "Profile",
+    icon: "pi pi-user",
+    name: "profile",
+  },
+  {
+    label: "Trash",
+    icon: "pi pi-trash",
+    name: "trash",
+  },
 ]);
 
 const visible = ref(false);

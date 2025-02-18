@@ -1,5 +1,5 @@
 <template>
-  <RouterView />
+  <RouterView class="bg-[#1B4D3E]" />
 </template>
 
 <script setup>

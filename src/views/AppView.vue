@@ -16,7 +16,7 @@
               <HeaderBar v-model:activeSection="activeSection" />
             </header>
             <section class="p-menubar w-full">
-              <RouterView />
+              <RouterView class="w-full" />
             </section>
           </ScrollPanel>
         </div>

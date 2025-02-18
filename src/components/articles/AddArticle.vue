@@ -62,41 +62,27 @@
               class="p-menubar rounded-es-none rounded-ee-none border-b-0 flex justify-between"
             >
               <span class="font-bold py-2">Tags</span>
-              <Button
-                v-styleclass="{
-                  selector: '#tag-input',
-                  toggleClass: 'hidden',
-                }"
-                @click="toggleTagInput"
-                size="small"
-                raised
-                severity="contrast"
-              >
-                <span
-                  :class="[
-                    enterTag ? 'pi pi-pencil' : 'pi pi-times',
-                    '!text-xs ',
-                  ]"
-                ></span>
-              </Button>
             </div>
             <div
               class="p-menubar rounded-ss-none rounded-se-none p-2 flex flex-col"
             >
-              <div id="tag-input" class="flex gap-2 w-full">
+              <div id="tag-input" class="flex gap-2 w-full justify-between">
                 <InputText
                   v-model="tempTag"
                   type="text"
                   fluid
-                  class="py-1 w-full h-[30px]"
+                  class="py-1 w-[85%] h-[2rem]"
                 />
 
                 <Button
                   @click="addTags"
                   icon="pi pi-plus text-xs"
-                  label="Add"
+                  rounded
+                  aria-label="Add Tag"
                   raised
-                  class="py-1 gap-1 text-xs"
+                  class="w-[2rem] !h-[2rem]"
+                  variant="outlined"
+                  severity="warn"
                 />
               </div>
               <div>
@@ -136,17 +122,18 @@
           <Button
             severity="danger"
             variant="outlined"
-            icon="pi pi-trash text-xs"
+            icon="pi pi-trash text-sm"
             label="Discard"
-            class="py-1 w-[50%] text-xs"
+            class="py-1 text-xs"
             raised
           />
 
           <Button
             type="submit"
+            severity="warn"
             label="Submit"
-            icon="pi pi-check text-xs"
-            class="py-1 w-[50%] text-xs"
+            icon="pi pi-check text-sm"
+            class="py-1 text-xs"
             :loading="loading"
             raised
           />
@@ -167,7 +154,6 @@ import { addArticle } from "@/assets/js/service.js";
 
 const published = ref(false);
 const tempTag = ref(null);
-const enterTag = ref(false);
 const tags = ref([]);
 const description = ref("");
 const loading = ref(false);
@@ -197,7 +183,7 @@ const handleArticleData = (values) => {
     description: description.value,
     tags: tags.value,
     isPublished: published.value,
-    authorID: "149ebfda-a27e-4cef-9882-ee7ec44ac349",
+    authorID: localStorage.getItem("app-author-id"),
   };
 };
 
@@ -222,11 +208,6 @@ const onFormSubmit = async ({ valid, values }) => {
       life: 10000,
     });
   }
-};
-
-const toggleTagInput = () => {
-  enterTag.value = !enterTag.value;
-  tempTag.value = "";
 };
 
 const addTags = () => {
