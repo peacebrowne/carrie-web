@@ -141,7 +141,7 @@ const handleCookies = (result) => {
   const { data: cookie } = result;
   const [token, id] = cookie.split(":");
 
-  setAuthor(id);
+  setAuthor({ id });
   setCookie(token);
   setIsAuthenticated();
 };

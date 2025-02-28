@@ -1,14 +1,15 @@
 <template>
   <Toast />
   <div class="flex flex-col w-full p-4">
-    <div class="p-2">
+    <div class="p-2 flex gap-3 items-center">
       <span class="text-lg font-black">Create new article</span>
+      <span :class="status.color">{{ status.name }}</span>
     </div>
     <Form
       v-slot="$form"
       :initialValues="initialValues"
       :resolver="resolver"
-      @submit="onFormSubmit"
+      @submit.prevent="onFormSubmit"
       class="flex w-full gap-6"
     >
       <div class="w-[65%] flex flex-col gap-4">
@@ -50,28 +51,52 @@
         <div class="article-meta flex flex-col gap-4">
           <!-- PUBLISH -->
           <div class="publish">
-            <div class="p-menubar flex justify-between">
+            <div
+              class="border px-2 rounded-lg flex items-center justify-between"
+            >
               <span class="font-bold py-2">Publish</span>
               <ToggleSwitch v-model="published" />
+            </div>
+          </div>
+
+          <!-- SCHEDULE -->
+          <div class="tags">
+            <div
+              class="border px-2 rounded-lg rounded-es-none rounded-ee-none border-b-0 flex justify-between"
+            >
+              <span class="font-bold py-2">Schedule</span>
+            </div>
+            <div
+              class="border rounded-ss-none rounded-se-none p-2 flex flex-col"
+            >
+              <div id="tag-input" class="flex gap-2 w-full justify-between">
+                <DatePicker
+                  v-model="date"
+                  class="w-full h-8"
+                  showIcon
+                  fluid
+                  iconDisplay="input"
+                />
+              </div>
             </div>
           </div>
 
           <!-- TAGS -->
           <div class="tags">
             <div
-              class="p-menubar rounded-es-none rounded-ee-none border-b-0 flex justify-between"
+              class="border px-2 rounded-lg rounded-es-none rounded-ee-none border-b-0 flex justify-between"
             >
               <span class="font-bold py-2">Tags</span>
             </div>
             <div
-              class="p-menubar rounded-ss-none rounded-se-none p-2 flex flex-col"
+              class="border rounded-ss-none rounded-se-none p-2 flex flex-col"
             >
               <div id="tag-input" class="flex gap-2 w-full justify-between">
                 <InputText
                   v-model="tempTag"
                   type="text"
                   fluid
-                  class="py-1 w-[85%] h-[2rem]"
+                  class="py-1 w-[85%] h-8"
                 />
 
                 <Button
@@ -80,9 +105,8 @@
                   rounded
                   aria-label="Add Tag"
                   raised
-                  class="w-[2rem] !h-[2rem]"
-                  variant="outlined"
-                  severity="warn"
+                  class="w-[2rem] !h-[2rem] cursor-pointer"
+                  severity="secondary"
                 />
               </div>
               <div>
@@ -101,11 +125,11 @@
           <!-- META -->
           <div class="meta">
             <div
-              class="p-menubar rounded-es-none rounded-ee-none border-b-0 flex justify-between"
+              class="border rounded-lg px-2 rounded-es-none rounded-ee-none border-b-0 flex justify-between"
             >
               <span class="font-bold py-2">Meta</span>
             </div>
-            <div class="p-menubar rounded-ss-none rounded-se-none p-2">
+            <div class="border rounded-lg rounded-ss-none rounded-se-none p-2">
               <Textarea
                 v-model="description"
                 placeholder="Description"
@@ -145,7 +169,7 @@
 
 <script setup>
 import { useToast } from "primevue/usetoast";
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { z } from "zod";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import UploadArticleImage from "./UploadArticleImage.vue";
@@ -161,6 +185,39 @@ const image = defineModel("image");
 const src = defineModel("src");
 const content = defineModel("content");
 const toast = useToast();
+const date = ref();
+const status = ref({
+  name: "Draft",
+  color: "text-red-600",
+});
+
+watch(date, (newDate) => {
+  console.log({ newDate });
+  if (newDate) {
+    published.value = "";
+    status.value.name = "Pending";
+    status.value.color = "text-orange-600";
+  } else {
+    date.value = "";
+    published.value = false;
+    status.value.name = "Draft";
+    status.value.color = "text-red-600";
+  }
+});
+
+watch(published, (newPublished) => {
+  console.log({ newPublished });
+  if (newPublished) {
+    date.value = "";
+    status.value.name = "Published";
+    status.value.color = "text-primary";
+  } else {
+    date.value = "";
+    published.value = false;
+    status.value.name = "Draft";
+    status.value.color = "text-red-600";
+  }
+});
 
 const initialValues = reactive({
   title: "",
@@ -229,6 +286,8 @@ const load = () => {
     loading.value = false;
   }, 2000);
 };
+
+const handleArticleStatus = () => {};
 </script>
 
 <style></style>

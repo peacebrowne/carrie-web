@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4 w-full" id="article-data-view">
     <DataView
       :data-key="dataKey"
       :value="articles"
@@ -15,6 +15,9 @@
       <template #header>
         <div class="w-full flex justify-between items-center">
           <Select
+            editable
+            showClear
+            variant="filled"
             v-model="sortKey"
             :options="sortOptions"
             optionLabel="label"
@@ -25,6 +28,68 @@
           />
 
           <div class="flex items-center gap-3">
+            <div>
+              <Button
+                rounded
+                aria-label="Add Tag"
+                class="w-[2rem] !h-[2rem] cursor-pointer"
+                @click="toggleFilterDropDown"
+                raised
+                severity="secondary"
+              >
+                <span
+                  :class="[
+                    'text-xs pi',
+                    visible ? 'pi-filter-slash' : 'pi-filter',
+                  ]"
+                ></span>
+              </Button>
+
+              <Popover ref="op">
+                <div class="flex flex-col gap-4 w-[15rem] px-4 p-2">
+                  <div>
+                    <span class="font-medium block mb-2">Filter Articles</span>
+                    <Select
+                      showClear
+                      variant="filled"
+                      v-model="filterKey"
+                      :options="filterOptions"
+                      optionLabel="label"
+                      placeholder="Filter by"
+                      class="text-xs flex items-center py-0 h-[30px]"
+                      dropdownIcon="pi pi-angle-down text-xs"
+                    />
+                     
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <label for="startDate" class="font-semibold text-xs w-24"
+                      >Start Date:</label
+                    >
+                    <DatePicker
+                      v-model="from"
+                      class="w-full h-8"
+                      showIcon
+                      fluid
+                      iconDisplay="input"
+                      @onchange="onStartDateChange"
+                    />
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <label for="endDate" class="font-semibold text-xs w-24"
+                      >End Date:</label
+                    >
+                    <DatePicker
+                      v-model="to"
+                      class="w-full h-8"
+                      showIcon
+                      fluid
+                      iconDisplay="input"
+                    />
+                  </div>
+                </div>
+              </Popover>
+            </div>
+
             <InputText
               placeholder="Search"
               type="text"
@@ -113,7 +178,7 @@
                         </Chip>
                       </div>
                       <div class="flex gap-1">
-                        <Tag
+                        <!-- <Tag
                           icon="pi pi-thumbs-up"
                           severity="warn"
                           :value="article.totalClaps"
@@ -122,7 +187,7 @@
                           icon="pi pi-comments"
                           severity="warn"
                           :value="article.totalComments"
-                        ></Tag>
+                        ></Tag> -->
                       </div>
                     </div>
                   </template>
@@ -168,16 +233,16 @@
                     class="absolute z-50 top-2 px-2 w-full flex justify-between"
                   >
                     <div class="flex gap-1">
-                      <Tag
+                      <!-- <Tag
                         severity="warn"
                         icon="pi pi-thumbs-up"
-                        :value="article.totalClaps"
+                        :value="article.totalLikes"
                       ></Tag>
                       <Tag
                         severity="warn"
                         icon="pi pi-comments"
                         :value="article.totalComments"
-                      ></Tag>
+                      ></Tag> -->
                     </div>
                     <Chip
                       class="text-black bg-white font-black text-xs py-1 px-2"
@@ -189,7 +254,7 @@
 
                   <div class="text-start p-4 text-white">
                     <h3
-                      class="font-black text-white text ms:text-sm md:text-lg "
+                      class="font-black text-white text ms:text-sm md:text-lg"
                     >
                       {{ handleTitleFormat(article.title, "grid") }}
                     </h3>
@@ -218,12 +283,17 @@ const articles = ref([]);
 const layout = ref("grid");
 const options = ref(["list", "grid"]);
 const sortKey = ref();
+const filterKey = ref();
+const from = ref();
+const to = ref();
 const sortField = ref("updatedAt");
 const totalRecords = ref();
 const search = ref("");
 const dataKey = ref("1");
 const first = ref(0);
 const rows = ref(6);
+const visible = ref(false);
+const op = ref();
 
 const params = computed(() => ({
   start: first.value,
@@ -236,6 +306,12 @@ const sortOptions = ref([
   { label: "Title", value: "title" },
 ]);
 
+const filterOptions = ref([
+  { label: "Published", value: "published" },
+  { label: "Pending", value: "pending" },
+  { label: "Draft", value: "draft" },
+]);
+
 const onSearchTerm = async (term) => {
   params.value.term = term;
   await fetchAuthorArticles();
@@ -245,8 +321,30 @@ watch(search, async (newTerm) => {
   await onSearchTerm(newTerm);
 });
 
+watch([filterKey, from, to], ([newFilterKey, startDate, endDate]) => {
+  const status = newFilterKey?.value ?? "";
+  const filterParam = { status, startDate, endDate };
+
+  visible.value = Object.values(filterParam).some((val) => val);
+  handleFilterData(filterParam);
+});
+
 const onSortChange = async (event) => {
   sortField.value = event.value.value;
+  await fetchAuthorArticles();
+};
+
+const handleFilterData = async (filterParam) => {
+  Object.keys(filterParam).forEach((key) => {
+    if (filterParam[key]) {
+      params.value[key] = filterParam[key]?.getDate
+        ? handleDateFormat(filterParam[key], "YYYY-MM-DD HH:mm:ss")
+        : filterParam[key];
+    } else {
+      params.value[key] = "";
+    }
+  });
+
   await fetchAuthorArticles();
 };
 
@@ -302,10 +400,26 @@ const handleDescriptionFormat = (description, layout) => {
     : description;
 };
 
+const cleanParams = (params) => {
+  const cleanedParams = {};
+  for (const key in params) {
+    if (
+      params[key] !== undefined &&
+      params[key] !== null &&
+      params[key] !== ""
+    ) {
+      cleanedParams[key] = params[key];
+    }
+  }
+  return cleanedParams;
+};
+
 const fetchAuthorArticles = async () => {
+  const cleanedParams = cleanParams(params.value);
+
   const result = await getAuthorArticles(
     localStorage.getItem("app-author-id"),
-    params.value
+    cleanedParams
   );
 
   if (result.data) {
@@ -316,6 +430,10 @@ const fetchAuthorArticles = async () => {
   } else {
     console.error("Failed to fetch articles:", result.error);
   }
+};
+
+const onStartDateChange = (event) => {
+  console.log(event);
 };
 
 onMounted(async () => {
@@ -330,6 +448,10 @@ const onPage = async (event) => {
 const handleArticleStore = (data) => {
   const { setArticle } = articleStore();
   setArticle(data);
+};
+
+const toggleFilterDropDown = (event) => {
+  op.value.toggle(event);
 };
 </script>
 

@@ -4,16 +4,20 @@
   <div class="flex flex-col gap-4 w-full">
     <div class="flex gap-4">
       <div class="flex items-center gap-2">
-        <span class="text-2xl font-bold">Likes</span>
-        <Badge :value="commentData.claps" severity="contrast"></Badge>
+        <span class="pi pi-thumbs-up text-2xl font-bold"></span>
+        <Badge :value="commentData.likes" severity="contrast"></Badge>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-2xl font-bold">Comments</span>
+        <span class="pi pi-comments text-2xl font-bold"></span>
         <Badge :value="commentData.comments" severity="contrast"></Badge>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="pi pi-share-alt text-2xl font-bold"></span>
+        <Badge value="0" severity="contrast"></Badge>
       </div>
     </div>
 
-    <Comments
+    <CommentItem
       v-for="comment in comments"
       :key="comment.id"
       :comment="comment"
@@ -24,7 +28,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import Comments from "./CommentItem.vue";
+import CommentItem from "./CommentItem.vue";
 import { getAuthorById, getComments } from "@/assets/js/service";
 
 const props = defineProps({

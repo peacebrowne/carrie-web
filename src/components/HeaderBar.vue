@@ -1,5 +1,5 @@
 <template>
-  <div class="p-menubar border-0 rounded-none pb-4">
+  <div class="pb-3">
     <div class="max-w-7xl flex items-center">
       <span class="text-2xl font-bold p-4">{{ title }}</span>
       <BreadCrumbs />

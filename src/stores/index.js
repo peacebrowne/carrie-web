@@ -2,6 +2,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import Cookies from "js-cookie";
+import { getAuthorById } from "@/assets/js/service";
 
 export const articleStore = defineStore("article", () => {
   const article = ref(null);
@@ -17,14 +18,22 @@ export const articleStore = defineStore("article", () => {
 });
 
 export const authorStore = defineStore("authorStore", () => {
-  const author = ref(null);
+  const author = ref({});
 
-  const setAuthor = (id) => {
-    author.value = id;
-    localStorage.setItem("app-author-id", id);
+  const setAuthor = (data) => {
+    author.value = data;
+    localStorage.setItem("app-author-id", data.id);
   };
 
-  const getAuthor = () => author.value;
+  const getAuthor = async () => {
+    if (Object.keys(author.value).includes("firstName")) {
+      return author.value;
+    }
+
+    const { data } = await getAuthorById(localStorage.getItem("app-author-id"));
+
+    return data;
+  };
 
   return { getAuthor, setAuthor };
 });

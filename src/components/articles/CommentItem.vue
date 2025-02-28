@@ -31,7 +31,7 @@
             @click="handleCommentClaps(comment)"
           >
             <i class="pi pi-thumbs-up text-xs"></i>
-            <span>{{ comment.totalClaps }}</span>
+            <span>{{ comment.totalLikes }}</span>
           </Button>
 
           <!-- TOGGLE REPLIES -->
@@ -154,12 +154,12 @@ const loading = ref(false);
 
 const handleCommentClaps = async (comment) => {
   const data = {
-    authorID: "22cd93b5-01dc-4f3a-b33d-c77af55af1ed",
+    authorID: localStorage.getItem("app-author-id"),
     commentID: comment.id,
   };
 
   const { result, ok } = await addClaps(data);
-  if (ok) comment.totalClaps++;
+  if (ok) comment.totalLikes++;
 };
 
 const menu = ref(null);
@@ -234,7 +234,7 @@ const handleCommentData = (content, type, targetID) => {
 
   return {
     ...typeMapping[type],
-    authorID: "149ebfda-a27e-4cef-9882-ee7ec44ac349",
+    authorID: localStorage.getItem("app-author-id"),
     content,
   };
 };

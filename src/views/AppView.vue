@@ -1,12 +1,13 @@
 <template>
-  <nav class="absolute w-full z-50 top-0">
+  <nav class="sticky w-full z-50 top-0">
     <NavBar />
   </nav>
-  <main class="">
+  <main class="bg-[#1B4D3E]">
     <div class="p-menubar items-start border-0 rounded-none py-0">
       <div class="container py-0 mx-auto px-16">
         <div
-          class="p-menubar h-[100vh] border-none pt-20 flex items-start gap-10"
+          class="p-menubar border-none pt-6 flex items-start gap-10"
+          :style="{ height: 'calc(100vh - 56px)' }"
         >
           <aside class="flex gap-2 pt-3">
             <SideBar />
@@ -49,8 +50,4 @@ watch(
 );
 </script>
 
-<style>
-#main-content .p-scrollpanel-content {
-  padding-right: 30px !important;
-}
-</style>
+<style></style>

@@ -58,7 +58,7 @@ import ArticleComments from "./ArticleComments.vue";
 const store = articleStore();
 const article = ref("");
 const commentData = ref({
-  claps: 0,
+  likes: 0,
   comments: 0,
   id: null,
 });
@@ -75,7 +75,7 @@ const fetchArticleById = async () => {
   article.value =
     cachedArticle ?? (await handleArticleImage(fetchedArticle.data));
 
-  commentData.value.claps = article.value.totalClaps;
+  commentData.value.likes = article.value.totalLikes;
   commentData.value.comments = article.value.totalComments;
   commentData.value.id = id;
 };
@@ -98,7 +98,6 @@ onMounted(async () => {
 
 <style module>
 #content > p > span {
-  color: white !important;
   font-size: 0.9rem;
 }
 </style>

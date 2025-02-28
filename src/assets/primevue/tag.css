@@ -21,14 +21,14 @@
   @apply bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300;
 }
 
-/* .p-tag-warn {
-  @apply bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300;
-} */
 .p-tag-warn {
+  @apply bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300;
+}
+/* .p-tag-warn {
   @apply bg-[#d9ebe5] dark:bg-[#1B4D3E]/15 
            text-[#15493a] dark:text-[#E6F2EF] 
            font-bold px-2 py-1 rounded-md text-xs;
-}
+} */
 
 .p-tag-danger {
   @apply bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-300;

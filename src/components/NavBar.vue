@@ -1,75 +1,56 @@
 <template>
-  <div class="p-menubar border-0 rounded-none py-0">
-    <Menubar
-      :model="items"
-      class="container border-0 rounded-none mx-auto mt-1 px-10 w-full"
-    >
-      <template #start> <span class="font-black">Carrie</span> </template>
-      <!-- <template #item="{ item, props, hasSubmenu, root }">
-        <a v-ripple class="flex items-center" v-bind="props.action">
-          <span class="text-sm">{{ item.label }}</span>
-          <Badge
-            v-if="item.badge"
-            :class="{ 'ml-auto': !root, 'ml-2': root }"
-            :value="item.badge"
-          />
-          <span
-            v-if="item.shortcut"
-            class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1"
-            >{{ item.shortcut }}</span
-          >
-          <i
-            v-if="hasSubmenu"
-            :class="[
-              'pi pi-angle-down ml-auto',
-              { 'pi-angle-down': root, 'pi-angle-right': !root },
-            ]"
-          ></i>
-        </a>
-      </template> -->
-      <template #end>
-        <div class="flex items-center gap-2 ml-auto">
-          <InputText
-            placeholder="Search"
-            type="search"
-            class="w-32 py-1 text-sm min-w-0 grow sm:w-auto"
-          />
+  <Menubar class=" border-0 rounded-none mx-auto pt-4 px-10 w-full">
+    <template #start> <span class="font-black">Carrie</span> </template>
+    <template #end>
+      <div class="flex items-center gap-2 ml-auto">
+        <InputText
+          placeholder="Search"
+          type="search"
+          class="w-32 py-1 text-sm min-w-0 grow sm:w-auto"
+        />
 
-          <OverlayBadge
-            value="4"
-            @click="toggle"
-            aria-haspopup="true"
-            aria-controls="overlay_tmenu"
-            severity="info"
-            class="inline-flex cursor-pointer"
-            size="small"
-          >
-            <Avatar
-              icon="pi pi-user text-white text-xs"
-              shape="circle"
-              class="bg-[#1B4D3E]"
+        <ToggleSwitch
+          v-model="checked"
+          class="!h-[1.9rem] w-12"
+          @click="toggleDarkMode"
+        >
+          <template #handle="{ checked }">
+            <i
+              :class="[
+                '!text-xs pi',
+                { 'pi-sun': checked, 'pi-moon': !checked },
+              ]"
             />
-          </OverlayBadge>
+          </template>
+        </ToggleSwitch>
 
-          <TieredMenu
-            ref="menu"
-            id="overlay_tmenu"
-            class="text-xs"
-            :model="userItems"
-            popup
-            :pt="{
-              root: { class: 'min-w-[11rem] top-[2.875rem] left-[69.375rem]' },
-            }"
+        <OverlayBadge
+          value="4"
+          @click="toggleDropdownMenu"
+          aria-haspopup="true"
+          aria-controls="overlay_tmenu"
+          severity="info"
+          class="inline-flex cursor-pointer"
+          size="small"
+        >
+          <Avatar
+            icon="pi pi-user text-white text-xs"
+            shape="circle"
+            class="bg-[#1B4D3E]"
           />
-        </div>
-      </template>
-    </Menubar>
-  </div>
+        </OverlayBadge>
+
+        <Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true" />
+
+        
+      </div>
+    </template>
+  </Menubar>
 </template>
 
 <script setup>
 import { cookiesStore } from "@/stores";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -101,7 +82,30 @@ const logOut = () => {
   router.push("/login");
 };
 
-const toggle = (event) => {
+const toggleDropdownMenu = (event) => {
   menu.value.toggle(event);
 };
+
+const checked = ref(false);
+
+const isDarkMode = ref(false);
+
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value;
+  if (isDarkMode.value) {
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+};
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    isDarkMode.value = true;
+    document.documentElement.classList.add("dark");
+  }
+});
 </script>
