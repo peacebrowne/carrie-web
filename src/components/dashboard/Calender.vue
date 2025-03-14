@@ -8,8 +8,22 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, inject } from "vue";
 import { Qalendar } from "qalendar";
+
+const analytics = inject("analytics");
+
+const fetchPendingArticles = async () => {
+  const {pending}= analytics.value;
+  const result = await authorStore.getPendingArticles(pending);
+  
+};
+
+onMounted(() => {
+  setTimeout(async () => {
+    await fetchPendingArticles();
+  }, 1000);
+});
 
 const events = [
   // ...

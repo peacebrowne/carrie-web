@@ -1,6 +1,10 @@
 <template>
-  <Menubar class=" border-0 rounded-none mx-auto pt-4 px-10 w-full">
-    <template #start> <span class="font-black">Carrie</span> </template>
+  <Menubar class="border-0 rounded-none mx-auto py-3 px-10 w-full shadow-sm">
+    <template #start>
+      <router-link :to="{ name: 'landing-page' }">
+        <span class="font-black">Carrie</span>
+      </router-link>
+    </template>
     <template #end>
       <div class="flex items-center gap-2 ml-auto">
         <InputText
@@ -24,25 +28,29 @@
           </template>
         </ToggleSwitch>
 
-        <OverlayBadge
-          value="4"
-          @click="toggleDropdownMenu"
-          aria-haspopup="true"
-          aria-controls="overlay_tmenu"
-          severity="info"
-          class="inline-flex cursor-pointer"
-          size="small"
-        >
-          <Avatar
-            icon="pi pi-user text-white text-xs"
-            shape="circle"
-            class="bg-[#1B4D3E]"
-          />
-        </OverlayBadge>
+        <div v-if="isLoggedIn">
+          <OverlayBadge
+            value="4"
+            @click="toggleDropdownMenu"
+            aria-haspopup="true"
+            aria-controls="overlay_tmenu"
+            severity="info"
+            class="inline-flex cursor-pointer"
+            size="small"
+          >
+            <Avatar
+              icon="pi pi-user text-white text-xs"
+              shape="circle"
+              class="bg-[#1B4D3E]"
+            />
+          </OverlayBadge>
 
-        <Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true" />
+          <Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true" />
+        </div>
 
-        
+        <router-link v-else :to="{ name: 'login' }">
+          <span class="text-xs font-bold">login</span>
+        </router-link>
       </div>
     </template>
   </Menubar>
@@ -72,6 +80,15 @@ const userItems = ref([
   },
 ]);
 
+const isLoggedIn = ref(false);
+
+const handleIsLoggedIn = () => {
+  const { getCookie } = cookiesStore();
+  const token = getCookie();
+
+  isLoggedIn.value = token ? true : false;
+};
+
 const logOut = () => {
   const { removeCookie } = cookiesStore();
   removeCookie();
@@ -79,7 +96,8 @@ const logOut = () => {
     localStorage.removeItem(item)
   );
 
-  router.push("/login");
+  isLoggedIn.value = false;
+  router.push("/");
 };
 
 const toggleDropdownMenu = (event) => {
@@ -87,7 +105,6 @@ const toggleDropdownMenu = (event) => {
 };
 
 const checked = ref(false);
-
 const isDarkMode = ref(false);
 
 const toggleDarkMode = () => {
@@ -107,5 +124,7 @@ onMounted(() => {
     isDarkMode.value = true;
     document.documentElement.classList.add("dark");
   }
+
+  handleIsLoggedIn();
 });
 </script>

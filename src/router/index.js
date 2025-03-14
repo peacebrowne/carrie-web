@@ -7,6 +7,8 @@ import ArticleDetail from "@/components/articles/ArticleDetail.vue";
 import LoginForm from "@/components/forms/LoginForm.vue";
 import RegistrationForm from "@/components/forms/RegistrationForm.vue";
 import DashBoard from "@/components/dashboard/DashBoard.vue";
+import LandingPage from "@/views/LandingPage.vue";
+// import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
   {
@@ -18,19 +20,12 @@ const routes = [
     },
     children: [
       {
-        path: "",
-        // TODO add landing page.
-        name: "landing-page",
-      },
-      {
         path: "dashboard",
-        // TODO add dashboard component.
         component: DashBoard,
         name: "dashboard",
       },
       {
         path: "list",
-        // TODO add dashboard component.
         children: [
           {
             path: "",
@@ -49,31 +44,6 @@ const routes = [
         component: AddArticle,
         name: "write",
       },
-      // {
-      //   path: "articles",
-      //   children: [
-      //     {
-      //       path: "list",
-      //       children: [
-      //         {
-      //           path: "",
-      //           component: ArticleList,
-      //           name: "list",
-      //         },
-      //         {
-      //           path: ":title",
-      //           component: ArticleDetail,
-      //           name: "article-detail",
-      //         },
-      //       ],
-      //     },
-      // {
-      //   path: "write",
-      //   component: AddArticle,
-      //   name: "write",
-      // },
-      //   ],
-      // },
       {
         path: "trash",
         // TODO add trash component.
@@ -88,6 +58,11 @@ const routes = [
   },
   {
     path: "/",
+    component: LandingPage,
+    name: "landing-page",
+  },
+  {
+    path: "/auth",
     component: LoginView,
     children: [
       {
@@ -105,9 +80,11 @@ const routes = [
       },
     ],
   },
+
   {
-    // path: "*", // Catch-all route for 404
-    // component: NotFound,
+    path: "/:catchAll(.*)",
+    // component: NotFound, // Uncomment when NotFound component is created
+    name: "not-found",
   },
 ];
 

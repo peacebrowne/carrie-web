@@ -5,6 +5,7 @@ import Fieldset from "primevue/fieldset";
 import Chart from "primevue/chart";
 import "primeicons/primeicons.css";
 import ConfirmationService from "primevue/confirmationservice";
+import VirtualScroller from "primevue/virtualscroller";
 import Toast from "primevue/toast";
 import DialogService from "primevue/dialogservice";
 import ToastService from "primevue/toastservice";

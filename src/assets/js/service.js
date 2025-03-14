@@ -26,7 +26,7 @@ export const addArticle = async (data) => {
 export const getAuthorArticles = async (id, params = {}) => {
   try {
     const url = new URL(
-      `${API_URL}/articles/authors/${id}${params.term ? "/search" : ""}`
+      `${API_URL}/articles/authors/${id}${params?.term ? "/search" : ""}`
     );
 
     url.search = new URLSearchParams(params).toString();
@@ -197,3 +197,42 @@ export const register = async (data) => {
     console.error("Error registering user", error);
   }
 };
+
+export const getArticleAnalytics = async (id) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(
+      `${API_URL}/articles/${id}/article-analytics`,
+      options
+    );
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching article analytics", error);
+    
+  }
+}
+
+export const getArticles = async (params = {}) => {
+  try {
+    const url = new URL(`${API_URL}/articles${params?.term ? "/search" : ""}`);
+    url.search = new URLSearchParams(params).toString();
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching articles", error);
+  }
+}

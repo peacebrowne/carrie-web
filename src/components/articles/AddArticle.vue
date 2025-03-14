@@ -14,10 +14,9 @@
     >
       <div class="w-[65%] flex flex-col gap-4">
         <!-- IMAGE -->
-        <UploadArticleImage
+        <AddImage
           name="image"
-          v-model:src="src"
-          v-model:image="image"
+         
         />
 
         <!-- TITLE -->
@@ -172,7 +171,7 @@ import { useToast } from "primevue/usetoast";
 import { ref, reactive, watch } from "vue";
 import { z } from "zod";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
-import UploadArticleImage from "./UploadArticleImage.vue";
+import AddImage from "./AddImage.vue";
 import Editor from "./Editor.vue";
 import { addArticle } from "@/assets/js/service.js";
 
@@ -181,9 +180,9 @@ const tempTag = ref(null);
 const tags = ref([]);
 const description = ref("");
 const loading = ref(false);
-const image = defineModel("image");
-const src = defineModel("src");
-const content = defineModel("content");
+const image = provide("");
+const src = provide("");
+const content = provide("");
 const toast = useToast();
 const date = ref();
 const status = ref({

@@ -6,8 +6,7 @@
     <div class="p-menubar items-start border-0 rounded-none py-0">
       <div class="container py-0 mx-auto px-16">
         <div
-          class="p-menubar border-none pt-6 flex items-start gap-10"
-          :style="{ height: 'calc(100vh - 56px)' }"
+          class="p-menubar border-none pt-6 flex items-start gap-10 h-[calc(100vh-56px)]"
         >
           <aside class="flex gap-2 pt-3">
             <SideBar />

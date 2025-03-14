@@ -126,7 +126,7 @@ const onFormSubmit = async ({ valid, values }) => {
       loading.value = false;
       setTimeout(() => {
         handleCookies(result);
-        router.push("/app/dashboard");
+        router.push("/");
       }, 3000);
     } else {
       loading.value = false;

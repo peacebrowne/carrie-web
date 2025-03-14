@@ -1,50 +1,58 @@
 <template>
   <div class="flex flex-col gap-6 justify-between mb-10">
     <div class="flex flex-col p-4">
-      <span class="text-3xl font-black">Good day, {{ author.firstName }}</span
-      ><span>We are collecting articles for you</span>
+      <span class="text-3xl font-black">Good day, {{ author.firstName }}</span>
+      <span>We are collecting articles for you</span>
     </div>
 
     <div class="flex flex-row gap-6 w-full">
       <div class="flex basis-3/3 px-4 w-full">
         <div class="flex flex-row gap-6 w-full">
           <div
-            class="flex flex-col basis-64 h-28 shadow-lg border rounded-2xl p-4"
+            class="flex flex-col basis-64 h-32 shadow-lg border rounded-2xl p-4 gap-2"
           >
             <Tag rounded severity="success">
               <span class="pi pi-book"> </span>
               <span class="text-xs">Total Articles</span>
             </Tag>
-            <span class="mx-auto text-6xl font-normal"> 0 </span>
+            <span class="mx-auto text-6xl font-normal">
+              {{ animatedTotal }}
+            </span>
           </div>
           <div
-            class="flex flex-col basis-64 h-28 shadow-lg border rounded-2xl p-4"
+            class="flex flex-col basis-64 h-32 shadow-lg border rounded-2xl p-4 gap-2"
           >
             <Tag rounded severity="info">
               <span class="pi pi-file-check"> </span>
               <span class="text-xs">Published</span>
             </Tag>
-            <span class="mx-auto text-6xl font-normal"> 0 </span>
+            <span class="mx-auto text-6xl font-normal">
+              {{ animatedPublished }}
+            </span>
           </div>
 
           <div
-            class="flex flex-col basis-64 h-28 shadow-lg border rounded-2xl p-4"
+            class="flex flex-col basis-64 h-32 shadow-lg border rounded-2xl p-4 gap-2"
           >
             <Tag rounded severity="warn">
               <span class="pi pi-file-export"> </span>
               <span class="text-xs">Pending</span>
             </Tag>
-            <span class="mx-auto text-6xl font-normal"> 0 </span>
+            <span class="mx-auto text-6xl font-normal">
+              {{ animatedPending }}
+            </span>
           </div>
 
           <div
-            class="flex flex-col basis-64 h-28 shadow-lg border rounded-2xl p-4"
+            class="flex flex-col basis-64 h-32 shadow-lg border rounded-2xl p-4 gap-2"
           >
             <Tag rounded severity="danger">
               <span class="pi pi-file-edit"> </span>
               <span class="text-xs">Draft</span>
             </Tag>
-            <span class="mx-auto text-6xl font-normal"> 0 </span>
+            <span class="mx-auto text-6xl font-normal">
+              {{ animatedDraft }}
+            </span>
           </div>
         </div>
       </div>
@@ -82,7 +90,6 @@
                     image="../../assets/images/onyamalimba.png"
                     shape="circle"
                   />
-
                   <span>John Doe</span>
                 </div>
               </template>
@@ -105,7 +112,6 @@
                     image="../../assets/images/onyamalimba.png"
                     shape="circle"
                   />
-
                   <span>John Doe</span>
                 </div>
               </template>
@@ -167,16 +173,73 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, provide } from "vue";
 import Calender from "./Calender.vue";
 import { authorStore } from "@/stores";
+import { getArticleAnalytics } from "@/assets/js/service";
 
 const author = ref("");
+const analytics = ref({
+  total: 0,
+  published: 0,
+  pending: 0,
+  draft: 0,
+  likes: 0,
+  dislikes: 0,
+  shares: 0,
+});
+
+provide("analytics", analytics);
+
+const animatedTotal = ref(0);
+const animatedPublished = ref(0);
+const animatedPending = ref(0);
+const animatedDraft = ref(0);
+
+const animateIncrement = (start, end, duration, callback) => {
+  const startTime = performance.now();
+
+  const animate = (currentTime) => {
+    const elapsedTime = currentTime - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+    const value = Math.floor(progress * (end - start) + start);
+
+    callback(value);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  };
+
+  requestAnimationFrame(animate);
+};
+
+const fetchAuthorArticlesAnalytics = async (id) => {
+  const result = await getArticleAnalytics(id);
+  analytics.value = result.data;
+
+  const duration = 1000;
+
+  animateIncrement(0, analytics.value.total, duration, (value) => {
+    animatedTotal.value = value;
+  });
+  animateIncrement(0, analytics.value.published, duration, (value) => {
+    animatedPublished.value = value;
+  });
+  animateIncrement(0, analytics.value.pending, duration, (value) => {
+    animatedPending.value = value;
+  });
+  animateIncrement(0, analytics.value.draft, duration, (value) => {
+    animatedDraft.value = value;
+  });
+};
 
 onMounted(async () => {
   const { getAuthor } = authorStore();
   author.value = await getAuthor();
+  fetchAuthorArticlesAnalytics(author.value.id);
 });
 
 const categories = ref([

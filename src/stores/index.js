@@ -1,4 +1,3 @@
-// stores/article.store.js
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import Cookies from "js-cookie";
@@ -49,7 +48,10 @@ export const cookiesStore = defineStore("cookiesStore", () => {
     });
   };
 
-  const removeCookie = () => Cookies.remove("token");
+  const removeCookie = () => {
+    Cookies.remove("token");
+    isAuthenticated.value = null;
+  };
 
   const setIsAuthenticated = () => {
     isAuthenticated.value = getCookie();
