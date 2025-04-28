@@ -5,6 +5,7 @@
       name="content"
       editorStyle="height: 320px"
       placeholder="Tell your story"
+      v-model="content"
     >
       <template v-slot:toolbar>
         <span class="ql-formats">
@@ -17,7 +18,12 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import {inject } from 'vue';
+
+const content = inject('content');
+
+</script>
 
 <style>
 .ql-toolbar.ql-snow,

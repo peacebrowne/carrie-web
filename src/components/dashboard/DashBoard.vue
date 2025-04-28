@@ -1,7 +1,9 @@
 <template>
-  <div class="flex flex-col gap-6 justify-between mb-10">
+  <div class="flex flex-col gap-6 justify-between">
     <div class="flex flex-col p-4">
-      <span class="text-3xl font-black">Good day, {{ author.firstName }}</span>
+      <span class="text-4xl font-semibold"
+        >Good day, {{ author.firstName }}</span
+      >
       <span>We are collecting articles for you</span>
     </div>
 

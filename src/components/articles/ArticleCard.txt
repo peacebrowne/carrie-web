@@ -126,7 +126,7 @@
             >
               <router-link
                 :to="{
-                  name: 'public-article-detail',
+                  name: 'article-detail',
                   params: { title: article.title },
                 }"
                 @click="handleArticleStore(article)"
@@ -206,7 +206,7 @@
           >
             <router-link
               :to="{
-                name: 'public-article-detail',
+                name: 'article-detail',
                 params: { title: article.title },
               }"
               @click="handleArticleStore(article)"

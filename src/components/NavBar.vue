@@ -1,27 +1,49 @@
 <template>
-  <Menubar class="border-0 rounded-none mx-auto py-3 px-10 w-full shadow-sm">
+  <Menubar class="border-0 px-16 rounded-none absolute w-full shadow-sm">
     <template #start>
-      <router-link :to="{ name: 'landing-page' }">
-        <span class="font-black">Carrie</span>
-      </router-link>
+      <div class="flex items-center gap-4">
+        <router-link :to="{ name: 'landing-page' }">
+          <span class="font-black text-2xl">Carrie</span>
+        </router-link>
+        <IconField>
+          <InputIcon class="pi pi-search text-sm" />
+          <InputText class="py-1 rounded-full" placeholder="Search" />
+        </IconField>
+      </div>
     </template>
     <template #end>
-      <div class="flex items-center gap-2 ml-auto">
-        <InputText
-          placeholder="Search"
-          type="search"
-          class="w-32 py-1 text-sm min-w-0 grow sm:w-auto"
-        />
+      <div class="flex items-center gap-4 ml-auto">
+        <div>
+          <router-link :to="{ name: 'write' }">
+            <Button
+              class="py-1 text-sm"
+              severity="secondary"
+              variant="outlined"
+              rounded
+              aria-label="Write"
+              icon="pi pi-plus text-sm"
+              label="Write"
+            />
+          </router-link>
+        </div>
+
+        <div class="mt-[.5rem] cursor-pointer">
+          <OverlayBadge value="2" size="small" severity="warn">
+            <i class="pi pi-bell text-xl" severity="secondary" />
+          </OverlayBadge>
+        </div>
 
         <ToggleSwitch
           v-model="checked"
-          class="!h-[1.9rem] w-12"
+          class="!h-[2rem] w-12"
           @click="toggleDarkMode"
+          severity="secondary"
+          variant="outlined"
         >
           <template #handle="{ checked }">
             <i
               :class="[
-                '!text-xs pi',
+                '!text-sm pi',
                 { 'pi-sun': checked, 'pi-moon': !checked },
               ]"
             />
@@ -29,23 +51,7 @@
         </ToggleSwitch>
 
         <div v-if="isLoggedIn">
-          <OverlayBadge
-            value="4"
-            @click="toggleDropdownMenu"
-            aria-haspopup="true"
-            aria-controls="overlay_tmenu"
-            severity="info"
-            class="inline-flex cursor-pointer"
-            size="small"
-          >
-            <Avatar
-              icon="pi pi-user text-white text-xs"
-              shape="circle"
-              class="bg-[#1B4D3E]"
-            />
-          </OverlayBadge>
-
-          <Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true" />
+          <SideBar />
         </div>
 
         <router-link v-else :to="{ name: 'login' }">
@@ -60,25 +66,9 @@
 import { cookiesStore } from "@/stores";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import SideBar from "@/components/SideBar.vue";
 
 const router = useRouter();
-const menu = ref();
-const userItems = ref([
-  {
-    label: "Notification",
-    icon: "pi pi-bell",
-  },
-  {
-    separator: true,
-  },
-  {
-    label: "Logout",
-    icon: "pi pi-power-off",
-    command: () => {
-      logOut();
-    },
-  },
-]);
 
 const isLoggedIn = ref(false);
 
@@ -87,21 +77,6 @@ const handleIsLoggedIn = () => {
   const token = getCookie();
 
   isLoggedIn.value = token ? true : false;
-};
-
-const logOut = () => {
-  const { removeCookie } = cookiesStore();
-  removeCookie();
-  Array.of("app-author-id", "app-article-id").forEach((item) =>
-    localStorage.removeItem(item)
-  );
-
-  isLoggedIn.value = false;
-  router.push("/");
-};
-
-const toggleDropdownMenu = (event) => {
-  menu.value.toggle(event);
 };
 
 const checked = ref(false);
@@ -118,7 +93,7 @@ const toggleDarkMode = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     isDarkMode.value = true;

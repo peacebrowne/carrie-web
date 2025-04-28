@@ -8,13 +8,14 @@ import LoginForm from "@/components/forms/LoginForm.vue";
 import RegistrationForm from "@/components/forms/RegistrationForm.vue";
 import DashBoard from "@/components/dashboard/DashBoard.vue";
 import LandingPage from "@/views/LandingPage.vue";
+import Profile from "@/components/Profile.vue";
 // import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
   {
-    path: "/app",
+    path: "/me",
     component: AppView,
-    name: "app",
+    name: "me",
     meta: {
       requiresAuth: true,
     },
@@ -25,17 +26,24 @@ const routes = [
         name: "dashboard",
       },
       {
-        path: "list",
+        path: "stories",
         children: [
           {
             path: "",
             component: ArticleList,
-            name: "list",
+            name: "stories",
           },
           {
             path: ":title",
             component: ArticleDetail,
-            name: "article-detail",
+            name: "me-article-detail",
+            props: true,
+          },
+          {
+            path: ":title/edit",
+            component: AddArticle,
+            name: "edit-article",
+            props: true,
           },
         ],
       },
@@ -51,15 +59,29 @@ const routes = [
       },
       {
         path: "profile",
-        // TODO add author profile component.
+        component: Profile,
         name: "profile",
       },
     ],
   },
   {
     path: "/",
-    component: LandingPage,
-    name: "landing-page",
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: "",
+        component: LandingPage,
+        name: "landing-page",
+      },
+      {
+        path: ":title",
+        component: ArticleDetail,
+        name: "public-article-detail",
+        props: true,
+      },
+    ],
   },
   {
     path: "/auth",
@@ -80,7 +102,6 @@ const routes = [
       },
     ],
   },
-
   {
     path: "/:catchAll(.*)",
     // component: NotFound, // Uncomment when NotFound component is created

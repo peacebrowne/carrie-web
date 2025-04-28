@@ -1,6 +1,6 @@
 <template>
-  <div class="grid grid-cols-2 h-dvh">
-    <div class="h-full bg-[#E8751A] p-4 flex flex-col justify-between">
+  <div class="w-full h-dvh">
+    <!-- <div class="h-full bg-[#E8751A] p-4 flex flex-col justify-between">
       <div class="flex justify-between gap-2 px-8">
         <span class="font-black">Carrie</span>
         <Button
@@ -16,8 +16,8 @@
           <span class="pi pi-arrow-right text-sm"></span>
         </Button>
       </div>
-    </div>
-    <div class="h-full p-4 flex justify-center items-center">
+    </div> -->
+    <div class="h-full w-full p-4 flex justify-center items-center">
       <RouterView />
     </div>
   </div>

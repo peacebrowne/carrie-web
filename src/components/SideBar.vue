@@ -1,96 +1,142 @@
 <template>
-  <!-- PanelMenu with scrollable items -->
-  <ScrollPanel class="sidebar w-full !max-h-[80vh] p-0">
-    <PanelMenu :model="items" class="w-full md:w-[12rem]">
-      <template #item="{ item }">
-        <router-link
-          v-if="item.name"
-          :to="{ name: item.name }"
-          class="flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
-          :class="{ 'p-panelmenu-item-active': isActive(item.name) }"
-        >
-          <!-- <a v-ripple :href="href" @click="navigate"> -->
-          <span
-            :class="[
-              isActive(item.name) ? 'p-panelmenu-item-icon' : '',
-              item.icon,
-            ]"
-          />
-          <span
-            :class="{ 'p-panelmenu-item-icon': isActive(item.name) }"
-            class="ml-2 text-xs"
-            >{{ item.label }}</span
-          >
-          <!-- </a> -->
-        </router-link>
-        <a
-          v-else
-          v-ripple
-          class="test flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
-          :to="{ name: item.name }"
-          :target="item.target"
-          @click="toggleDropdownIcon"
-        >
-          <span :class="item.icon" />
-          <span class="ml-2 text-xs">{{ item.label }}</span>
-          <span
-            v-if="item.items"
-            :class="[
-              'pi',
-              dropdown ? ' pi-angle-up' : 'pi-angle-down',
-              'text-secondary ml-auto',
-            ]"
-          />
-        </a>
-      </template>
-    </PanelMenu>
-    <div class="pt-8 w-full md:w-[12rem]">
-      <router-link :to="{ name: 'write' }">
-        <Button class="py-1" severity="warn" raised>
-          <span class="text-xs">New article</span>
-          <span class="pi pi-plus text-sm"></span>
-        </Button>
-      </router-link>
-    </div>
-  </ScrollPanel>
-  <div class="">
-    <Button
-      v-styleclass="{
-        selector: '.sidebar',
-        toggleClass: 'hidden',
-      }"
-      @click="toggleSideBar"
-      severity="secondary"
-      text
-      rounded
+  <div class="card flex justify-center">
+    <Drawer
+      pt:header:class="flex items-center shadow-sm pb-3"
+      pt:closeButtonProps:class="bg-red-600"
+      v-model:visible="visible"
+      header="Right Drawer"
+      position="right"
     >
-      <span
-        :class="[
-          'pi',
-          visible ? ' pi-angle-double-right' : 'pi pi-angle-double-left',
-        ]"
-      ></span>
-    </Button>
+      <template #header>
+        <div class="flex items-center gap-2">
+          <Avatar v-if="src" :image="src" shape="circle" />
+
+          <Avatar
+            v-else
+            icon="pi pi-user text-white text-xs"
+            shape="circle"
+            class="bg-[#1B4D3E]"
+          />
+          <span class="font-bold"
+            >{{ author.firstName }} {{ author.lastName }}</span
+          >
+        </div>
+      </template>
+      <Menu :model="items" class="border-none h-full">
+        <template #item="{ item }">
+          <router-link
+            v-if="item.name"
+            :to="{ name: item.name }"
+            class="flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
+            :class="{ 'p-panelmenu-item-active': isActive(item.name) }"
+          >
+            <span
+              :class="[
+                isActive(item.name) ? 'p-panelmenu-item-icon' : '',
+                item.icon,
+              ]"
+            />
+            <span
+              :class="{ 'p-panelmenu-item-icon': isActive(item.name) }"
+              class="ml-2 text-xs"
+              >{{ item.label }}</span
+            >
+          </router-link>
+          <a
+            v-else
+            v-ripple
+            class="test flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
+            :to="{ name: item.name }"
+            :target="item.target"
+            @click="toggleDropdownIcon"
+          >
+            <span :class="item.icon" />
+            <span class="ml-2 text-xs">{{ item.label }}</span>
+            <span
+              v-if="item.items"
+              :class="[
+                'pi',
+                dropdown ? ' pi-angle-up' : 'pi-angle-down',
+                'text-secondary ml-auto',
+              ]"
+            />
+          </a>
+        </template>
+      </Menu>
+      <template #footer>
+        <div class="flex items-center gap-2">
+          <router-link class="w-full" :to="{ name: 'login' }">
+            <Button
+              label="Logout"
+              icon="pi pi-sign-out text-sm"
+              class="flex-auto text-sm w-full"
+              severity="danger"
+              text
+            ></Button>
+          </router-link>
+        </div>
+      </template>
+    </Drawer>
+    <!-- <Button icon="pi pi-bars" @click="visible = true" /> -->
+
+    <div @click="visible = true" class="cursor-pointer">
+      <Avatar v-if="src" :image="src" shape="circle" />
+
+      <Avatar
+        v-else
+        icon="pi pi-user text-white text-xs"
+        shape="circle"
+        class="bg-[#1B4D3E]"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRoute } from "vue-router";
+import { getImage } from "@/assets/js/service";
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { authorStore } from "@/stores";
+
+const visible = ref(false);
+const src = ref(null);
+const author = ref("");
+
+const fetchUserImage = async (id) => {
+  if (id) {
+    const { data, ok } = await getImage(id);
+
+    if (ok && data.size) {
+      return URL.createObjectURL(data);
+    }
+  }
+};
+
+onMounted(async () => {
+  const { getAuthor } = authorStore();
+  author.value = await getAuthor();
+  src.value = await fetchUserImage(localStorage.getItem("app-author-id"));
+});
 
 const route = useRoute();
-
+const router = useRouter();
 const isActive = (path) => route.path.split("/")[2] === path;
+
 const items = ref([
   {
-    label: "Dashboard",
+    label: "Stats",
     icon: "pi pi-th-large",
     name: "dashboard",
   },
   {
-    label: "My articles",
+    label: "My Stories",
     icon: "pi pi-book",
-    name: "list",
+    name: "stories",
+  },
+  {
+    label: "Chats",
+    icon: "pi pi-comments",
+    name: "stories",
   },
 
   {
@@ -105,16 +151,16 @@ const items = ref([
   },
 ]);
 
-const visible = ref(false);
-const dropdown = ref(false);
+const logOut = () => {
+  const { removeCookie } = cookiesStore();
+  removeCookie();
+  Array.of("app-author-id", "app-article-id").forEach((item) =>
+    localStorage.removeItem(item)
+  );
 
-const toggleSideBar = () => (visible.value = !visible.value);
-const toggleDropdownIcon = () => (dropdown.value = !dropdown.value);
+  isLoggedIn.value = false;
+  router.push("/auth/login");
+};
 </script>
 
-<style>
-.p-panelmenu-item {
-  margin-top: 0.4rem !important;
-  margin-bottom: 0.4rem !important;
-}
-</style>
+<style scoped></style>

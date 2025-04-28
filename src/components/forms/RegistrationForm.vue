@@ -1,6 +1,8 @@
 <template>
+  <Toast />
+
   <div class="card flex justify-center">
-    <Stepper v-model:value="activeStep" class="basis-[40rem]">
+    <Stepper v-model:value="activeStep" class="basis-[40rem]" linear>
       <StepList>
         <Step
           v-slot="{ activateCallback, value, a11yAttrs }"
@@ -92,17 +94,18 @@
       <StepPanels>
         <StepPanel v-slot="{ activateCallback }" :value="1" class="w-[30rem]">
           <div
-            class="flex flex-col gap-4 p-8 rounded-xl bg-[#FBFBFB] shadow-lg"
+            class="flex flex-col gap-2 p-6 rounded-xl bg-[#FBFBFB] shadow-lg"
           >
             <div class="flex flex-col mb-4">
               <span class="text-3xl font-black">Create an account</span>
               <!-- <span class="text-lg">Register now to access your account.</span> -->
             </div>
+
             <Form
+              ref="formRef"
               :resolver="resolver"
               :initialValues="initialValues"
-              @submit="onFormSubmit"
-              class="flex flex-col gap-4 w-full"
+              class="flex flex-col gap-3 w-full"
             >
               <div class="flex justify-between gap-4">
                 <FormField
@@ -110,8 +113,9 @@
                   as="section"
                   name="firstName"
                   initialValue=""
-                  class="flex flex-col gap-2 text-sm"
+                  class="flex flex-col gap-2 text-sm w-[50%]"
                 >
+                  <!-- <pre class="whitespace-pre-wrap">{{ $field }}</pre> -->
                   <div class="flex gap-2 items-center">
                     <label for="firstName">First name</label>
                     <span
@@ -132,7 +136,7 @@
                   as="section"
                   name="lastName"
                   initialValue=""
-                  class="flex flex-col gap-2 text-sm mt-[0.20rem]"
+                  class="flex flex-col gap-2 text-sm mt-[0.22rem] w-[50%]"
                 >
                   <label for="lastName">Last name</label>
                   <InputText type="text" />
@@ -151,7 +155,7 @@
                   as="section"
                   name="username"
                   initialValue=""
-                  class="flex flex-col gap-2 text-sm"
+                  class="flex flex-col gap-2 text-sm w-[50%]"
                 >
                   <div class="flex gap-2 items-center">
                     <label for="username">Username</label>
@@ -173,7 +177,7 @@
                   as="section"
                   name="email"
                   initialValue=""
-                  class="flex flex-col gap-2 text-sm"
+                  class="flex flex-col gap-2 text-sm w-[50%]"
                 >
                   <div class="flex gap-2 items-center">
                     <label for="email">Email</label>
@@ -181,7 +185,7 @@
                       class="pi pi-asterisk text-[.5rem] text-red-600"
                     ></span>
                   </div>
-                  <InputText type="text" />
+                  <InputText type="email" />
                   <Message
                     v-if="$field?.invalid"
                     severity="error"
@@ -196,15 +200,25 @@
                 asChild
                 name="password"
                 initialValue=""
+                autocomplete
               >
-                <section class="flex flex-col gap-2 text-sm">
+                <section
+                  class="flex flex-col gap-2 text-sm"
+                  aria-autocomplete="true"
+                >
                   <div class="flex gap-2 items-center">
                     <label for="password">Password</label>
                     <span
                       class="pi pi-asterisk text-[.5rem] text-red-600"
                     ></span>
                   </div>
-                  <Password type="text" :feedback="false" toggleMask fluid />
+                  <Password
+                    type="password"
+                    :feedback="false"
+                    toggleMask
+                    fluid
+                    autocomplete
+                  />
                   <Message
                     v-if="$field?.invalid"
                     severity="error"
@@ -215,18 +229,8 @@
                 </section>
               </FormField>
 
-              <!-- <Button
-              type="submit"
-              icon="pi pi-user-plus"
-              severity="warn"
-              label="Create account"
-              :loading="loading"
-              raised
-            /> -->
-
-              <FormField
+              <div
                 as="section"
-                name="forgot_password"
                 initialValue=""
                 class="flex justify-center items-center gap-2"
               >
@@ -234,15 +238,16 @@
                 <router-link class="cursor-pointer" :to="{ name: 'login' }">
                   <span class="text-xs underline">Sign in</span>
                 </router-link>
-              </FormField>
+              </div>
             </Form>
           </div>
           <div class="flex pt-6 justify-end">
             <Button
               label="Next"
-              icon="pi pi-arrow-right"
+              icon="pi pi-arrow-right text-xs"
               iconPos="right"
-              @click="activateCallback(2)"
+              @click="validateStepOne(activateCallback)"
+              class="py-1"
             />
           </div>
         </StepPanel>
@@ -251,8 +256,9 @@
             class="flex flex-col gap-4 p-8 rounded-xl bg-[#FBFBFB] shadow-lg w-full h-full m-auto"
           >
             <div class="text-2xl font-black">Choose your interests</div>
+
             <MultiSelect
-              v-model="selectedItems"
+              v-model="interests"
               :options="items"
               :maxSelectedLabels="3"
               :selectAll="selectAll"
@@ -263,21 +269,23 @@
               :virtualScrollerOptions="{ itemSize: 44 }"
               filter
               placeholder="Select Item"
-              class="w-full"
+              class="w-full md:w-80"
             />
           </div>
           <div class="flex pt-6 justify-between">
             <Button
               label="Back"
               severity="secondary"
-              icon="pi pi-arrow-left"
+              icon="pi pi-arrow-left text-xs"
               @click="activateCallback(1)"
+              class="py-1"
             />
             <Button
               label="Next"
-              icon="pi pi-arrow-right"
+              icon="pi pi-arrow-right text-xs"
               iconPos="right"
               @click="activateCallback(3)"
+              class="py-1"
             />
           </div>
         </StepPanel>
@@ -290,12 +298,24 @@
               <AddImage name="image" v-model:src="src" v-model:image="image" />
             </div>
           </div>
-          <div class="flex pt-6 justify-start">
+          <div class="flex pt-6 justify-between">
             <Button
               label="Back"
               severity="secondary"
-              icon="pi pi-arrow-left"
+              icon="pi pi-arrow-left text-xs"
               @click="activateCallback(2)"
+              class="py-1"
+            />
+
+            <Button
+              type="submit"
+              icon="pi pi-user-plus text-xs"
+              severity="warn"
+              label="Create account"
+              :loading="loading"
+              class="py-1"
+              raised
+              @click="onFormSubmit"
             />
           </div>
         </StepPanel>
@@ -305,35 +325,23 @@
 </template>
 
 <script setup>
-import { ref, provide } from "vue";
-
-const image = provide("");
-const src = provide("");
-const activeStep = ref(1);
-const selectedItems = ref();
-const selectAll = ref(false);
-const items = ref(
-  Array.from({ length: 100000 }, (_, i) => ({ label: `Item #${i}`, value: i }))
-);
-
-const onSelectAllChange = (event) => {
-  selectedItems.value = event.checked
-    ? items.value.map((item) => item.value)
-    : [];
-  selectAll.value = event.checked;
-};
-const onChange = (event) => {
-  selectAll.value = event.value.length === items.value.length;
-};
-
+import { ref, onMounted } from "vue";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "primevue/usetoast";
-import { register } from "../../assets/js/service.js";
+import { getCategories, register } from "@/assets/js/service";
 import { useRouter } from "vue-router";
 
+const image = defineModel("image");
+const src = defineModel("src");
+const interests = ref();
+const activeStep = ref(1);
+const formRef = ref(null);
+const selectAll = ref(false);
+const items = ref([]);
 const toast = useToast();
 const router = useRouter();
+
 const loading = ref(false);
 
 const initialValues = ref({
@@ -344,36 +352,80 @@ const initialValues = ref({
   password: "",
 });
 
+const validateStepOne = async (next) => {
+  const { errors } = await formRef.value.validate();
+
+  const error = Object.keys(errors).length;
+
+  if (!error) {
+    next(2);
+  }
+};
+
+const onSelectAllChange = (event) => {
+  interests.value = event.checked ? items.value.map((item) => item.value) : [];
+  selectAll.value = event.checked;
+};
+
+const onChange = (event) => {
+  selectAll.value = event.value.length === items.value.length;
+};
+
+const fetchInterests = async () => {
+  const { data } = await getCategories();
+  items.value = data.map((item) => ({ label: item.name, value: item.id }));
+};
+
+onMounted(async () => await fetchInterests());
+
 const resolver = zodResolver(
   z.object({
-    firstName: z.string().min(1, { message: "first name is required." }),
-    username: z.string().min(1, { message: "username is required." }),
-    email: z.string().min(1, { message: "email is required." }),
+    firstName: z.string().min(1, { message: "First name is required." }),
+    username: z.string().min(1, { message: "Username is required." }),
+    email: z.string().min(1, { message: "Email is required." }),
     password: z.string().min(1, { message: "Password is required." }),
   })
 );
 
-const onFormSubmit = async ({ valid, values }) => {
-  if (valid) {
-    loading.value = true;
+const handleAuthorData = ({ states }) => {
+  return {
+    username: states.username.value,
+    firstName: states.firstName.value,
+    lastName: states.lastName.value,
+    email: states.email.value,
+    password: states.password.value,
+    interests: interests.value.map(
+      (interest) => items.value.find((item) => item.value === interest).label
+    ),
+  };
+};
 
-    const { ok, result } = await register(values);
+const onFormSubmit = async () => {
+  const author = handleAuthorData(formRef.value);
 
-    toast.add({
-      severity: ok ? "success" : "error",
-      summary: result.message,
-      life: 5000,
-    });
+  const data = new FormData();
+  data.append("image", image.value);
+  data.append(
+    "author",
+    new Blob([JSON.stringify(author)], { type: "application/json" })
+  );
 
-    if (ok) {
-      loading.value = false;
+  loading.value = true;
+  const { ok, result } = await register(data);
 
-      setTimeout(() => {
-        router.push("/login");
-      }, 3000);
-    } else {
-      loading.value = false;
-    }
+  toast.add({
+    severity: ok ? "success" : "error",
+    summary: result.message,
+    life: 5000,
+  });
+
+  if (ok) {
+    loading.value = false;
+    setTimeout(() => {
+      router.push("/auth/login");
+    }, 3000);
+  } else {
+    loading.value = false;
   }
 };
 </script>

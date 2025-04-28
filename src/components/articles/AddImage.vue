@@ -59,10 +59,10 @@
 </template>
 
 <script setup>
-import { inject, onMounted } from "vue";
+import { provide, onMounted } from "vue";
 
-const image = inject("image");
-const src = inject("src");
+const image = defineModel("image");
+const src = defineModel("src");
 
 function onFileSelect(event) {
   const file = event.files[0];

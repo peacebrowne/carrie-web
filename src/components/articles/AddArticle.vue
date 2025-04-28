@@ -1,27 +1,47 @@
 <template>
   <Toast />
   <div class="flex flex-col w-full p-4">
-    <div class="p-2 flex gap-3 items-center">
-      <span class="text-lg font-black">Create new article</span>
-      <span :class="status.color">{{ status.name }}</span>
+    <div class="py-2 w-full flex gap-3 items-center justify-between">
+      <div class="flex gap-3 items-center">
+        <span class="text-4xl font-semibold">Your Story</span>
+        <span :class="currentStatus?.color">{{ currentStatus?.name }}</span>
+      </div>
+      <!-- <div class="flex items-center">
+        <router-link
+          v-if="title"
+          :to="{ name: 'me-article-detail', params: { title } }"
+          target="_blank"
+        >
+          <Button
+            icon="pi pi-arrow-right text-xs"
+            label="preview"
+            severity="contrast"
+            class="py-1 text-xs flex flex-row-reverse items-center"
+          />
+        </router-link>
+      </div> -->
     </div>
     <Form
       v-slot="$form"
       :initialValues="initialValues"
       :resolver="resolver"
-      @submit.prevent="onFormSubmit"
+      @submit="onFormSubmit"
       class="flex w-full gap-6"
+      ref="formRef"
     >
       <div class="w-[65%] flex flex-col gap-4">
         <!-- IMAGE -->
-        <AddImage
-          name="image"
-         
-        />
+        <AddImage v-model:image="image" v-model:src="src" />
 
         <!-- TITLE -->
         <div class="flex flex-col gap-1">
-          <InputText name="title" type="text" placeholder="Title" fluid />
+          <InputText
+            name="title"
+            v-model="title"
+            type="text"
+            placeholder="Title"
+            fluid
+          />
           <Message
             v-if="$form.title?.invalid"
             severity="error"
@@ -35,7 +55,6 @@
         <div class="flex flex-col gap-1">
           <Editor
             :class="[$form.content?.invalid ? 'p-invalid' : '', 'p-inputtext']"
-            v-model:content="content"
           />
           <Message
             v-if="$form.content?.invalid"
@@ -51,26 +70,38 @@
           <!-- PUBLISH -->
           <div class="publish">
             <div
-              class="border px-2 rounded-lg flex items-center justify-between"
+              class="border px-2 rounded-lg rounded-es-none rounded-ee-none border-b-0 flex justify-between"
             >
-              <span class="font-bold py-2">Publish</span>
-              <ToggleSwitch v-model="published" />
+              <span class="font-bold py-2">Status</span>
+            </div>
+            <div
+              class="border rounded-ss-none rounded-se-none p-2 flex flex-col"
+            >
+              <div id="tag-input" class="flex gap-2 w-full justify-between">
+                <Select
+                  v-model="currentStatus"
+                  :options="statuses"
+                  optionLabel="name"
+                  placeholder="Select a status"
+                  class="w-full"
+                />
+              </div>
             </div>
           </div>
 
           <!-- SCHEDULE -->
-          <div class="tags">
+          <div v-if="pendingSchedule" class="schedule">
             <div
               class="border px-2 rounded-lg rounded-es-none rounded-ee-none border-b-0 flex justify-between"
             >
-              <span class="font-bold py-2">Schedule</span>
+              <span class="font-bold py-2">Scheduled Date</span>
             </div>
             <div
               class="border rounded-ss-none rounded-se-none p-2 flex flex-col"
             >
               <div id="tag-input" class="flex gap-2 w-full justify-between">
                 <DatePicker
-                  v-model="date"
+                  v-model="pendingDate"
                   class="w-full h-8"
                   showIcon
                   fluid
@@ -105,7 +136,7 @@
                   aria-label="Add Tag"
                   raised
                   class="w-[2rem] !h-[2rem] cursor-pointer"
-                  severity="secondary"
+                  severity="contrast"
                 />
               </div>
               <div>
@@ -147,7 +178,7 @@
             variant="outlined"
             icon="pi pi-trash text-sm"
             label="Discard"
-            class="py-1 text-xs"
+            class="py-1 text-xs flex items-center"
             raised
           />
 
@@ -156,7 +187,7 @@
             severity="warn"
             label="Submit"
             icon="pi pi-check text-sm"
-            class="py-1 text-xs"
+            class="py-1 text-xs flex items-center"
             :loading="loading"
             raised
           />
@@ -168,55 +199,33 @@
 
 <script setup>
 import { useToast } from "primevue/usetoast";
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, onMounted, provide } from "vue";
 import { z } from "zod";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import AddImage from "./AddImage.vue";
 import Editor from "./Editor.vue";
-import { addArticle } from "@/assets/js/service.js";
+import {
+  addArticle,
+  editArticle,
+  getArticleById,
+  getImage,
+} from "@/assets/js/service.js";
+import { articleStore } from "../../stores";
+import { useRoute } from "vue-router";
 
-const published = ref(false);
 const tempTag = ref(null);
 const tags = ref([]);
 const description = ref("");
 const loading = ref(false);
-const image = provide("");
-const src = provide("");
-const content = provide("");
+const image = defineModel("image");
+const src = defineModel("src");
+const content = defineModel("content");
+const title = ref();
 const toast = useToast();
-const date = ref();
-const status = ref({
-  name: "Draft",
-  color: "text-red-600",
-});
+const pendingDate = ref();
+const formRef = ref(null);
 
-watch(date, (newDate) => {
-  console.log({ newDate });
-  if (newDate) {
-    published.value = "";
-    status.value.name = "Pending";
-    status.value.color = "text-orange-600";
-  } else {
-    date.value = "";
-    published.value = false;
-    status.value.name = "Draft";
-    status.value.color = "text-red-600";
-  }
-});
-
-watch(published, (newPublished) => {
-  console.log({ newPublished });
-  if (newPublished) {
-    date.value = "";
-    status.value.name = "Published";
-    status.value.color = "text-primary";
-  } else {
-    date.value = "";
-    published.value = false;
-    status.value.name = "Draft";
-    status.value.color = "text-red-600";
-  }
-});
+provide("content", content);
 
 const initialValues = reactive({
   title: "",
@@ -233,37 +242,53 @@ const resolver = ref(
 );
 
 const handleArticleData = (values) => {
-  return {
-    title: values.title,
-    content: values.content,
-    description: description.value,
-    tags: tags.value,
-    isPublished: published.value,
-    authorID: localStorage.getItem("app-author-id"),
-  };
+  article.value.title = values.title;
+  article.value.content = values.content;
+  article.value.description = description.value;
+  article.value.tags = tags.value;
+  article.value.authorID = localStorage.getItem("app-author-id");
+  article.value.status = currentStatus.value.value;
+
+  return article.value;
 };
 
-const onFormSubmit = async ({ valid, values }) => {
-  load();
+const article = ref({
+  title: "",
+  content: "",
+  description: "",
+  tags: [],
+  authorID: localStorage.getItem("app-author-id"),
+  status: "draft",
+});
 
-  const article = handleArticleData(values);
+const onFormSubmit = async ({ valid, values }) => {
+  if (!valid) return;
+
+  loading.value = true;
 
   const data = new FormData();
+
   data.append("image", image.value);
   data.append(
     "article",
-    new Blob([JSON.stringify(article)], { type: "application/json" })
+    new Blob([JSON.stringify(handleArticleData(values))], {
+      type: "application/json",
+    })
   );
 
-  if (valid) {
-    const { ok, result } = await addArticle(data);
+  const { ok, result } = route.path.split("/").includes("edit")
+    ? await editArticle(localStorage.getItem("app-article-id"), data)
+    : await addArticle(data);
 
-    toast.add({
-      severity: ok ? "success" : "error",
-      summary: result.message,
-      life: 10000,
-    });
-  }
+  // const { ok, result } = await addArticle(data);
+
+  toast.add({
+    severity: ok ? "success" : "error",
+    summary: result?.message,
+    life: 10000,
+  });
+
+  loading.value = false;
 };
 
 const addTags = () => {
@@ -279,14 +304,129 @@ const deleteTags = (item) => {
   tags.value = tags.value.filter((tag) => tag !== item);
 };
 
-const load = () => {
-  loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
-  }, 2000);
+const pendingSchedule = ref(false);
+
+const showPendingSchedule = (status) => {
+  pendingSchedule.value = status.value === "pending";
 };
 
-const handleArticleStatus = () => {};
+const currentStatus = ref({
+  name: "Draft",
+  value: "draft",
+  color: "text-red-700",
+});
+
+watch(currentStatus, (n, o) => showPendingSchedule(!n ? o : n));
+
+//
+const handlePendingSchedule = (date) => {
+  const pad = (n, z = 2) => ("00" + n).slice(-z);
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hour = pad(date.getHours());
+  const minute = pad(date.getMinutes());
+  const second = pad(date.getSeconds());
+  const millisecond = pad(date.getMilliseconds(), 3);
+
+  // Add microseconds (.000000 format)
+  const microseconds = millisecond + "000";
+
+  const formatted = `${year}-${month}-${day} ${hour}:${minute}:${second}.${microseconds}`;
+  console.log(formatted);
+};
+
+watch(pendingDate, handlePendingSchedule);
+
+const statuses = ref([
+  { name: "Draft", value: "draft", color: "text-red-700" },
+  { name: "Pending", value: "pending", color: "text-blue-700" },
+  { name: "Published", value: "published", color: "text-green-700" },
+]);
+
+const store = articleStore();
+
+const fetchArticleById = async () => {
+  const cachedArticle = store.getArticle();
+
+  const id = cachedArticle
+    ? cachedArticle.id
+    : localStorage.getItem("app-article-id");
+
+  if (!id) return;
+
+  const fetchedArticle = await getArticleById(id);
+
+  const currentArticle =
+    cachedArticle ?? (await handleArticleImage(fetchedArticle.data));
+
+  if (!currentArticle) return;
+
+  const {
+    title: t,
+    content: c,
+    tags: tg,
+    description: d,
+    image: img,
+    status: s,
+  } = currentArticle;
+
+  title.value = t;
+  content.value = c;
+  tags.value = tg;
+  description.value = d;
+  src.value = img;
+  image.value = img;
+  currentStatus.value = statuses.value.find((status) => status.value === s);
+
+  // Update initial form values
+  const form = await formRef.value.states;
+  form.content.value = c;
+  form.title.value = t;
+};
+
+const handleArticleImage = async (articleData) => {
+  const { data, ok } = await getImage(articleData.id);
+  let image;
+
+  if (ok && data.size) {
+    image = URL.createObjectURL(data);
+  }
+
+  return { ...articleData, image };
+};
+
+const resetForm = async () => {
+  // Stop loader
+  loading.value = false;
+
+  // Reset form fields
+  title.value = "";
+  content.value = "";
+  tags.value = [];
+  description.value = "";
+  src.value = "";
+  image.value = "";
+
+  // Update initial form values
+  const form = await formRef.value.states;
+  form.content.value = "";
+  form.title.value = "";
+};
+
+const route = useRoute();
+const switchFormMode = async (url) => {
+  url.path.split("/").includes("edit")
+    ? await fetchArticleById()
+    : await resetForm();
+};
+
+watch(route, switchFormMode);
+onMounted(async () => {
+  await switchFormMode(route);
+});
+
 </script>
 
 <style></style>

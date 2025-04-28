@@ -1,8 +1,24 @@
 <template>
-  <div class="pb-3">
-    <div class="max-w-7xl flex items-center">
-      <span class="text-2xl font-bold p-4">{{ title }}</span>
-      <BreadCrumbs />
+  <div class="">
+    <div class="w-[60%] flex items-center justify-between">
+      <span class="text-4xl font-semibold p-4">{{ title }}</span>
+      <div class="flex justify-center items-center gap-4">
+        <router-link :to="{ name: 'write' }">
+          <Button
+            label="Write a Story"
+            class="bg-[#1B4D3E] text-white text-xs"
+            rounded
+          />
+        </router-link>
+        <Button
+          label="Import a Story"
+          severity="contrast"
+          class="text-xs"
+          variant="outlined"
+          rounded
+        />
+      </div>
+      <!-- <BreadCrumbs /> -->
     </div>
   </div>
 </template>
