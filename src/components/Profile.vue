@@ -294,7 +294,7 @@
       <div class="py-4 flex flex-col gap-3">
         <span class="text-2xl font-black">Default theme</span>
 
-        <div class="relative">
+        <div class="relative rounded-2xl">
           <Image
             src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg"
             alt="Image"
@@ -347,6 +347,8 @@ const fetchUserImage = async (id) => {
     }
   }
 };
+
+console.log(countryCodes.all()[0]);
 
 const initialValues = reactive({
   firstName: "",

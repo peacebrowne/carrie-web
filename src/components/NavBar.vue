@@ -35,7 +35,7 @@
 
         <ToggleSwitch
           v-model="checked"
-          class="!h-[2rem] w-12"
+          class="!h-[2rem] w-12 hidden"
           @click="toggleDarkMode"
           severity="secondary"
           variant="outlined"
