@@ -160,7 +160,10 @@ export const addClaps = async (data) => {
       body: JSON.stringify(data),
     };
 
-    const response = await fetch(`${API_URL}/claps`, options);
+    console.log(data);
+
+    // Added  the action=like because the dislike feature wil be later
+    const response = await fetch(`${API_URL}/claps?action=like`, options);
     const result = await response.json();
     return { ok: response.ok, result };
   } catch (error) {
@@ -273,7 +276,7 @@ export const getArticles = async (params = {}) => {
   }
 };
 
-export const getAuthorInterestedArticles = async (id, params = {}) => {
+export const getFollowedArticles = async (id, params = {}) => {
   try {
     const url = new URL(`${API_URL}/articles/author/${id}/interests`);
     url.search = new URLSearchParams(params).toString();

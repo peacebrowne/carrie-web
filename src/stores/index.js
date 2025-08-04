@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import Cookies from "js-cookie";
 import { getAuthorById } from "@/assets/js/service";
+import { jwtDecode } from "jwt-decode";
 
 export const articleStore = defineStore("article", () => {
   const article = ref(null);
@@ -41,8 +42,12 @@ export const cookiesStore = defineStore("cookiesStore", () => {
   const isAuthenticated = ref(null);
 
   const getCookie = () => Cookies.get("token");
-  const setCookie = (value) => {
-    Cookies.set("token", value, {
+  const setCookie = (token) => {
+    const decoded = jwtDecode(token);
+
+    console.log({ decoded });
+
+    Cookies.set("token", token, {
       expires: (1 / 1440) * 30,
       sameSite: "Strict",
     });

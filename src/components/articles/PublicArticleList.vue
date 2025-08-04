@@ -1,5 +1,5 @@
 <template>
-  <ScrollPanel id="main-content" class="flex w-full h-full">
+  <div id="main-content" class="flex w-full h-[calc(90vh-56px)]">
     <div class="container m-auto flex w-full h-full md:px-8 lg:px-36 2xl:px-52">
       <Tabs value="0" class="flex-1 mx-auto h-full">
         <TabList>
@@ -172,34 +172,18 @@
           </TabPanel>
 
           <TabPanel value="1">
-            <p class="m-0">
-              Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-              accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
-              quae ab illo inventore veritatis et quasi architecto beatae vitae
-              dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit
-              aspernatur aut odit aut fugit, sed quia consequuntur magni dolores
-              eos qui ratione voluptatem sequi nesciunt. Consectetur, adipisci
-              velit, sed quia non numquam eius modi.
-            </p>
+            <p class="m-0">Coming soon!</p>
           </TabPanel>
 
           <TabPanel value="2">
-            <p class="m-0">
-              At vero eos et accusamus et iusto odio dignissimos ducimus qui
-              blanditiis praesentium voluptatum deleniti atque corrupti quos
-              dolores et quas molestias excepturi sint occaecati cupiditate non
-              provident, similique sunt in culpa qui officia deserunt mollitia
-              animi, id est laborum et dolorum fuga. Et harum quidem rerum
-              facilis est et expedita distinctio. Nam libero tempore, cum soluta
-              nobis est eligendi optio cumque nihil impedit quo minus.
-            </p>
+            <p class="m-0">Coming soon!</p>
           </TabPanel>
         </TabPanels>
       </Tabs>
       <Divider layout="vertical" />
       <div class="w-72"></div>
     </div>
-  </ScrollPanel>
+  </div>
 </template>
 
 <script setup>
@@ -208,7 +192,7 @@ import { useToast } from "primevue/usetoast";
 import { useRouter } from "vue-router";
 import Menu from "primevue/menu";
 import {
-  getAuthorInterestedArticles,
+  getFollowedArticles,
   getArticles,
   getAuthorById,
   getFollowedAuthors,
@@ -241,7 +225,7 @@ const load = async ($state) => {
 
   try {
     // const id = localStorage.getItem("app-author-id");
-    // const interestedArticles = await getAuthorInterestedArticles(id, {
+    // const interestedArticles = await getFollowedArticles(id, {
     //   status: "published",
     //   start: 0,
     //   limit: 10,
@@ -274,7 +258,7 @@ const load = async ($state) => {
 
 const fetchArticles = async () => {
   // const id = localStorage.getItem("app-author-id");
-  // const interestedArticles = await getAuthorInterestedArticles(id, {
+  // const interestedArticles = await getFollowedArticles(id, {
   //   status: "published",
   //   start: 0,
   //   limit: 10,

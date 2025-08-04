@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[100vw] h-[100vh overflow-hidden flex flex-col">
+  <div class="w-[100vw] overflow-hidden flex flex-col">
     <nav class="w-full relative h-16 z-50 flex top-0">
       <NavBar />
     </nav>
