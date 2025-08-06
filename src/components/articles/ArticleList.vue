@@ -137,7 +137,7 @@
               class="border-none relative"
             >
               <div class="flex">
-               <router-link
+                <router-link
                   class="w-full"
                   :to="{
                     name: 'edit-article',
@@ -248,7 +248,7 @@
               class="border-none relative"
             >
               <div class="flex">
-              <router-link
+                <router-link
                   class="w-full"
                   :to="{
                     name: 'edit-article',
@@ -366,7 +366,7 @@ import { articleStore } from "../../stores";
 import InfiniteLoading from "v3-infinite-loading";
 import {
   attachArticleImage,
-  fetchUserImage,
+  handleImage,
   handleDateFormat,
 } from "@/assets/js/util";
 import { useRoute } from "vue-router";

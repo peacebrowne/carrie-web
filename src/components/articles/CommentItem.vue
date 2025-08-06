@@ -3,11 +3,12 @@
     <template #header>
       <div class="flex items-center gap-2">
         <Avatar
-          icon="pi pi-user text-xs"
-          size="small"
-          style="background-color: #ece9fc; color: #2a1261"
+          v-if="comment.author.image"
+          :image="comment.author.image"
           shape="circle"
         />
+
+        <Avatar v-else icon="pi pi-user text-xs" shape="circle" />
         <div class="flex flex-col">
           <span class="font-black text-surface-900 dark:text-surface-0 text-xs"
             >{{ comment.author.firstName }} {{ comment.author.lastName }}</span
@@ -75,14 +76,8 @@
             @submit="onFormSubmit"
             class="flex flex-col gap-4"
           >
-            <div class="flex flex-col gap-1">
-              <Textarea
-                name="comment"
-                rows="2"
-                cols="30"
-                class="resize-none text-sm"
-                :placeholder="`Replying to ${comment.author.firstName}'s`"
-              />
+            <div class="border rounded-lg">
+              <Editor :editorData="editorData" />
             </div>
             <div class="flex justify-end">
               <Button
@@ -90,7 +85,7 @@
                 type="submit"
                 severity="primary"
                 :disabled="$form.comment?.value ? false : true"
-                label="Post Comment"
+                label="Post reply"
                 @click="fetchCommentReplies(comment, 'comment')"
               />
             </div>
@@ -124,9 +119,10 @@
       <Menu ref="menu" id="config_menu" :model="items" popup />
     </template>
     <div class="flex flex-col gap-2">
-      <p class="m-0">
+      <p class="m-0" v-html="comment.content"></p>
+      <!-- <p class="m-0">
         {{ comment.content }}
-      </p>
+      </p> -->
     </div>
   </Panel>
 </template>
@@ -146,6 +142,12 @@ const props = defineProps({
     required: true,
   },
   attachAuthorToComments: Function,
+});
+
+const editorData = ref({
+  height: "120",
+  placeholder: "What are your thoughts?",
+  name: "comment",
 });
 
 const postCommentId = ref("");
@@ -222,7 +224,7 @@ const onFormSubmit = async ({ valid, states, reset }) => {
       life: 10000,
     });
 
-    reset(states.comment);
+    states.comment.value = "";
   }
 };
 
@@ -241,11 +243,11 @@ const handleCommentData = (content, type, targetID) => {
 
 const fetchCommentReplies = async (comment, type) => {
   updateCommentTarget(comment.id, type);
+  comment.repliesVisible = !comment.repliesVisible;
 
   setTimeout(async () => {
     const replies = await getCommentReplies(comment.id);
     comment.replies = await props.attachAuthorToComments(replies.data.values);
-    comment.repliesVisible = !comment.repliesVisible;
   }, 2000);
 };
 
@@ -260,10 +262,10 @@ const load = () => {
 <style>
 #replies .p-panel {
   border: none;
-  border-left: 2px solid
+  border-left: 1px solid
     color-mix(
       in srgb,
-      var(--p-surface-700) calc(100% * var(--tw-border-opacity, 1)),
+      var(--p-surface-200) calc(100% * var(--tw-border-opacity, 1)),
       transparent
     );
   border-radius: 0;

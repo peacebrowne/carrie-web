@@ -4,32 +4,30 @@ import { getImage } from "./service";
 export const handleDateFormat = (date, format = "MMM DD, YYYY") =>
   dayjs(date).format(format);
 
-export const attachArticleImage = async (articleData) => {
+export const attachArticleImage = async (articles) => {
   try {
+    if (!articles.length) {
+      const image = await handleImage(articles.id);
+      return { ...articles, image };
+    }
+
     return await Promise.all(
-      articleData.map(async (article) => {
-        const { data, ok } = await getImage(article.id);
-        let image;
-        if (ok && data.size) {
-          image = URL.createObjectURL(data);
-        }
+      articles.map(async (article) => {
+        const image = await handleImage(article.id);
         return { ...article, image };
       })
     );
   } catch (error) {
     console.error("Error handling article images:", error);
-    return articleData;
+    return articles;
   }
 };
 
-
-export const fetchUserImage = async (id) => {
+export const handleImage = async (id) => {
   if (id) {
     const { data, ok } = await getImage(id);
-
     if (ok && data.size) {
       return URL.createObjectURL(data);
     }
   }
 };
-

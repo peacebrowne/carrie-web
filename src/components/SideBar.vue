@@ -96,7 +96,7 @@
 import { getImage } from "@/assets/js/service";
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { authorStore } from "@/stores";
+import { userStore } from "@/stores";
 
 const visible = ref(false);
 const src = ref(null);
@@ -113,8 +113,8 @@ const fetchUserImage = async (id) => {
 };
 
 onMounted(async () => {
-  const { getAuthor } = authorStore();
-  author.value = await getAuthor();
+  const { getUser } = userStore();
+  author.value = await getUser();
   src.value = await fetchUserImage(localStorage.getItem("app-author-id"));
 });
 

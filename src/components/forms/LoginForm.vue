@@ -96,7 +96,7 @@ import { z } from "zod";
 import { useToast } from "primevue/usetoast";
 import { login } from "../../assets/js/service.js";
 import { useRouter } from "vue-router";
-import { cookiesStore, authorStore } from "../../stores/index.js";
+import { cookiesStore, userStore } from "../../stores/index.js";
 
 const toast = useToast();
 const size = ref();
@@ -136,12 +136,12 @@ const onFormSubmit = async ({ valid, values }) => {
 
 const handleCookies = (result) => {
   const { setCookie, setIsAuthenticated } = cookiesStore();
-  const { setAuthor } = authorStore();
+  const { setUser } = userStore();
 
   const { data: cookie } = result;
   const [token, id] = cookie.split(":");
 
-  setAuthor({ id });
+  setUser({ id });
   setCookie(token);
   setIsAuthenticated();
 };

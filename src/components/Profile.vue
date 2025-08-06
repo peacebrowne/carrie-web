@@ -324,7 +324,7 @@ import { useToast } from "primevue/usetoast";
 import { ref, reactive, watch, onMounted, provide } from "vue";
 import { z } from "zod";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
-import { authorStore } from "@/stores";
+import { userStore } from "@/stores";
 import { getImage, addImage } from "@/assets/js/service";
 import AddImage from "./articles/AddImage.vue";
 import Editor from "./articles/Editor.vue";
@@ -370,8 +370,8 @@ const resolver = ref(
 );
 
 onMounted(async () => {
-  const { getAuthor } = authorStore();
-  author.value = await getAuthor();
+  const { getUser } = userStore();
+  author.value = await getUser();
   src.value = await fetchUserImage(localStorage.getItem("app-author-id"));
   image.value = src.value;
 });

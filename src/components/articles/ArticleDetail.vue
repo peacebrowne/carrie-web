@@ -14,13 +14,11 @@
             imageClass="w-full h-full object-cover"
             preview
           />
-          <Image
+          <img
             v-else
-            src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg"
+            src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
             alt="Image"
             class="w-full h-80"
-            imageClass="w-full h-full object-cover"
-            preview
           />
 
           <div>
@@ -46,7 +44,102 @@
             ></Tag>
           </div>
 
-          <div :id="$style.content" v-html="article.content"></div>
+          <p :id="$style.content" v-html="article.content"></p>
+
+          <!-- ACTIONS -->
+          <div class="flex gap-4">
+            <div class="flex items-center gap-2">
+              <Button
+                class="py-1 rounded-lg"
+                size="small"
+                severity="secondary"
+                text
+                @click="handleArticleClaps"
+              >
+                <i class="pi pi-thumbs-up text-2xl"></i>
+                <span class="text-sm">{{ article.totalLikes }}</span>
+              </Button>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="#editor">
+                <Button
+                  class="py-1 rounded-lg"
+                  size="small"
+                  severity="secondary"
+                  text
+                >
+                  <i class="pi pi-comments text-2xl font-light"></i>
+                  <span class="text-sm">{{ article.totalComments }}</span>
+                </Button>
+              </a>
+            </div>
+            <div class="flex items-center gap-2" disabled>
+              <Button
+                class="py-1 rounded-lg"
+                size="small"
+                severity="secondary"
+                text
+              >
+                <i class="pi pi-share-alt text-2xl"></i>
+                <span class="text-sm">0</span>
+              </Button>
+            </div>
+          </div>
+
+          <!-- WRITTEN BY -->
+          <Panel toggleable id="writtenBy">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <Avatar
+                  v-if="author.image"
+                  :image="author.image"
+                  shape="circle"
+                  size="large"
+                />
+
+                <Avatar
+                  v-else
+                  icon="pi pi-user text-white text-xs"
+                  shape="circle"
+                  size="large"
+                  class="bg-[#1B4D3E]"
+                />
+                <div>
+                  <span class="font-black"
+                    >Written by {{ author.firstName }}
+                    {{ author.lastName }}</span
+                  >
+                  <div class="flex gap-2 text-xs">
+                    <span>1.7K followers</span><span></span>16 following
+                  </div>
+                </div>
+              </div>
+            </template>
+            <template #footer>
+              <div class="w-full flex justify-end">
+                <Button
+                  v-if="author.followed"
+                  class="text-xs"
+                  rounded
+                  text
+                  label="Following"
+                  disabled
+                />
+                <Button
+                  v-else
+                  class="text-xs"
+                  rounded
+                  text
+                  label="Follow"
+                  @click="addAuthorFollower(author.id)"
+                />
+              </div>
+            </template>
+            <p class="m-0 text-sm">
+              {{ author.biography }}
+            </p>
+          </Panel>
+
           <ArticleComments :commentData="commentData" />
         </div>
         <ScrollTop
@@ -63,15 +156,23 @@
 </template>
 
 <script setup>
-import { getArticleById, getImage } from "@/assets/js/service.js";
+import {
+  addClaps,
+  followAuthor,
+  getAuthorById,
+  getAuthorFollowers,
+} from "@/assets/js/service.js";
 import { articleStore } from "../../stores/index.js";
 import { onMounted, ref } from "vue";
+import { userStore } from "@/stores";
 
 import ArticleComments from "./ArticleComments.vue";
 import NavBar from "../NavBar.vue";
-// NavBar
+import { handleImage } from "@/assets/js/util.js";
 
 const store = articleStore();
+const author = ref("");
+const user = ref("");
 const article = ref("");
 const commentData = ref({
   likes: 0,
@@ -80,51 +181,74 @@ const commentData = ref({
 });
 
 const fetchArticleById = async () => {
-  const cachedArticle = store.getArticle();
+  const fetchedArticle = await store.getArticle();
+  const fetchedAuthor = await fetchArticleAuthor(fetchedArticle?.authorID);
 
-  const id = cachedArticle
-    ? cachedArticle.id
-    : localStorage.getItem("app-article-id");
+  article.value = fetchedArticle;
+  author.value = fetchedAuthor;
+  handleAuthorFollowers(fetchedAuthor);
 
-  const fetchedArticle = await getArticleById(id);
-
-  console.log({ fetchedArticle });
-
-  article.value =
-    cachedArticle ?? (await handleArticleImage(fetchedArticle.data));
-
-  commentData.value.likes = article.value.totalLikes;
-  commentData.value.comments = article.value.totalComments;
-  commentData.value.id = id;
+  commentData.value.likes = fetchedArticle.totalLikes;
+  commentData.value.comments = fetchedArticle.totalComments;
+  commentData.value.id = fetchedArticle.id;
 };
 
-const handleArticleImage = async (articleData) => {
-  const { data, ok } = await getImage(articleData.id);
-  let image;
+const fetchArticleAuthor = async (id) => {
+  const { data: fetchedAuthor } = await getAuthorById(id);
+  fetchedAuthor.image = await handleImage(id);
+  return fetchedAuthor;
+};
 
-  if (ok && data.size) {
-    image = URL.createObjectURL(data);
-  }
+const handleAuthorFollowers = async ({ id }) => {
+  const { data } = await getAuthorFollowers(id);
+  const followers = data?.values || [];
 
-  return { ...articleData, image };
+  const isFollowing = followers.some(
+    (follower) => follower.id === user.value.id
+  );
+
+  author.value.followed = isFollowing;
+};
+
+const addAuthorFollower = async (id) => {
+  const follower = user.value.id;
+
+  if (follower === id) return;
+
+  const { data: followedAuthor } = await followAuthor(follower, id);
+  if (followedAuthor) author.value.followed = true;
+};
+
+const handleArticleClaps = async () => {
+  const data = {
+    authorID: user.value.id,
+    articleID: article.value.id,
+  };
+
+  const { result, ok } = await addClaps(data);
+  if (ok) article.value.totalLikes++;
 };
 
 onMounted(async () => {
   await fetchArticleById();
+  const { getUser } = userStore();
+  user.value = await getUser();
 });
 </script>
 
 <style module>
 #custom-scrollpanel ::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+  display: none;
 }
 
 #custom-scrollpanel {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-#content > p > span {
+#content > p > span,
+#content > p {
   font-size: 0.9rem;
+  color: #e5e7eb;
 }
 </style>

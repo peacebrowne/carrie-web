@@ -17,25 +17,29 @@
               >
                 <template #header>
                   <div class="flex items-center gap-2">
-                    <Avatar
-                      v-if="article.author.image"
-                      :image="article.author.image"
-                      shape="circle"
-                    />
-
-                    <Avatar
-                      v-else
-                      icon="pi pi-user text-white text-xs"
-                      shape="circle"
-                      class="bg-[#1B4D3E]"
-                    />
-                    <span class="font-bold"
-                      >{{ article.author.firstName }}
-                      {{ article.author.lastName }}</span
+                    <router-link
+                      class="text-sm font-bold flex items-center gap-2"
                     >
+                      <Avatar
+                        v-if="article.author.image"
+                        :image="article.author.image"
+                        shape="circle"
+                      />
+
+                      <Avatar
+                        v-else
+                        icon="pi pi-user text-white text-xs"
+                        shape="circle"
+                        class="bg-[#1B4D3E]"
+                      />
+                      <span class="font-bold"
+                        >{{ article.author.firstName }}
+                        {{ article.author.lastName }}</span
+                      >
+                    </router-link>
 
                     <Button
-                      v-if="article.followed"
+                      v-if="article.author.followed"
                       class="text-xs"
                       rounded
                       text
@@ -43,7 +47,9 @@
                       disabled
                     />
                     <Button
-                      v-else-if="!article.followed && article.author.id !== id"
+                      v-else-if="
+                        !article.author.followed && article.author.id !== id
+                      "
                       class="text-xs"
                       rounded
                       text
@@ -192,7 +198,6 @@ import { useToast } from "primevue/usetoast";
 import { useRouter } from "vue-router";
 import Menu from "primevue/menu";
 import {
-  getFollowedArticles,
   getArticles,
   getAuthorById,
   getFollowedAuthors,
@@ -204,7 +209,7 @@ import { articleStore } from "@/stores";
 import InfiniteLoading from "v3-infinite-loading";
 import {
   attachArticleImage,
-  fetchUserImage,
+  handleImage,
   handleDateFormat,
 } from "@/assets/js/util";
 
@@ -224,13 +229,6 @@ const load = async ($state) => {
   console.log("loading...");
 
   try {
-    // const id = localStorage.getItem("app-author-id");
-    // const interestedArticles = await getFollowedArticles(id, {
-    //   status: "published",
-    //   start: 0,
-    //   limit: 10,
-    // });
-
     params.value.start += 10;
     const response = await getArticles(params.value);
 
@@ -257,13 +255,6 @@ const load = async ($state) => {
 };
 
 const fetchArticles = async () => {
-  // const id = localStorage.getItem("app-author-id");
-  // const interestedArticles = await getFollowedArticles(id, {
-  //   status: "published",
-  //   start: 0,
-  //   limit: 10,
-  // });
-
   const result = await getArticles(params.value);
 
   if (result.data) {
@@ -285,9 +276,8 @@ const attachAuthorToArticles = (articles) => {
     articles.map(async (article) => {
       const { data: author } = await getAuthorById(article.authorID);
 
-      author.image = await fetchUserImage(article.authorID);
-      article.author = author;
-      delete article.authorID;
+      author.image = await handleImage(article.authorID);
+      article = { author, ...article };
       return article;
     })
   );
@@ -314,19 +304,25 @@ const items = ref([
   },
 ]);
 
-const handleFollowedAuthors = async (id, articles) => {
-  const followedAuthors = await getFollowedAuthors(id);
+const handleFollowedAuthors = async (userId, articles) => {
+  try {
+    const { data: followedAuthors = [] } = await getFollowedAuthors(userId);
 
-  if (followedAuthors?.data.length) {
-    const authors = followedAuthors.data.filter((author) => author.id !== id);
+    if (!followedAuthors.length) return;
 
+    // Create a Set for faster lookups
+    const followedAuthorIds = new Set(
+      followedAuthors
+        .filter((author) => author.id !== userId)
+        .map((author) => author.id)
+    );
+
+    // Update articles' author.followed flag
     articles.forEach((article) => {
-      authors.forEach((author) => {
-        if (article.author.id === author.id) {
-          article.followed = true;
-        }
-      });
+      article.author.followed = followedAuthorIds.has(article.author.id);
     });
+  } catch (error) {
+    console.error("Failed to fetch followed authors:", error);
   }
 };
 
@@ -339,12 +335,11 @@ const addAuthorFollower = async (author) => {
   const followedAuthor = await followAuthor(follower, author);
 
   const { data: authors } = followedAuthor;
-  console.log({ authors });
 
   if (authors) {
     mainArticles.value.forEach((article) => {
       if (article.author.id === author) {
-        article.followed = true;
+        article.author.followed = true;
       }
     });
   }
@@ -371,6 +366,7 @@ const handleDescriptionFormat = (description, layout) => {
 onMounted(async () => await fetchArticles());
 
 const handleArticleStore = (data) => {
+  console.log({ data });
   const { setArticle } = articleStore();
   setArticle(data);
 };

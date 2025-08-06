@@ -1,6 +1,6 @@
 <template>
   <Toast />
-  
+
   <div class="flex flex-col w-full p-4">
     <div class="py-2 w-full flex gap-3 items-center justify-between">
       <div class="flex gap-3 items-center">
@@ -427,7 +427,6 @@ watch(route, switchFormMode);
 onMounted(async () => {
   await switchFormMode(route);
 });
-
 </script>
 
 <style></style>

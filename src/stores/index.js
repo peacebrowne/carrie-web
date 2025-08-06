@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import Cookies from "js-cookie";
-import { getAuthorById } from "@/assets/js/service";
+import { getAuthorById, getArticleById } from "@/assets/js/service";
 import { jwtDecode } from "jwt-decode";
+import { attachArticleImage, handleImage } from "@/assets/js/util";
 
 export const articleStore = defineStore("article", () => {
   const article = ref(null);
@@ -12,30 +13,44 @@ export const articleStore = defineStore("article", () => {
     localStorage.setItem("app-article-id", data.id);
   };
 
-  const getArticle = () => article.value;
+  const getArticle = async () => {
+    const cachedArticle = article.value;
+
+    if (cachedArticle) return cachedArticle;
+
+    const id = localStorage.getItem("app-article-id");
+    const { data: fetchedArticle } = await getArticleById(id);
+
+    article.value = await attachArticleImage(fetchedArticle);
+
+    return article.value;
+  };
 
   return { getArticle, article, setArticle };
 });
 
-export const authorStore = defineStore("authorStore", () => {
-  const author = ref({});
+export const userStore = defineStore("userStore", () => {
+  const user = ref({});
 
-  const setAuthor = (data) => {
-    author.value = data;
+  const setUser = (data) => {
+    user.value = data;
     localStorage.setItem("app-author-id", data.id);
   };
 
-  const getAuthor = async () => {
-    if (Object.keys(author.value).includes("firstName")) {
-      return author.value;
+  const getUser = async () => {
+    if (Object.keys(user.value).includes("firstName")) {
+      return user.value;
     }
+    const id = localStorage.getItem("app-author-id");
+    const { data: fetchedAuthor } = await getAuthorById(id);
 
-    const { data } = await getAuthorById(localStorage.getItem("app-author-id"));
+    fetchedAuthor.image = await handleImage(id);
+    user.value = fetchedAuthor;
 
-    return data;
+    return user.value;
   };
 
-  return { getAuthor, setAuthor };
+  return { getUser, setUser };
 });
 
 export const cookiesStore = defineStore("cookiesStore", () => {

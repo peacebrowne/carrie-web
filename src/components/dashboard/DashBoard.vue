@@ -179,7 +179,7 @@
 <script setup>
 import { ref, onMounted, provide } from "vue";
 import Calender from "./Calender.vue";
-import { authorStore } from "@/stores";
+import { userStore } from "@/stores";
 import { getArticleAnalytics } from "@/assets/js/service";
 
 const author = ref("");
@@ -239,8 +239,8 @@ const fetchAuthorArticlesAnalytics = async (id) => {
 };
 
 onMounted(async () => {
-  const { getAuthor } = authorStore();
-  author.value = await getAuthor();
+  const { getUser } = userStore();
+  author.value = await getUser();
   fetchAuthorArticlesAnalytics(author.value.id);
 });
 

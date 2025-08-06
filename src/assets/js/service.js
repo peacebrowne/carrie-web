@@ -145,6 +145,7 @@ export const getAuthorById = async (id) => {
     const response = await fetch(`${API_URL}/authors/${id}`, options);
     return await response.json();
   } catch (error) {
+    console.log({ error });
     console.error("Error fetching author data");
   }
 };
@@ -159,8 +160,6 @@ export const addClaps = async (data) => {
       },
       body: JSON.stringify(data),
     };
-
-    console.log(data);
 
     // Added  the action=like because the dislike feature wil be later
     const response = await fetch(`${API_URL}/claps?action=like`, options);
@@ -356,6 +355,22 @@ export const getFollowedAuthors = async (id) => {
     };
 
     const response = await fetch(`${API_URL}/authors/${id}/followed`, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching followed authors");
+  }
+};
+
+export const getAuthorFollowers = async (id) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(`${API_URL}/authors/${id}/followers`, options);
     return await response.json();
   } catch (error) {
     console.error("Error fetching followed authors");

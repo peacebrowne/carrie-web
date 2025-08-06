@@ -2,10 +2,9 @@
   <div>
     <Editor
       class="flex-col gap-0 p-0 m-0"
-      name="content"
-      editorStyle="height: 320px"
-      placeholder="Tell your story"
-      v-model="content"
+      :style="{ height: (editorData?.height || '320') + 'px' }"
+      :name="editorData?.name || 'content'"
+      :placeholder="editorData?.placeholder || 'Tell your story'"
     >
       <template v-slot:toolbar>
         <span class="ql-formats">
@@ -19,10 +18,14 @@
 </template>
 
 <script setup>
-import {inject } from 'vue';
-
-const content = inject('content');
-
+import { inject } from "vue";
+const props = defineProps({
+  editorData: {
+    type: Object,
+    required: true,
+  },
+});
+const content = inject("content");
 </script>
 
 <style>

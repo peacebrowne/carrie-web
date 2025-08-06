@@ -14,9 +14,8 @@ import { Qalendar } from "qalendar";
 const analytics = inject("analytics");
 
 const fetchPendingArticles = async () => {
-  const {pending}= analytics.value;
+  const { pending } = analytics.value;
   const result = await authorStore.getPendingArticles(pending);
-  
 };
 
 onMounted(() => {
