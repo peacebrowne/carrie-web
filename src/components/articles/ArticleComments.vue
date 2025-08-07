@@ -128,8 +128,13 @@ const onFormSubmit = async ({ valid, states, reset }) => {
     });
 
     fetchComments(data.articleID);
-    reset(states.comment);
+    resetForm(states);
   }
+};
+
+const resetForm = (states) => {
+  reset(states.comment);
+  content.value = "";
 };
 
 const handleCommentData = (content, type, targetID) => {

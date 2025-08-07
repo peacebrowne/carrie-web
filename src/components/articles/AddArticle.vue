@@ -56,6 +56,7 @@
         <div class="flex flex-col gap-1">
           <Editor
             :class="[$form.content?.invalid ? 'p-invalid' : '', 'p-inputtext']"
+            :editorData="{}"
           />
           <Message
             v-if="$form.content?.invalid"
@@ -205,17 +206,12 @@ import { z } from "zod";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import AddImage from "./AddImage.vue";
 import Editor from "./Editor.vue";
-import {
-  addArticle,
-  editArticle,
-  getArticleById,
-  getImage,
-} from "@/assets/js/service.js";
-import { articleStore } from "../../stores";
+import { addArticle, editArticle } from "@/assets/js/service.js";
 import { useRoute } from "vue-router";
+import { articleStore, userStore } from "@/stores";
 
-const tempTag = ref(null);
 const tags = ref([]);
+const tempTag = ref(null);
 const description = ref("");
 const loading = ref(false);
 const image = defineModel("image");
@@ -225,6 +221,7 @@ const title = ref();
 const toast = useToast();
 const pendingDate = ref();
 const formRef = ref(null);
+const user = ref("");
 
 provide("content", content);
 
@@ -247,7 +244,7 @@ const handleArticleData = (values) => {
   article.value.content = values.content;
   article.value.description = description.value;
   article.value.tags = tags.value;
-  article.value.authorID = localStorage.getItem("app-author-id");
+  article.value.authorID = user.value.id;
   article.value.status = currentStatus.value.value;
 
   return article.value;
@@ -258,7 +255,7 @@ const article = ref({
   content: "",
   description: "",
   tags: [],
-  authorID: localStorage.getItem("app-author-id"),
+  authorID: user.value.id,
   status: "draft",
 });
 
@@ -335,7 +332,6 @@ const handlePendingSchedule = (date) => {
   const microseconds = millisecond + "000";
 
   const formatted = `${year}-${month}-${day} ${hour}:${minute}:${second}.${microseconds}`;
-  console.log(formatted);
 };
 
 watch(pendingDate, handlePendingSchedule);
@@ -347,55 +343,23 @@ const statuses = ref([
 ]);
 
 const store = articleStore();
-
 const fetchArticleById = async () => {
-  const cachedArticle = store.getArticle();
+  const cachedArticle = await store.getArticle();
 
-  const id = cachedArticle
-    ? cachedArticle.id
-    : localStorage.getItem("app-article-id");
-
-  if (!id) return;
-
-  const fetchedArticle = await getArticleById(id);
-
-  const currentArticle =
-    cachedArticle ?? (await handleArticleImage(fetchedArticle.data));
-
-  if (!currentArticle) return;
-
-  const {
-    title: t,
-    content: c,
-    tags: tg,
-    description: d,
-    image: img,
-    status: s,
-  } = currentArticle;
-
-  title.value = t;
-  content.value = c;
-  tags.value = tg;
-  description.value = d;
-  src.value = img;
-  image.value = img;
-  currentStatus.value = statuses.value.find((status) => status.value === s);
+  title.value = cachedArticle.title;
+  content.value = cachedArticle.content;
+  tags.value = cachedArticle.tags || [];
+  description.value = cachedArticle.description;
+  src.value = cachedArticle.image;
+  image.value = cachedArticle.image;
+  currentStatus.value = statuses.value.find(
+    (status) => status.value === cachedArticle.status
+  );
 
   // Update initial form values
   const form = await formRef.value.states;
-  form.content.value = c;
-  form.title.value = t;
-};
-
-const handleArticleImage = async (articleData) => {
-  const { data, ok } = await getImage(articleData.id);
-  let image;
-
-  if (ok && data.size) {
-    image = URL.createObjectURL(data);
-  }
-
-  return { ...articleData, image };
+  form.content.value = cachedArticle.content;
+  form.title.value = cachedArticle.title;
 };
 
 const resetForm = async () => {
@@ -426,6 +390,8 @@ const switchFormMode = async (url) => {
 watch(route, switchFormMode);
 onMounted(async () => {
   await switchFormMode(route);
+  const { getUser } = userStore();
+  user.value = await getUser();
 });
 </script>
 

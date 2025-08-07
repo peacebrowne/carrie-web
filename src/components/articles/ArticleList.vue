@@ -361,7 +361,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import HeaderBar from "@/components/HeaderBar.vue";
 import { getAuthorById, getAuthorArticles } from "@/assets/js/service";
-import { articleStore } from "../../stores";
+import { userStore, articleStore } from "@/stores";
 
 import InfiniteLoading from "v3-infinite-loading";
 import {
@@ -380,6 +380,7 @@ const params = computed(() => ({
 const breadCrumbs = defineModel("breadCrumbs");
 const activeSection = defineModel("activeSection");
 const route = useRoute();
+const user = ref("");
 
 activeSection.value = route.path.split("/")[2];
 
@@ -393,14 +394,14 @@ watch(
 );
 
 const mainArticles = ref([]);
-const id = localStorage.getItem("app-author-id");
+const id = user.value.id;
 
 const load = async ($state) => {
   console.log("loading...");
 
   try {
     params.value.start += 10;
-    const response = await getAuthorArticles();
+    const response = await getAuthorArticles(user.value.id);
 
     if (response.data) {
       if (response.data.length) {
@@ -423,10 +424,7 @@ const fetchAuthorArticles = async (type) => {
   params.value.status = type;
   const cleanedParams = cleanParams(params.value);
 
-  const result = await getAuthorArticles(
-    localStorage.getItem("app-author-id"),
-    cleanedParams
-  );
+  const result = await getAuthorArticles(user.value.id, cleanedParams);
 
   if (result.data) {
     const { total, values: articles } = result.data;
@@ -467,7 +465,11 @@ const handleDescriptionFormat = (description) => {
     : description;
 };
 
-onMounted(async () => await fetchAuthorArticles("draft"));
+onMounted(async () => {
+  const { getUser } = userStore();
+  user.value = await getUser();
+  await fetchAuthorArticles("draft");
+});
 
 const handleArticleStore = (data) => {
   const { setArticle } = articleStore();

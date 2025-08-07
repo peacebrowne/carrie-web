@@ -72,3 +72,17 @@
     --p-text-hover-muted-color: var(--p-surface-300);
   }
 }
+
+#_content_1cimr_1 > p {
+  color: #09090b !important;
+}
+
+ul,
+ol {
+  list-style: disc outside none;
+  margin: 1em 0;
+  padding-left: 40px;
+}
+/* li[data-list="bullet"] {
+  list-style-type: disc;
+} */
