@@ -45,6 +45,7 @@ export const userStore = defineStore("userStore", () => {
     const { data: fetchedAuthor } = await getAuthorById(id);
 
     fetchedAuthor.image = await handleImage(id);
+    console.log({ fetchedAuthor });
     user.value = fetchedAuthor;
 
     return user.value;

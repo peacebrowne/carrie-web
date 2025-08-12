@@ -329,7 +329,7 @@ import { ref, onMounted } from "vue";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "primevue/usetoast";
-import { getCategories, register } from "@/assets/js/service";
+import { getInterests, register } from "@/assets/js/service";
 import { useRouter } from "vue-router";
 
 const image = defineModel("image");
@@ -372,7 +372,7 @@ const onChange = (event) => {
 };
 
 const fetchInterests = async () => {
-  const { data } = await getCategories();
+  const { data } = await getInterests();
   items.value = data.map((item) => ({ label: item.name, value: item.id }));
 };
 

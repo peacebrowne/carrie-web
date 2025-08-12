@@ -4,25 +4,22 @@ import { cookiesStore } from "@/stores";
 router.beforeEach((to, from, next) => {
   const { getIsAuthenticated, getCookie, setIsAuthenticated } = cookiesStore();
 
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (to.fullPath !== "/auth/login") {
-      const token = getCookie();
-      if (token) {
-        setIsAuthenticated();
-      }
-    }
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  const token = getCookie();
 
-    if (!getIsAuthenticated()) {
-      next({
-        path: "/auth/login",
-        query: { redirect: to.fullPath },
-      });
-    } else {
-      next();
-    }
-  } else {
-    next();
+  // Auto-set authentication if token exists but not yet set
+  if (token && !getIsAuthenticated()) {
+    setIsAuthenticated();
   }
+
+  if (requiresAuth && !getIsAuthenticated()) {
+    return next({
+      path: "/auth/login",
+      query: { redirect: to.fullPath },
+    });
+  }
+
+  next();
 });
 
 export default router;

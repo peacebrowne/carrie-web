@@ -24,7 +24,6 @@ export const addArticle = async (data) => {
 };
 
 export const addImage = async (id, data, type) => {
-  console.log({ data });
   try {
     const options = {
       method: "POST",
@@ -56,7 +55,6 @@ export const editArticle = async (id, data) => {
     };
     const response = await fetch(`${API_URL}/articles/${id}`, options);
     const result = await response.json();
-    console.log({ result });
     return { ok: response.ok, result };
   } catch (error) {
     console.error("Error adding article:", error);
@@ -294,7 +292,7 @@ export const getFollowedArticles = async (id, params = {}) => {
   }
 };
 
-export const getCategories = async () => {
+export const getInterests = async () => {
   try {
     const options = {
       method: "GET",
@@ -374,5 +372,23 @@ export const getAuthorFollowers = async (id) => {
     return await response.json();
   } catch (error) {
     console.error("Error fetching followed authors");
+  }
+};
+
+export const editAuthor = async (id, data) => {
+  try {
+    const options = {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
+    const response = await fetch(`${API_URL}/authors/${id}`, options);
+    const result = await response.json();
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error editing author:", error);
   }
 };
