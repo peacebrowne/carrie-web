@@ -235,7 +235,7 @@
                       <!-- <Tag
                         severity="warn"
                         icon="pi pi-thumbs-up"
-                        :value="article.totalLikes"
+                        :value="article.likes"
                       ></Tag>
                       <Tag
                         severity="warn"

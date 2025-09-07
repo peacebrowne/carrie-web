@@ -273,7 +273,7 @@ export const getArticles = async (params = {}) => {
   }
 };
 
-export const getFollowedArticles = async (id, params = {}) => {
+export const getAuthorInterestedArticles = async (id, params = {}) => {
   try {
     const url = new URL(`${API_URL}/articles/author/${id}/interests`);
     url.search = new URLSearchParams(params).toString();

@@ -73,21 +73,17 @@
                         <div class="flex items-center gap-4">
                           <div
                             class="flex gap-1 items-enter"
-                            v-tooltip.top="`${article.totalLikes} likes`"
+                            v-tooltip.top="`${article.likes} likes`"
                           >
                             <span class="pi pi-thumbs-up text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalLikes
-                            }}</span>
+                            <span class="text-xs">{{ article.likes }}</span>
                           </div>
                           <div
                             class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.totalDislikes} dislikes`"
+                            v-tooltip.top="`${article.dislikes} dislikes`"
                           >
                             <span class="pi pi-thumbs-down text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalDislikes
-                            }}</span>
+                            <span class="text-xs">{{ article.dislikes }}</span>
                           </div>
 
                           <div
@@ -184,21 +180,17 @@
                         <div class="flex items-center gap-4">
                           <div
                             class="flex gap-1 items-enter"
-                            v-tooltip.top="`${article.totalLikes} likes`"
+                            v-tooltip.top="`${article.likes} likes`"
                           >
                             <span class="pi pi-thumbs-up text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalLikes
-                            }}</span>
+                            <span class="text-xs">{{ article.likes }}</span>
                           </div>
                           <div
                             class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.totalDislikes} dislikes`"
+                            v-tooltip.top="`${article.dislikes} dislikes`"
                           >
                             <span class="pi pi-thumbs-down text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalDislikes
-                            }}</span>
+                            <span class="text-xs">{{ article.dislikes }}</span>
                           </div>
 
                           <div
@@ -295,21 +287,17 @@
                         <div class="flex items-center gap-4">
                           <div
                             class="flex gap-1 items-enter"
-                            v-tooltip.top="`${article.totalLikes} likes`"
+                            v-tooltip.top="`${article.likes} likes`"
                           >
                             <span class="pi pi-thumbs-up text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalLikes
-                            }}</span>
+                            <span class="text-xs">{{ article.likes }}</span>
                           </div>
                           <div
                             class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.totalDislikes} dislikes`"
+                            v-tooltip.top="`${article.dislikes} dislikes`"
                           >
                             <span class="pi pi-thumbs-down text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalDislikes
-                            }}</span>
+                            <span class="text-xs">{{ article.dislikes }}</span>
                           </div>
 
                           <div
@@ -360,15 +348,11 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import HeaderBar from "@/components/HeaderBar.vue";
-import { getAuthorById, getAuthorArticles } from "@/assets/js/service";
+import { getAuthorArticles } from "@/assets/js/service";
 import { userStore, articleStore } from "@/stores";
 
 import InfiniteLoading from "v3-infinite-loading";
-import {
-  attachArticleImage,
-  handleImage,
-  handleDateFormat,
-} from "@/assets/js/util";
+import { attachArticleImage, handleDateFormat } from "@/assets/js/util";
 import { useRoute } from "vue-router";
 
 const params = computed(() => ({
@@ -394,7 +378,6 @@ watch(
 );
 
 const mainArticles = ref([]);
-const id = user.value.id;
 
 const load = async ($state) => {
   console.log("loading...");
@@ -448,8 +431,6 @@ const cleanParams = (params) => {
   }
   return cleanedParams;
 };
-
-const menu = ref(null);
 
 const handleTitleFormat = (title) => {
   const characters = 50;

@@ -57,7 +57,7 @@
                 @click="handleArticleClaps"
               >
                 <i class="pi pi-thumbs-up text-2xl"></i>
-                <span class="text-sm">{{ article.totalLikes }}</span>
+                <span class="text-sm">{{ article.likes }}</span>
               </Button>
             </div>
             <div class="flex items-center gap-2">
@@ -188,7 +188,7 @@ const fetchArticleById = async () => {
   author.value = fetchedAuthor;
   handleAuthorFollowers(fetchedAuthor);
 
-  commentData.value.likes = fetchedArticle.totalLikes;
+  commentData.value.likes = fetchedArticle.likes;
   commentData.value.comments = fetchedArticle.totalComments;
   commentData.value.id = fetchedArticle.id;
 };
@@ -226,7 +226,7 @@ const handleArticleClaps = async () => {
   };
 
   const { result, ok } = await addClaps(data);
-  if (ok) article.value.totalLikes++;
+  if (ok) article.value.likes++;
 };
 
 onMounted(async () => {

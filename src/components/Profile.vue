@@ -409,7 +409,7 @@
                 </li>
                 <li class="flex flex-col">
                   <span class="text-sm">Interests</span>
-                  <div class="flex gap-1">
+                  <div class="flex flex-wrap gap-1">
                     <Tag
                       v-for="interest in author.interests"
                       :key="interest"

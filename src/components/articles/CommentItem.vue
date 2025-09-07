@@ -32,7 +32,7 @@
             @click="handleCommentClaps(comment)"
           >
             <i class="pi pi-thumbs-up text-xs"></i>
-            <span>{{ comment.totalLikes }}</span>
+            <span>{{ comment.likes }}</span>
           </Button>
 
           <!-- TOGGLE REPLIES -->
@@ -161,7 +161,7 @@ const handleCommentClaps = async (comment) => {
   };
 
   const { result, ok } = await addClaps(data);
-  if (ok) comment.totalLikes++;
+  if (ok) comment.likes++;
 };
 
 const menu = ref(null);

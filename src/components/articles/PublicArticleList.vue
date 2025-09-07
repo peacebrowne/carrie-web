@@ -117,22 +117,18 @@
                           <div class="flex items-center gap-4">
                             <div
                               class="flex gap-1 items-enter"
-                              v-tooltip.top="`${article.totalLikes} likes`"
+                              v-tooltip.top="`${article.likes} likes`"
                             >
                               <span class="pi pi-thumbs-up text-xs"></span>
-                              <span class="text-xs">{{
-                                article.totalLikes
-                              }}</span>
+                              <span class="text-xs">{{ article.likes }}</span>
                             </div>
                             <div
                               class="flex gap-1 items-center"
-                              v-tooltip.top="
-                                `${article.totalDislikes} dislikes`
-                              "
+                              v-tooltip.top="`${article.dislikes} dislikes`"
                             >
                               <span class="pi pi-thumbs-down text-xs"></span>
                               <span class="text-xs">{{
-                                article.totalDislikes
+                                article.dislikes
                               }}</span>
                             </div>
 
@@ -194,17 +190,16 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import { useToast } from "primevue/usetoast";
-import { useRouter } from "vue-router";
 import Menu from "primevue/menu";
 import {
   getArticles,
   getAuthorById,
   getFollowedAuthors,
   followAuthor,
+  getAuthorInterestedArticles,
 } from "@/assets/js/service";
 
-import { articleStore } from "@/stores";
+import { userStore, articleStore } from "@/stores";
 
 import InfiniteLoading from "v3-infinite-loading";
 import {
@@ -213,7 +208,6 @@ import {
   handleDateFormat,
 } from "@/assets/js/util";
 
-let comments = ref([]);
 const params = computed(() => ({
   start: 0,
   limit: 10,
@@ -223,18 +217,20 @@ const params = computed(() => ({
 const mainArticles = ref([]);
 const totalRecords = ref();
 const id = localStorage.getItem("app-author-id");
+const user = ref("");
 
-let page = 1;
 const load = async ($state) => {
   console.log("loading...");
 
   try {
     params.value.start += 10;
-    const response = await getArticles(params.value);
+    // const result = await getArticles(params.value);
 
-    if (response.data) {
-      if (response.data.length) {
-        const { total, values: articles } = response.data;
+    const result = await getAuthorInterestedArticles(id, params.value);
+
+    if (result.data) {
+      if (result.data.length) {
+        const { total, values: articles } = result.data;
         const articleWithImage = await attachArticleImage(articles);
         mainArticles.value.push(
           ...(await attachAuthorToArticles(articleWithImage))
@@ -246,7 +242,7 @@ const load = async ($state) => {
         $state.complete();
       }
     } else {
-      console.error("Failed to fetch articles:", response.error);
+      console.error("Failed to fetch articles:", result.error);
     }
   } catch (error) {
     console.log({ error });
@@ -255,15 +251,19 @@ const load = async ($state) => {
 };
 
 const fetchArticles = async () => {
-  const result = await getArticles(params.value);
+  // const result = await getArticles(params.value);
+  const result = await getAuthorInterestedArticles(user.value.id, params.value);
 
   if (result.data) {
     const { total, values: articles } = result.data;
 
+    console.log({ articles });
+
     const articleWithImage = await attachArticleImage(articles);
 
     mainArticles.value = await attachAuthorToArticles(articleWithImage);
-    await handleFollowedAuthors(id, mainArticles.value);
+
+    await handleFollowedAuthors(user.value.id, mainArticles.value);
     console.log(mainArticles.value);
     totalRecords.value = total;
   } else {
@@ -284,7 +284,6 @@ const attachAuthorToArticles = (articles) => {
 };
 
 const menu = ref(null);
-const router = useRouter();
 
 const items = ref([
   {
@@ -363,10 +362,13 @@ const handleDescriptionFormat = (description, layout) => {
     : description;
 };
 
-onMounted(async () => await fetchArticles());
+onMounted(async () => {
+  const { getUser } = userStore();
+  user.value = await getUser();
+  await fetchArticles();
+});
 
 const handleArticleStore = (data) => {
-  console.log({ data });
   const { setArticle } = articleStore();
   setArticle(data);
 };
