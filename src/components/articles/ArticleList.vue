@@ -17,13 +17,13 @@
           >Published</Tab
         >
       </TabList>
-      <TabPanels class="h-full">
-        <TabPanel value="0" class="h-full">
-          <ScrollPanel class="w-full h-full">
+      <TabPanels class="h-full p-0">
+        <TabPanel value="0" class="h-full p-0">
+          <ScrollPanel class="w-full h-full p-0">
             <Panel
               v-for="article in mainArticles"
               :key="article.id"
-              class="border-none relative"
+              class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
             >
               <div class="flex">
                 <router-link
@@ -130,7 +130,7 @@
             <Panel
               v-for="article in mainArticles"
               :key="article.id"
-              class="border-none relative"
+              class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
             >
               <div class="flex">
                 <router-link
@@ -237,7 +237,7 @@
             <Panel
               v-for="article in mainArticles"
               :key="article.id"
-              class="border-none relative"
+              class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
             >
               <div class="flex">
                 <router-link
@@ -384,6 +384,8 @@ const load = async ($state) => {
 
   try {
     params.value.start += 10;
+    console.log(params.value);
+    // return;
     const response = await getAuthorArticles(user.value.id);
 
     if (response.data) {
@@ -405,6 +407,7 @@ const load = async ($state) => {
 
 const fetchAuthorArticles = async (type) => {
   params.value.status = type;
+  console.log(params.value);
   const cleanedParams = cleanParams(params.value);
 
   const result = await getAuthorArticles(user.value.id, cleanedParams);

@@ -326,6 +326,8 @@ export const followAuthor = async (follower, author) => {
 
 export const unfollowAuthor = async (follower, author) => {
   try {
+    console.log({ follower, author });
+
     const options = {
       method: "DELETE",
       headers: {
@@ -334,7 +336,7 @@ export const unfollowAuthor = async (follower, author) => {
     };
 
     const response = await fetch(
-      `${API_URL}/authors/follow?follower=${follower}&author=${author}`,
+      `${API_URL}/authors/unfollow?follower=${follower}&author=${author}`,
       options
     );
     return await response.json();

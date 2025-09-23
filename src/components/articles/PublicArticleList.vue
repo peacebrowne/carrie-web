@@ -1,5 +1,5 @@
 <template>
-  <div id="main-content" class="flex w-full h-[calc(90vh-56px)]">
+  <div id="main-content" class="w-full h-dvh">
     <div class="container m-auto flex w-full h-full md:px-8 lg:px-36 2xl:px-52">
       <Tabs value="0" class="flex-1 mx-auto h-full">
         <TabList>
@@ -7,13 +7,13 @@
           <Tab value="1">Following</Tab>
           <Tab value="2">Shared</Tab>
         </TabList>
-        <TabPanels class="h-full">
-          <TabPanel value="0" class="h-full">
-            <ScrollPanel class="w-full h-full">
+        <TabPanels class="h-full p-0">
+          <TabPanel value="0" class="h-full p-0">
+            <ScrollPanel class="w-full h-full pb-16">
               <Panel
                 v-for="article in mainArticles"
                 :key="article.id"
-                class="border-none relative"
+                class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
               >
                 <template #header>
                   <div class="flex items-center gap-2">
@@ -44,7 +44,7 @@
                       rounded
                       text
                       label="Following"
-                      disabled
+                      @click="removeAuthorFollower(article.author.id)"
                     />
                     <Button
                       v-else-if="
@@ -68,7 +68,7 @@
                   />
                   <Menu ref="menu" id="config_menu" :model="items" popup />
                 </template>
-                <div class="flex">
+                <div class="">
                   <router-link
                     class="w-full"
                     :to="{
@@ -183,7 +183,27 @@
         </TabPanels>
       </Tabs>
       <Divider layout="vertical" />
-      <div class="w-72"></div>
+      <div class="w-72">
+        <div class="card">
+          <div class="mb-4">
+            <Button label="Block" @click="blocked = true" class="mr-2"></Button>
+            <Button label="Unblock" @click="blocked = false"></Button>
+          </div>
+          <BlockUI :blocked="blocked">
+            <Panel header="Basic">
+              <p class="m-0">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+                in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+                nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+                sunt in culpa qui officia deserunt mollit anim id est laborum.
+              </p>
+            </Panel>
+          </BlockUI>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -192,11 +212,11 @@
 import { ref, onMounted, computed } from "vue";
 import Menu from "primevue/menu";
 import {
-  getArticles,
   getAuthorById,
   getFollowedAuthors,
   followAuthor,
   getAuthorInterestedArticles,
+  unfollowAuthor,
 } from "@/assets/js/service";
 
 import { userStore, articleStore } from "@/stores";
@@ -213,6 +233,8 @@ const params = computed(() => ({
   limit: 10,
   status: "published",
 }));
+
+const blocked = ref(false);
 
 const mainArticles = ref([]);
 const totalRecords = ref();
@@ -326,19 +348,32 @@ const handleFollowedAuthors = async (userId, articles) => {
 };
 
 const addAuthorFollower = async (author) => {
-  const follower = localStorage.getItem("app-author-id");
+  const follower = user.value?.id;
 
-  if (follower === author) {
-    return;
-  }
-  const followedAuthor = await followAuthor(follower, author);
+  if (follower === author) return;
 
-  const { data: authors } = followedAuthor;
+  const { data: followedAuthors } = await followAuthor(follower, author);
 
-  if (authors) {
+  if (followedAuthors) {
     mainArticles.value.forEach((article) => {
       if (article.author.id === author) {
         article.author.followed = true;
+      }
+    });
+  }
+};
+
+const removeAuthorFollower = async (author) => {
+  const follower = user.value?.id;
+
+  if (follower === author) return;
+
+  const { data: followedAuthors } = await unfollowAuthor(follower, author);
+
+  if (followedAuthors) {
+    mainArticles.value.forEach((article) => {
+      if (article.author.id === author) {
+        article.author.followed = false;
       }
     });
   }

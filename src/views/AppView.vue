@@ -1,20 +1,21 @@
 <template>
-  <div class="w-[100vw] h-[100vh] overflow-hidden flex flex-col">
-    <nav class="relative w-full h-16 z-50 flex top-0">
-      <NavBar />
-    </nav>
-    <main class="flex-1 overflow-hidden">
-      <ScrollPanel id="main-content" class="flex w-full h-full">
-        <div
-          class="container flex flex-col w-full h-full m-auto md:px-8 lg:px-36 2xl:px-52"
-        >
-          <section>
-            <RouterView class="w-full" />
-          </section>
-        </div>
-      </ScrollPanel>
-    </main>
-  </div>
+  <nav
+    class="w-full sticky z-[500] flex top-0"
+    style="transform: translateY(0px)"
+  >
+    <NavBar />
+  </nav>
+  <main class="flex-1 overflow-hidden">
+    <ScrollPanel id="main-content" class="flex w-full h-full">
+      <div
+        class="container flex flex-col w-full h-full m-auto md:px-8 lg:px-36 2xl:px-52"
+      >
+        <section>
+          <RouterView class="w-full" />
+        </section>
+      </div>
+    </ScrollPanel>
+  </main>
 </template>
 
 <script setup>

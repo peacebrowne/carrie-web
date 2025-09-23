@@ -1,5 +1,5 @@
 <template>
-  <Menubar class="border-0 px-16 rounded-none absolute w-full shadow-sm">
+  <Menubar class="border-0 py-3 px-16 rounded-none w-full shadow-sm">
     <template #start>
       <div class="flex items-center gap-4">
         <router-link :to="{ name: 'landing-page' }">

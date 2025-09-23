@@ -136,7 +136,7 @@ const items = ref([
   {
     label: "Chats",
     icon: "pi pi-comments",
-    name: "stories",
+    name: "chats",
   },
 
   {

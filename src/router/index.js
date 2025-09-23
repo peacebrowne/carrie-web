@@ -9,6 +9,7 @@ import RegistrationForm from "@/components/forms/RegistrationForm.vue";
 import DashBoard from "@/components/dashboard/DashBoard.vue";
 import LandingPage from "@/views/LandingPage.vue";
 import Profile from "@/components/Profile.vue";
+import Chats from "@/components/chats/Chats.vue";
 // import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
@@ -46,6 +47,11 @@ const routes = [
             props: true,
           },
         ],
+      },
+      {
+        path: "chats",
+        component: Chats,
+        name: "chats",
       },
       {
         path: "write",
