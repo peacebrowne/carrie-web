@@ -200,24 +200,29 @@
                       <Select
                         v-model="selectedCountry"
                         :options="countries"
-                        filter
                         optionLabel="countryNameEn"
+                        filter
                         :virtualScrollerOptions="{ itemSize: 44 }"
                         id="contact"
                         class="p-[0.34rem]"
                       >
+                        <!-- Selected Value -->
                         <template #value="slotProps">
-                          <div class="flex items-center">
+                          <div class="flex items-center" v-if="slotProps.value">
                             <div class="flex items-center gap-1 text-xs">
                               <span>{{ slotProps.value.flag }}</span>
-
                               <div class="flex items-center">
                                 <i class="pi pi-plus !text-[9px]"></i
                                 >{{ slotProps.value.countryCallingCode }}
                               </div>
                             </div>
                           </div>
+                          <span v-else class="text-gray-400"
+                            >Select country</span
+                          >
                         </template>
+
+                        <!-- Option in Dropdown -->
                         <template #option="slotProps">
                           <div
                             class="flex items-center w-full justify-between text-xs"
@@ -227,7 +232,7 @@
                               <span>{{ slotProps.option.countryNameEn }}</span>
                             </div>
                             <div class="flex items-center font-black">
-                              <i class="pi pi-plus font-black !text-[9px]"></i
+                              <i class="pi pi-plus !text-[9px]"></i
                               >{{ slotProps.option.countryCallingCode }}
                             </div>
                           </div>
@@ -466,7 +471,7 @@ import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { userStore } from "@/stores";
 import { addImage, editAuthor, getInterests } from "@/assets/js/service";
 import AddImage from "./articles/AddImage.vue";
-import Editor from "./articles/Editor.vue";
+import Editor from "./editors/ArticleEditor.vue";
 import * as countryCodes from "country-codes-list";
 
 const author = ref("");
@@ -517,8 +522,6 @@ const onFormSubmit = async ({ valid, values }) => {
 
   loading.value = true;
   formatMsisdn(values);
-
-  console.log({ values });
 
   const { ok, result } = await editAuthor(author.value.id, values);
   author.value = values;
@@ -578,6 +581,7 @@ const handleUserProfile = () => {
 const formatMsisdn = (values) => {
   if (values.msisdn) {
     const formattedContact = values.msisdn.split(/[,;:\+\- ]+/).join("");
+    console.log(selectedCountry.value);
     const contact = `${selectedCountry.value.flag} +${selectedCountry.value.countryCallingCode}-${formattedContact}`;
     values.msisdn = contact;
   }
@@ -600,6 +604,7 @@ const editorData = ref({
 const interests = ref([]);
 
 const selectedCountry = ref(countryCodes.all()[0]);
+console.log(selectedCountry.value);
 const countries = ref(countryCodes.all());
 
 const user = ref();

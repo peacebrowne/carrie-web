@@ -2,7 +2,6 @@
   <div class="card flex justify-center">
     <Drawer
       pt:header:class="flex items-center shadow-sm pb-3"
-      pt:closeButtonProps:class="bg-red-600"
       v-model:visible="visible"
       header="Right Drawer"
       position="right"

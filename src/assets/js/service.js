@@ -6,20 +6,72 @@ const token = () => {
   return getCookie();
 };
 
+export const publishArticleNow = async (id) => {
+  try {
+    const options = {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(
+      `${API_URL}/articles/${id}/publish-now`,
+      options
+    );
+    const result = await response.json();
+
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error publishing article now:", error);
+    return { ok: false, result: { message: error.message } };
+  }
+};
+
+export const publishArticleLater = async (id, date) => {
+  try {
+    const options = {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(
+      `${API_URL}/articles/${id}/publish-later?date=${date}`,
+      options
+    );
+    const result = await response.json();
+
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error scheduling article publish time:", error);
+    return { ok: false, result: { message: error.message } };
+  }
+};
+
 export const addArticle = async (data) => {
+  const authToken = token();
+  if (!authToken) {
+    return { ok: false, result: { message: "No token" } };
+  }
+
   try {
     const options = {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token()}`,
+        Authorization: `Bearer ${authToken}`,
       },
       body: data,
     };
+
     const response = await fetch(`${API_URL}/articles`, options);
     const result = await response.json();
+
     return { ok: response.ok, result };
   } catch (error) {
     console.error("Error adding article:", error);
+    return { ok: false, result: { message: error.message } };
   }
 };
 
@@ -305,6 +357,43 @@ export const getInterests = async () => {
   }
 };
 
+export const getTagById = async (id) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(`${API_URL}/tags/${id}`, options);
+    return await response.json();
+  } catch (error) {
+    console.log({ error });
+    console.error("Error fetching author data");
+  }
+};
+
+export const searchTags = async (query) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(
+      `${API_URL}/tags/search?term=${encodeURIComponent(query)}`,
+      options
+    );
+    return await response.json();
+  } catch (error) {
+    console.log({ error });
+    console.error("Error fetching author data");
+  }
+};
+
 export const followAuthor = async (follower, author) => {
   try {
     const options = {
@@ -392,5 +481,20 @@ export const editAuthor = async (id, data) => {
     return { ok: response.ok, result };
   } catch (error) {
     console.error("Error editing author:", error);
+  }
+};
+
+export const getRecommendedTopic = async (id) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    const response = await fetch(`${API_URL}/tags/recommended/${id}`, options);
+    return response.json();
+  } catch (error) {
+    console.error("Error getting recommended topics:", error);
   }
 };

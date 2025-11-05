@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { getImage } from "./service";
 
-export const handleDateFormat = (date, format = "MMM DD, YYYY") =>
+export const handleDateFormat = (date, format = "MMM DD, YYYY HH:mm A") =>
   dayjs(date).format(format);
 
 export const attachArticleImage = async (articles) => {
@@ -30,4 +30,21 @@ export const handleImage = async (id) => {
       return URL.createObjectURL(data);
     }
   }
+};
+
+export const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+export const useDebounceFn = (fn, delay = 300) => {
+  let timer;
+
+  const debounced = (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+
+  debounced.cancel = () => clearTimeout(timer);
+
+  return debounced;
 };

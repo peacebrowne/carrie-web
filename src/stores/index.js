@@ -1,7 +1,11 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import Cookies from "js-cookie";
-import { getAuthorById, getArticleById } from "@/assets/js/service";
+import {
+  getAuthorById,
+  getArticleById,
+  getRecommendedTopic,
+} from "@/assets/js/service";
 import { jwtDecode } from "jwt-decode";
 import { attachArticleImage, handleImage } from "@/assets/js/util";
 
@@ -86,4 +90,27 @@ export const cookiesStore = defineStore("cookiesStore", () => {
     setCookie,
     setIsAuthenticated,
   };
+});
+
+export const tagStore = defineStore("tagStore", () => {
+  const tag = ref({});
+
+  const setTag = (data) => {
+    tag.value = data;
+    localStorage.setItem("tag-id", data.id);
+  };
+
+  const getTag = async () => {
+    const cachedTag = article.value;
+
+    if (cachedTag) return cachedTag;
+    const id = localStorage.getItem("tag-id");
+    const { data: fetchedTag } = await getIn(id);
+
+    tag.value = fetchedTag;
+
+    return tag.value;
+  };
+
+  return { getTag, setTag };
 });

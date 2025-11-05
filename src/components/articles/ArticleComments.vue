@@ -24,7 +24,7 @@
           :initialValues="initialValues"
         >
           <div class="border rounded-lg">
-            <Editor id="editor" :editorData="editorData" />
+            <Editor id="editor" />
           </div>
           <div class="flex justify-end">
             <Button
@@ -55,18 +55,13 @@ import { getAuthorById, getComments, addComment } from "@/assets/js/service";
 import { userStore } from "@/stores";
 import { useToast } from "primevue/usetoast";
 import { handleImage } from "@/assets/js/util";
+import Editor from "../editors/CommentEditor.vue";
 
 const props = defineProps({
   commentData: {
     type: Object,
     required: true,
   },
-});
-
-const editorData = ref({
-  height: "120",
-  placeholder: "What are your thoughts?",
-  name: "comment",
 });
 
 const initialValues = ref({

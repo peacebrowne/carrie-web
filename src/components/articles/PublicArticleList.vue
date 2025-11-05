@@ -68,7 +68,7 @@
                   />
                   <Menu ref="menu" id="config_menu" :model="items" popup />
                 </template>
-                <div class="">
+                <div class="bg-red-500">
                   <router-link
                     class="w-full"
                     :to="{
@@ -78,93 +78,97 @@
                     @click="handleArticleStore(article)"
                   >
                     <Card
-                      pt:header:class="w-48 h-32"
-                      pt:body:class="flex-1 pl-0 py-0 m-auto"
+                      pt:body:class="flex-1 p-0 m-auto"
                       class="shadow-none rounded-none items-start justify-between overflow-hidden flex-row-reverse w-full gap-4"
                     >
-                      <!-- Image -->
-                      <template #header>
-                        <img
-                          v-if="article.image"
-                          :src="article.image"
-                          class="w-full h-full object-cover"
-                        />
-                        <img
-                          v-else
-                          src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
-                          alt="Mock Negotiation"
-                          class="w-full h-full object-cover"
-                        />
-                      </template>
-
                       <!-- Text Content -->
                       <template #content>
-                        <div class="text-start">
-                          <h3 class="font-black text-lg md:text-2xl">
-                            {{ handleTitleFormat(article.title) }}
-                          </h3>
+                        <div class="flex flex-row w-full">
+                          <div class="basis-3/4">
+                            <h3 class="font-black text-xl md:text-2xl">
+                              {{ handleTitleFormat(article.title) }}
+                            </h3>
 
-                          <p class="text-1xl">
-                            {{ handleDescriptionFormat(article.description) }}
-                          </p>
-                        </div>
-                      </template>
-
-                      <template #footer>
-                        <div
-                          class="flex flex-wrap items-center justify-between gap-4"
-                        >
-                          <div class="flex items-center gap-4">
-                            <div
-                              class="flex gap-1 items-enter"
-                              v-tooltip.top="`${article.likes} likes`"
-                            >
-                              <span class="pi pi-thumbs-up text-xs"></span>
-                              <span class="text-xs">{{ article.likes }}</span>
-                            </div>
-                            <div
-                              class="flex gap-1 items-center"
-                              v-tooltip.top="`${article.dislikes} dislikes`"
-                            >
-                              <span class="pi pi-thumbs-down text-xs"></span>
-                              <span class="text-xs">{{
-                                article.dislikes
-                              }}</span>
-                            </div>
-
-                            <div
-                              class="flex gap-1 items-center"
-                              v-tooltip.top="
-                                `${article.totalComments} comments`
-                              "
-                            >
-                              <span class="pi pi-comments text-xs"></span>
-                              <span class="text-xs">{{
-                                article.totalComments
-                              }}</span>
-                            </div>
-
-                            <div
-                              v-tooltip.top="'50 shares'"
-                              class="flex gap-1 items-center"
-                            >
-                              <span class="pi pi-share-alt text-xs"></span>
-                              <span class="text-xs">50</span>
-                            </div>
+                            <p class="text-lg">
+                              {{ handleDescriptionFormat(article.description) }}
+                            </p>
                           </div>
 
-                          <div class="flex gap-1 items-center">
-                            <span class="pi pi-calendar text-xs"></span>
-                            <span
-                              class="text-surface-500 text-xs font-bold dark:text-surface-400"
-                              >{{ handleDateFormat(article.createdAt) }}</span
-                            >
+                          <!-- Image -->
+                          <div class="basis-1/4 max-h-24">
+                            <img
+                              v-if="article.image"
+                              :src="article.image"
+                              class="w-full h-full object-cover"
+                            />
+                            <img
+                              v-else
+                              src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
+                              alt="Mock Negotiation"
+                              class="w-full h-full object-cover bas"
+                            />
                           </div>
                         </div>
                       </template>
                     </Card>
                   </router-link>
                 </div>
+                <template #footer>
+                  <div
+                    class="w-54 flex flex-wrap items-center justify-between gap-4 p-1"
+                  >
+                    <router-link
+                      :to="{
+                        name: 'public-article-detail',
+                        params: { title: article.title },
+                      }"
+                      @click="handleArticleStore(article)"
+                    >
+                      <div class="flex items-center gap-4">
+                        <div
+                          class="flex gap-1 items-enter"
+                          v-tooltip.top="`${article.likes} likes`"
+                        >
+                          <span class="pi pi-thumbs-up text-sm"></span>
+                          <span class="text-sm">{{ article.likes }}</span>
+                        </div>
+                        <div
+                          class="flex gap-1 items-center"
+                          v-tooltip.top="`${article.dislikes} dislikes`"
+                        >
+                          <span class="pi pi-thumbs-down text-sm"></span>
+                          <span class="text-sm">{{ article.dislikes }}</span>
+                        </div>
+
+                        <div
+                          class="flex gap-1 items-center"
+                          v-tooltip.top="`${article.totalComments} comments`"
+                        >
+                          <span class="pi pi-comments text-sm"></span>
+                          <span class="text-sm">{{
+                            article.totalComments
+                          }}</span>
+                        </div>
+
+                        <div
+                          v-tooltip.top="'50 shares'"
+                          class="flex gap-1 items-center"
+                        >
+                          <span class="pi pi-share-alt text-sm"></span>
+                          <span class="text-sm">50</span>
+                        </div>
+                      </div>
+                    </router-link>
+
+                    <div class="flex gap-1 items-center">
+                      <span class="pi pi-calendar text-sm"></span>
+                      <span
+                        class="text-surface-500 text-sm font-bold dark:text-surface-400"
+                        >{{ handleDateFormat(article.createdAt) }}</span
+                      >
+                    </div>
+                  </div>
+                </template>
               </Panel>
 
               <Divider type="dashed" />
@@ -183,26 +187,157 @@
         </TabPanels>
       </Tabs>
       <Divider layout="vertical" />
-      <div class="w-72">
-        <div class="card">
-          <div class="mb-4">
-            <Button label="Block" @click="blocked = true" class="mr-2"></Button>
-            <Button label="Unblock" @click="blocked = false"></Button>
+      <div class="w-72 h-full mx-auto">
+        <ScrollPanel class="w-full h-full pb-16">
+          <!-- RECOMMENDED TOPICS -->
+          <div>
+            <div class="px-2 pt-6 pb-2">
+              <h3 class="font-bold">Recommended Topics</h3>
+            </div>
+            <div class="card flex flex-wrap gap-2">
+              <router-link
+                v-for="topic in recommendedTopics"
+                :key="topic.id"
+                :to="{
+                  name: 'tag-detail',
+                  params: { name: topic.name },
+                }"
+              >
+                <Chip class="text-sm" :label="topic.name" />
+              </router-link>
+            </div>
           </div>
-          <BlockUI :blocked="blocked">
-            <Panel header="Basic">
-              <p class="m-0">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
-                in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-                nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+          <!-- WHO TO FOLLOW -->
+          <div>
+            <div class="px-2 pt-6 pb-2">
+              <h3 class="font-bold">Who to follow</h3>
+            </div>
+
+            <Panel
+              class="border-0 py-2"
+              pt:header:class="px-2 py-1"
+              pt:content:class="px-2 py-1"
+              pt:footer:class="px-2 py-1"
+            >
+              <template #header>
+                <div class="flex items-center gap-2">
+                  <Avatar
+                    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+                    shape="circle"
+                    class="w-10 h-10"
+                  />
+                  <span class="font-bold text-xs">Amy Elsner</span>
+                </div>
+              </template>
+              <template #footer>
+                <Button
+                  class="text-xs"
+                  severity="contrast"
+                  variant="outlined"
+                  rounded
+                  label="Follow"
+                />
+              </template>
+
+              <p class="m-0 font-black">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
               </p>
             </Panel>
-          </BlockUI>
-        </div>
+          </div>
+
+          <!-- YOUR READING LIST -->
+          <div>
+            <div class="px-2 pt-6 pb-2">
+              <h3 class="font-bold">Your reading list</h3>
+            </div>
+
+            <Panel
+              class="border-0 py-2"
+              pt:header:class="px-2 py-1"
+              pt:content:class="px-2 py-1"
+              pt:footer:class="px-2 py-1"
+            >
+              <template #header>
+                <div class="flex items-center gap-2">
+                  <Avatar
+                    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+                    shape="circle"
+                    class="w-6 h-6"
+                  />
+                  <span class="font-bold text-xs">Amy Elsner</span>
+                </div>
+              </template>
+              <template #footer>
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                  <span
+                    class="text-surface-500 dark:text-surface-400 text-xs font-normal"
+                    >July 5</span
+                  >
+                </div>
+              </template>
+
+              <p class="m-0 font-black">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+              </p>
+            </Panel>
+
+            <Panel
+              class="border-0 py-2"
+              pt:header:class="px-2 py-1"
+              pt:content:class="px-2 py-1"
+              pt:footer:class="px-2 py-1"
+            >
+              <template #header>
+                <div class="flex items-center gap-2">
+                  <Avatar
+                    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+                    shape="circle"
+                    class="w-6 h-6"
+                  />
+                  <span class="font-bold text-xs">Amy Elsner</span>
+                </div>
+              </template>
+              <template #footer>
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                  <span
+                    class="text-surface-500 dark:text-surface-400 text-xs font-normal"
+                    >July 5</span
+                  >
+                </div>
+              </template>
+
+              <p class="m-0 font-black">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+              </p>
+            </Panel>
+          </div>
+
+          <!-- AUTHORS YOU ARE FOLLOWING -->
+          <div>
+            <div class="flex items-center gap-2 px-2 pt-6 pb-2">
+              <i class="pi pi-users"></i>
+              <h3 class="font-bold">Following</h3>
+            </div>
+            <div class="card flex flex-col gap-2 px-2">
+              <div v-for="n in 5" :key="n">
+                <div class="flex items-center gap-2">
+                  <Avatar
+                    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+                    shape="circle"
+                    class="w-6 h-6"
+                  />
+                  <span
+                    class="font-normal text-xs text-surface-500 dark:text-surface-400"
+                  >
+                    Amy Elsner
+                  </span>
+                  <div class="w-1 h-1 bg-green-700 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollPanel>
       </div>
     </div>
   </div>
@@ -217,6 +352,7 @@ import {
   followAuthor,
   getAuthorInterestedArticles,
   unfollowAuthor,
+  getRecommendedTopic,
 } from "@/assets/js/service";
 
 import { userStore, articleStore } from "@/stores";
@@ -397,10 +533,17 @@ const handleDescriptionFormat = (description, layout) => {
     : description;
 };
 
+const recommendedTopics = ref([]);
+const fetchRecommendedTopics = async () => {
+  const { data } = await getRecommendedTopic(user.value.id);
+  recommendedTopics.value = data;
+};
+
 onMounted(async () => {
   const { getUser } = userStore();
   user.value = await getUser();
   await fetchArticles();
+  await fetchRecommendedTopics();
 });
 
 const handleArticleStore = (data) => {

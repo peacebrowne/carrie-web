@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="w-full sticky z-[500] flex top-0"
+    class="w-full sticky z-[200] flex top-0"
     style="transform: translateY(0px)"
   >
     <NavBar />

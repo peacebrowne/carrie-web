@@ -146,6 +146,7 @@ const props = defineProps({
 
 const editorData = ref({
   height: "120",
+  text: "small",
   placeholder: "What are your thoughts?",
   name: "comment",
 });

@@ -13,23 +13,15 @@
     >
       <div class="flex gap-3 items-center">
         <span class="text-3xl font-semibold">Your Story</span>
-        <div v-if="isEditPage" class="flex gap-2">
-          <!-- Status + author line -->
-          <div class="flex gap-1 items-center">
-            <span class="text-sm font-semibold" :class="currentStatus?.color">
-              {{ currentStatus?.name }}
-            </span>
-            <span class="text-surface-500 text-sm font-semibold">
-              in {{ user?.firstName }} {{ user?.lastName }}
-            </span>
-          </div>
-
-          <!-- Saving / Saved indicator -->
-          <div class="flex items-center gap-2">
-            <span v-if="saving" class="text-xs text-gray-500">Saving…</span>
-            <i v-else class="pi pi-check text-green-600 text-xs"></i>
-          </div>
+        <div class="flex gap-1">
+          <span class="text-sm font-semibold" :class="currentStatus?.color"
+            >{{ currentStatus?.name }}
+          </span>
+          <span class="text-surface-500 text-sm font-semibold">
+            in {{ user?.firstName }} {{ user?.lastName }}
+          </span>
         </div>
+        <span class="text-sm text-surface-500 font-semibold">Saving...</span>
       </div>
 
       <div class="flex gap-2">
@@ -42,7 +34,6 @@
         />
         <Button
           icon="pi pi-ellipsis-h"
-          label="Delete"
           severity="secondary"
           class="py-1 text-xs items-center rounded-full hidden"
           rounded
@@ -53,11 +44,12 @@
       </div>
     </div>
 
-    <!-- :initialValues="initialValues"
-    :resolver="resolver" -->
     <Form
       v-slot="$form"
       id="article-form"
+      :initialValues="initialValues"
+      :resolver="resolver"
+      @submit="onFormSubmit"
       class="flex flex-col w-full gap-6"
       ref="formRef"
     >
@@ -203,26 +195,24 @@
                 >
                   <DatePicker
                     id="datepicker-24h"
-                    v-model="displayDate"
-                    updateModelType="date"
+                    v-model="pendingDate"
                     name="pendingDate"
                     showTime
-                    hourFormat="12"
+                    hourFormat="24"
+                    class="w-full shadow-none"
                     showIcon
                     fluid
                     iconDisplay="input"
-                    class="w-full shadow-none"
-                    dateFormat="M dd, yy"
-                    @update:modelValue="handleDateChange"
                   />
+
+                  <Message
+                    v-if="$form.date?.invalid"
+                    severity="error"
+                    size="small"
+                    variant="simple"
+                    >{{ $form.pendingDate.error?.message }}</Message
+                  >
                 </div>
-                <Message
-                  v-if="$form.pendingDate?.invalid"
-                  severity="error"
-                  size="small"
-                  variant="simple"
-                  >{{ $form.pendingDate.error?.message }}</Message
-                >
               </div>
               <div>
                 <span class="text-sm leading-25rem"
@@ -238,7 +228,7 @@
                 label="Publish now"
                 type="submit"
                 class="py-1 text-sm flex items-center rounded-full"
-                @click="publishNow"
+                @click="visible = false"
                 :disabled="progress"
               />
               <Button
@@ -257,7 +247,7 @@
                 label="Schedule to publish"
                 type="submit"
                 class="py-1 text-sm flex items-center rounded-full"
-                @click="publishLater"
+                @click="visible = false"
                 :disabled="progress"
               />
               <Button
@@ -277,40 +267,26 @@
 
 <script setup>
 import { useToast } from "primevue/usetoast";
-import {
-  ref,
-  reactive,
-  watch,
-  onMounted,
-  provide,
-  nextTick,
-  computed,
-} from "vue";
+import { ref, reactive, watch, onMounted, provide } from "vue";
 import { z } from "zod";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import Menu from "primevue/menu";
 import Editor from "../editors/ArticleEditor.vue";
-import {
-  addArticle,
-  editArticle,
-  publishArticleLater,
-  publishArticleNow,
-  searchTags,
-} from "@/assets/js/service.js";
+import { addArticle, editArticle, searchTags } from "@/assets/js/service.js";
+import { useRoute } from "vue-router";
 import { articleStore, userStore } from "@/stores";
 import AddImage from "./AddImage.vue";
-import { handleDateFormat, capitalize, useDebounceFn } from "@/assets/js/util";
-import { useRouter, useRoute } from "vue-router";
-import dayjs from "dayjs";
+import { handleDateFormat, capitalize } from "@/assets/js/util";
 
 const tags = ref([]);
 const description = ref("");
 const loading = ref(false);
 const image = defineModel("image");
 const src = defineModel("src");
-const content = ref("");
+const content = defineModel("content");
 const title = ref("");
 const toast = useToast();
+const pendingDate = ref();
 const formRef = ref(null);
 const user = ref("");
 const visible = ref(false);
@@ -319,33 +295,19 @@ const topicOptions = ref([]);
 const selected = ref([]);
 const scheduled = ref(false);
 const writeMode = ref(true);
-const saving = ref(false);
-const router = useRouter();
-const pendingSchedule = ref(false);
-const progress = ref(false);
-const route = useRoute();
-const isEditPage = computed(() => route.path.includes("/edit"));
 
 provide("content", content);
 provide("writeMode", writeMode);
 
-const in30Minutes = dayjs().add(30, "minute");
+const in30Minutes = new Date();
+in30Minutes.setMinutes(in30Minutes.getMinutes() + 30);
+const formatted = in30Minutes.toISOString().slice(0, 16).split("T").join(" ");
 
-const displayDate = ref(in30Minutes.toDate());
-const pendingDate = ref(handleDateFormat(in30Minutes, "YYYY-MM-DD HH:mm:ss"));
-
-const handleDateChange = (selected) => {
-  if (!selected) return;
-  displayDate.value = selected;
-  pendingDate.value = handleDateFormat(selected, "YYYY-MM-DD HH:mm:ss");
-};
-
-// initial form data
 const initialValues = reactive({
   title: "",
   content: "",
   description: "",
-  pendingDate: pendingDate.value,
+  pendingDate: handleDateFormat(formatted),
 });
 
 const resolver = ref(
@@ -357,105 +319,77 @@ const resolver = ref(
         .min(5, { message: "Title must be at least 5 characters long." }),
       content: z.string().optional(),
       description: z.string().optional(),
-      pendingDate: z.preprocess(
-        (val) => {
-          if (!val) return null;
-          return new Date(val);
-        },
-        z.union([
-          z.date().refine(
-            (date) => {
-              const now = new Date();
-              now.setHours(0, 0, 0, 0);
-
-              return date >= now;
-            },
-            { message: "Date cannot be in the past." }
-          ),
-          z
-            .null()
-            .refine((val) => val !== null, { message: "Date is required." }),
-        ])
-      ),
+      //   pendingDate: z.preprocess(
+      //     (val) => {
+      //       if (!val) return null;
+      //       return new Date(val);
+      //     },
+      //     z.union([
+      //       z.date().refine(
+      //         (date) => {
+      //           const now = new Date();
+      //           // Remove time component for same-day comparisons
+      //           now.setHours(0, 0, 0, 0);
+      //           return date >= now;
+      //         },
+      //         { message: "Date cannot be in the past." }
+      //       ),
+      //       z
+      //         .null()
+      //         .refine((val) => val !== null, { message: "Date is required." }),
+      //     ])
+      //   ),
     })
   )
 );
 
-const initialized = ref(false);
-
-watch(
-  [title, description, image, content, selected],
-  () => {
-    if (!initialized.value) return;
-    nextTick(() => debouncedSave());
-  },
-  { deep: true }
-);
-
-const debouncedSave = useDebounceFn(() => {
+const handleArticleData = (values) => {
   const payload = {
-    title: title.value,
-    content: content.value,
+    title: values.title,
+    content: values.content,
     description: description.value,
     tags: selected.value.map((option) => option.name),
     authorID: user.value.id,
     status: currentStatus.value.value,
   };
+  // article.value.publishedAt = handleDateFormat(
+  //   pendingDate.value,
+  //   "YYYY-MM-DD HH:mm:ss"
+  // );
 
-  onFormSubmit(payload);
-}, 300);
+  console.log(payload.value);
+  return payload.value;
+};
 
-const onFormSubmit = async (payload) => {
+const onFormSubmit = async ({ valid, values }) => {
+  if (!valid) return;
+
   loading.value = true;
 
   const data = new FormData();
-  if (image.value) data.append("image", image.value);
+
+  data.append("image", image.value);
   data.append(
     "article",
-    new Blob([JSON.stringify(payload)], { type: "application/json" })
+    new Blob([JSON.stringify(handleArticleData(values))], {
+      type: "application/json",
+    })
   );
 
-  try {
-    // Decide: ADD (first time) or EDIT (already has ID)
-    const articleId = isEditPage.value
-      ? localStorage.getItem("app-article-id")
-      : null;
+  const { ok, result } = route.path.split("/").includes("edit")
+    ? await editArticle(localStorage.getItem("app-article-id"), data)
+    : await addArticle(data);
 
-    const { ok, result } = isEditPage.value
-      ? await editArticle(articleId, data)
-      : await addArticle(data);
+  toast.add({
+    severity: ok ? "success" : "error",
+    summary: result?.message,
+    life: 10000,
+  });
 
-    if (ok) {
-      //  FIRST SAVE (addArticle) → redirect to edit
-      if (!isEditPage.value && result.data?.id) {
-        handleArticleStore(result.data);
-
-        saving.value = true;
-
-        // Replace current history entry + push edit route
-        await router.replace({
-          name: "edit-article",
-          params: { id: result.data.id },
-        });
-      }
-
-      //  EDIT SAVE → just show toast
-      saving.value = true;
-    }
-  } catch (error) {
-    toast.add({
-      severity: "error",
-      summary: error.message || "Something went wrong",
-      life: 5000,
-    });
-  }
+  loading.value = false;
 };
 
-watch(saving, (val) => {
-  if (!val) return;
-  const timer = setTimeout(() => (saving.value = false), 2000);
-  return () => clearTimeout(timer);
-});
+const pendingSchedule = ref(false);
 
 const showPendingSchedule = (status) => {
   pendingSchedule.value = status.value === "pending";
@@ -464,42 +398,51 @@ const showPendingSchedule = (status) => {
 const currentStatus = ref({
   name: "Draft",
   value: "draft",
-  color: "text-red-500",
+  color: "text-blue-500",
 });
 
-const statuses = ref([
-  { name: "Draft", value: "draft", color: "text-red-500" },
-  { name: "Pending", value: "pending", color: "text-blue-500" },
-  { name: "Published", value: "published", color: "text-green-500" },
-]);
 watch(currentStatus, (n, o) => showPendingSchedule(!n ? o : n));
 
+const progress = ref(false);
 watch([title, content], ([newTitle, newContent]) => {
   progress.value = newTitle || newContent ? false : true;
 });
+
+const handlePendingSchedule = (date) => {
+  const pad = (n, z = 2) => ("00" + n).slice(-z);
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hour = pad(date.getHours());
+  const minute = pad(date.getMinutes());
+  const second = pad(date.getSeconds());
+  const millisecond = pad(date.getMilliseconds(), 3);
+
+  // Add microseconds (.000000 format)
+  const microseconds = millisecond + "000";
+
+  const formatted = `${year}-${month}-${day} ${hour}:${minute}:${second}.${microseconds}`;
+};
+
+watch(pendingDate, handlePendingSchedule);
+
+const statuses = ref([
+  { name: "Draft", value: "draft", color: "text-red-700" },
+  { name: "Pending", value: "pending", color: "text-blue-700" },
+  { name: "Published", value: "published", color: "text-green-700" },
+]);
 
 const store = articleStore();
 
 const fetchArticleById = async () => {
   const cachedArticle = await store.getArticle();
 
-  if (!cachedArticle) {
-    await router.replace({
-      name: "write",
-    });
-    return;
-  }
-
   title.value = cachedArticle.title;
   content.value = cachedArticle.content;
   description.value = cachedArticle.description;
   src.value = cachedArticle.image;
   image.value = cachedArticle.image;
-
-  // Update Status
-  currentStatus.value = statuses.value.find(
-    (status) => status.value === cachedArticle.status
-  );
 
   // Convert saved tags (strings) → objects
   selected.value = (cachedArticle.tags || []).map((tag) => ({
@@ -528,8 +471,6 @@ const resetForm = async () => {
   description.value = "";
   src.value = "";
   image.value = "";
-  selected.value = [];
-  topicOptions.value = [];
 
   // Update initial form values
   const form = await formRef.value.states;
@@ -539,16 +480,19 @@ const resetForm = async () => {
   }
 };
 
-const switchFormMode = async () => {
-  isEditPage.value ? await fetchArticleById() : await resetForm();
+const route = useRoute();
+const switchFormMode = async (url) => {
+  url.path.split("/").includes("edit")
+    ? await fetchArticleById()
+    : await resetForm();
 };
 
+watch(route, switchFormMode);
+
 onMounted(async () => {
-  await switchFormMode();
+  await switchFormMode(route);
   const { getUser } = userStore();
   user.value = await getUser();
-
-  initialized.value = true;
 });
 
 const menu = ref(null);
@@ -571,7 +515,10 @@ const items = ref([
   },
 ]);
 
-const toggle = (event) => menu.value.toggle(event);
+const toggle = (event) => {
+  menu.value.toggle(event);
+};
+
 const onFilter = async (event) => {
   const query = event.value;
 
@@ -592,6 +539,7 @@ const openScheduling = (value) => {
 
 const onSelectAllChange = (event) => {
   selected.value = event.checked ? [...topicOptions.value] : [];
+
   selectAll.value = event.checked;
 };
 
@@ -599,56 +547,12 @@ const onChange = (event) => {
   selectAll.value = event.value.length === topicOptions.value.length;
 };
 
-const handleArticleStore = (data) => {
-  const { setArticle } = articleStore();
-  setArticle(data);
-};
+let timeout;
+async function autoSave() {
+  clearTimeout(timeout);
 
-const publishNow = async () => {
-  const { getArticle } = articleStore();
-  const { id } = await getArticle();
-  const { ok, result } = await publishArticleNow(id);
-
-  if (ok) {
-    toast.add({
-      severity: "success",
-      summary: result.message,
-      life: 3000,
-    });
-
-    initialized.value = false;
-    await resetForm();
-    visible.value = false;
-    saving.value = true;
-
-    await router.replace({ name: "write" });
-
-    setTimeout(() => (initialized.value = true), 500);
-  }
-};
-
-const publishLater = async () => {
-  const { getArticle } = articleStore();
-  const { id } = await getArticle();
-
-  const { ok, result } = await publishArticleLater(id, pendingDate.value);
-  if (ok) {
-    toast.add({
-      severity: "success",
-      summary: result.message,
-      life: 3000,
-    });
-
-    initialized.value = false;
-    await resetForm();
-    visible.value = false;
-    saving.value = true;
-
-    await router.replace({ name: "write" });
-
-    setTimeout(() => (initialized.value = true), 500);
-  }
-};
+  timeout = setTimeout(async () => {}, 300);
+}
 </script>
 
 <style>

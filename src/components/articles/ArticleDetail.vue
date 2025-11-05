@@ -99,6 +99,15 @@
                 severity="secondary"
                 text
               >
+                <i class="pi pi-bookmark text-lg"></i>
+              </Button>
+
+              <Button
+                class="py-1 rounded-lg"
+                size="small"
+                severity="secondary"
+                text
+              >
                 <i class="pi pi-share-alt text-lg"></i>
                 <span class="text-sm">0</span>
               </Button>
@@ -219,7 +228,7 @@ import {
   unfollowAuthor,
 } from "@/assets/js/service.js";
 import { articleStore } from "../../stores/index.js";
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { userStore } from "@/stores";
 
 import ArticleComments from "./ArticleComments.vue";

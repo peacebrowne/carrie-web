@@ -5,7 +5,7 @@
         <router-link :to="{ name: 'landing-page' }">
           <span class="font-black text-2xl">Carrie</span>
         </router-link>
-        <IconField>
+        <IconField id="search" v-if="!writeMode">
           <InputIcon class="pi pi-search text-sm" />
           <InputText class="py-1 rounded-full" placeholder="Search" />
         </IconField>
@@ -13,7 +13,7 @@
     </template>
     <template #end>
       <div class="flex items-center gap-4 ml-auto">
-        <div>
+        <div id="write" v-if="!writeMode">
           <router-link :to="{ name: 'write' }">
             <Button
               class="py-1 text-sm"
@@ -64,7 +64,7 @@
 
 <script setup>
 import { cookiesStore } from "@/stores";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, inject } from "vue";
 import { useRouter } from "vue-router";
 import SideBar from "@/components/SideBar.vue";
 
@@ -102,4 +102,6 @@ onMounted(async () => {
 
   handleIsLoggedIn();
 });
+
+const writeMode = inject("writeMode");
 </script>

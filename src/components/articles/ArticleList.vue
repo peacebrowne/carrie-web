@@ -30,7 +30,7 @@
                   class="w-full"
                   :to="{
                     name: 'edit-article',
-                    params: { title: article.title },
+                    params: { id: article.id },
                   }"
                   @click="handleArticleStore(article)"
                 >
@@ -137,7 +137,7 @@
                   class="w-full"
                   :to="{
                     name: 'edit-article',
-                    params: { title: article.title },
+                    params: { id: article.id },
                   }"
                   @click="handleArticleStore(article)"
                 >
@@ -244,7 +244,7 @@
                   class="w-full"
                   :to="{
                     name: 'edit-article',
-                    params: { title: article.title },
+                    params: { id: article.id },
                   }"
                   @click="handleArticleStore(article)"
                 >

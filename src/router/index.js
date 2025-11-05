@@ -10,6 +10,7 @@ import DashBoard from "@/components/dashboard/DashBoard.vue";
 import LandingPage from "@/views/LandingPage.vue";
 import Profile from "@/components/Profile.vue";
 import Chats from "@/components/chats/Chats.vue";
+import TagDetail from "@/components/TagDetail.vue";
 // import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
@@ -40,12 +41,12 @@ const routes = [
             name: "me-article-detail",
             props: true,
           },
-          {
-            path: ":title/edit",
-            component: AddArticle,
-            name: "edit-article",
-            props: true,
-          },
+          // {
+          //   path: ":title/edit",
+          //   component: AddArticle,
+          //   name: "edit-article",
+          //   props: true,
+          // },
         ],
       },
       {
@@ -53,11 +54,11 @@ const routes = [
         component: Chats,
         name: "chats",
       },
-      {
-        path: "write",
-        component: AddArticle,
-        name: "write",
-      },
+      // {
+      //   path: "write",
+      //   component: AddArticle,
+      //   name: "write",
+      // },
       {
         path: "trash",
         // TODO add trash component.
@@ -90,6 +91,20 @@ const routes = [
     ],
   },
   {
+    path: "/tag",
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: ":name",
+        component: TagDetail,
+        name: "tag-detail",
+        props: true,
+      },
+    ],
+  },
+  {
     path: "/auth",
     component: LoginView,
     children: [
@@ -112,6 +127,17 @@ const routes = [
     path: "/:catchAll(.*)",
     // component: NotFound, // Uncomment when NotFound component is created
     name: "not-found",
+  },
+  {
+    path: "/write",
+    component: AddArticle,
+    name: "write",
+  },
+  {
+    path: "/:id/edit",
+    component: AddArticle,
+    name: "edit-article",
+    props: true,
   },
 ];
 
