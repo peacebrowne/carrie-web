@@ -434,6 +434,44 @@ export const unfollowAuthor = async (follower, author) => {
   }
 };
 
+export const followTag = async (tagId, authorId) => {
+  try {
+    const options = {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(
+      `${API_URL}/tags/follow?tagId=${tagId}&authorId=${authorId}`,
+      options
+    );
+    return await response.json();
+  } catch (error) {
+    console.log("Error");
+  }
+};
+
+export const unfollowTag = async (tagId, authorId) => {
+  try {
+    const options = {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(
+      `${API_URL}/tags/unfollow?tagId=${tagId}&authorId=${authorId}`,
+      options
+    );
+    return await response.json();
+  } catch (error) {
+    console.log("Error");
+  }
+};
+
 export const getFollowedAuthors = async (id) => {
   try {
     const options = {
@@ -484,7 +522,7 @@ export const editAuthor = async (id, data) => {
   }
 };
 
-export const getRecommendedTopic = async (id) => {
+export const getRecommendedTopic = async (id, limit) => {
   try {
     const options = {
       method: "GET",
@@ -492,7 +530,97 @@ export const getRecommendedTopic = async (id) => {
         Authorization: `Bearer ${token()}`,
       },
     };
-    const response = await fetch(`${API_URL}/tags/recommended/${id}`, options);
+    let url = `${API_URL}/tags/recommended/${id}`;
+    if (limit) url += `?limit=${limit}`;
+    const response = await fetch(url, options);
+    return response.json();
+  } catch (error) {
+    console.error("Error getting recommended topics:", error);
+  }
+};
+
+export const getAuthorReadingList = async (id) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    const response = await fetch(`${API_URL}/articles/saved/${id}`, options);
+    return response.json();
+  } catch (error) {
+    console.error("Error getting author's reading list:", error);
+  }
+};
+
+export const addToReadingList = async (authorId, articleId) => {
+  try {
+    const options = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    const response = await fetch(
+      `${API_URL}/articles/save?authorId=${authorId}&articleId=${articleId}`,
+      options
+    );
+    const result = await response.json();
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error adding article to author's reading list:", error);
+  }
+};
+
+export const getArticleByTopicId = async (tagId, authorId) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    const response = await fetch(
+      `${API_URL}/articles/tag/${tagId}/author/${authorId}?limit=8`,
+      options
+    );
+    return response.json();
+  } catch (error) {
+    console.error("Error getting articles by to topic ID:", error);
+  }
+};
+
+export const removeFromReadingList = async (authorId, articleId) => {
+  try {
+    const options = {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    const response = await fetch(
+      `${API_URL}/articles/unsave?authorId=${authorId}&articleId=${articleId}`,
+      options
+    );
+    const result = await response.json();
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error removing article from author's reading list:", error);
+  }
+};
+
+export const getRecommendedAuthors = async (id, limit) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    let url = `${API_URL}/authors/recommended/${id}`;
+    if (limit) url += `?limit=${limit}`;
+    const response = await fetch(url, options);
     return response.json();
   } catch (error) {
     console.error("Error getting recommended topics:", error);

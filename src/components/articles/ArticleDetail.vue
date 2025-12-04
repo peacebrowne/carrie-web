@@ -1,240 +1,329 @@
 <template>
-  <nav class="w-full relative h-16 z-50 flex top-0">
+  <Toast position="top-center" class="w-[32rem] text-sm" />
+
+  <nav
+    class="w-full sticky z-[500] flex top-0"
+    style="transform: translateY(0px)"
+  >
     <NavBar />
   </nav>
-  <div id="main-content" class="flex w-full h-dvh pt-6">
-    <div class="container m-auto flex w-full h-full md:px-8 lg:px-36 2xl:px-52">
-      <ScrollPanel id="custom-scrollpanel" class="w-full mx-auto px-2">
-        <div id="article-detail" class="w-full flex flex-col lg:px-16 gap-8">
-          <div>
-            <h1 class="text-1xl sm:text-3xl md:text-4xl lg:text-5xl font-black">
-              {{ article.title }}
-            </h1>
-          </div>
-
-          <div class="flex items-center gap-5">
-            <div class="flex items-center gap-2">
-              <Avatar
-                v-if="author.image"
-                :image="author.image"
-                shape="circle"
-                size="small"
-              />
-
-              <Avatar
-                v-else
-                icon="pi pi-user text-white text-xs"
-                shape="circle"
-                size="small"
-                class="bg-[#1B4D3E]"
-              />
-              <span class="font-bold">
-                {{ author.firstName }} {{ author.lastName }}</span
+  <div id="main-content" class="w-full h-dvh">
+    <div
+      class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52 pt-6"
+    >
+      <div class="flex-1 mx-auto h-full">
+        <ScrollPanel class="flex-1 w-full mx-auto px-2">
+          <div id="article-detail" class="w-full flex flex-col gap-8">
+            <div>
+              <h1
+                class="text-1xl sm:text-3xl md:text-4xl lg:text-5xl font-black"
               >
+                {{ article.title }}
+              </h1>
             </div>
 
-            <div class="flex" v-if="user?.id !== author.id">
-              <div v-if="author.followed">
-                <Button
-                  v-if="author.followed"
-                  class="text-xs"
-                  rounded
-                  severity="contrast"
-                  variant="outlined"
-                  label="Following"
-                  @click="removeAuthorFollower(author.id)"
-                />
-              </div>
-
-              <Button
-                v-else
-                class="text-xs"
-                severity="contrast"
-                variant="outlined"
-                rounded
-                label="Follow"
-                @click="addAuthorFollower(author.id)"
-              />
-            </div>
-
-            <div class="flex text-sm">
-              <span
-                >{{ readingTime }} min read -
-                {{ handleDateFormat(article.createdAt) }}</span
-              >
-            </div>
-          </div>
-
-          <!-- ACTIONS -->
-          <div class="flex gap-3 border-t border-b py-1">
-            <div class="flex items-center gap-2">
-              <Button
-                class="py-1 rounded-lg"
-                size="small"
-                severity="secondary"
-                text
-                @click="handleArticleClaps"
-              >
-                <i class="pi pi-thumbs-up text-lg"></i>
-                <span class="text-sm">{{ article.likes }}</span>
-              </Button>
-            </div>
-            <div class="flex items-center gap-2">
-              <a href="#editor">
-                <Button
-                  class="py-1 rounded-lg"
-                  size="small"
-                  severity="secondary"
-                  text
-                >
-                  <i class="pi pi-comments text-lg font-light"></i>
-                  <span class="text-sm">{{ article.totalComments }}</span>
-                </Button>
-              </a>
-            </div>
-            <div class="flex items-center ml-auto gap-2" disabled>
-              <Button
-                class="py-1 rounded-lg"
-                size="small"
-                severity="secondary"
-                text
-              >
-                <i class="pi pi-bookmark text-lg"></i>
-              </Button>
-
-              <Button
-                class="py-1 rounded-lg"
-                size="small"
-                severity="secondary"
-                text
-              >
-                <i class="pi pi-share-alt text-lg"></i>
-                <span class="text-sm">0</span>
-              </Button>
-            </div>
-          </div>
-
-          <div>
-            <p class="text-2xl">
-              {{ article.description }}
-            </p>
-          </div>
-
-          <Image
-            v-if="article.image"
-            :src="article.image"
-            alt="Image"
-            class="w-full h-80"
-            imageClass="w-full h-full object-cover"
-            preview
-          />
-          <img
-            v-else
-            src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
-            alt="Image"
-            class="w-full h-80"
-          />
-
-          <div class="gap-1 hidden">
-            <Tag
-              v-for="tag in article.tags"
-              :key="tag"
-              :value="tag"
-              severity="contrast"
-              rounded
-              class="py-1 text-xs"
-            ></Tag>
-          </div>
-
-          <p :id="$style.content" v-html="article.content"></p>
-
-          <!-- WRITTEN BY -->
-          <Panel toggleable id="writtenBy">
-            <template #header>
+            <div class="flex items-center gap-5">
               <div class="flex items-center gap-2">
                 <Avatar
                   v-if="author.image"
                   :image="author.image"
                   shape="circle"
-                  size="large"
+                  size="small"
                 />
 
                 <Avatar
                   v-else
                   icon="pi pi-user text-white text-xs"
                   shape="circle"
-                  size="large"
+                  size="small"
                   class="bg-[#1B4D3E]"
                 />
-                <div>
-                  <span class="font-black"
-                    >Written by {{ author.firstName }}
-                    {{ author.lastName }}</span
-                  >
-                  <div class="flex gap-2 text-xs">
-                    <span>{{ author?.followers }} followers</span><span></span
-                    >{{ author?.following }} following
-                  </div>
-                </div>
+                <span class="font-bold">
+                  {{ author.firstName }} {{ author.lastName }}</span
+                >
               </div>
-            </template>
-            <template #footer>
-              <div class="w-full flex justify-end">
-                <Button
-                  v-if="author.followed"
-                  class="text-xs"
-                  rounded
-                  severity="contrast"
-                  variant="outlined"
-                  label="Following"
-                  @click="removeAuthorFollower(author.id)"
-                />
+
+              <div class="flex" v-if="user?.id !== author.id">
+                <div v-if="author.isFollowed">
+                  <Button
+                    v-if="author.isFollowed"
+                    class="text-xs"
+                    rounded
+                    severity="contrast"
+                    variant="outlined"
+                    label="Following"
+                    @click="removeAuthorFollower(author.id)"
+                  />
+                </div>
+
                 <Button
                   v-else
                   class="text-xs"
-                  rounded
                   severity="contrast"
                   variant="outlined"
+                  rounded
                   label="Follow"
                   @click="addAuthorFollower(author.id)"
                 />
               </div>
-            </template>
 
-            <p :id="$style.biography" v-html="author.biography"></p>
-          </Panel>
+              <div class="flex text-sm">
+                <span
+                  >{{ readingTime }} min read -
+                  {{ handleDateFormat(article.createdAt) }}</span
+                >
+              </div>
+            </div>
 
-          <ArticleComments :commentData="commentData" />
-        </div>
-        <ScrollTop
-          target="parent"
-          :threshold="100"
-          icon="pi pi-arrow-up"
-          :buttonProps="{ severity: 'contrast', raised: true, rounded: true }"
-        />
-      </ScrollPanel>
+            <!-- ACTIONS -->
+            <div class="flex gap-3 border-t border-b py-1">
+              <div class="flex items-center gap-2">
+                <Button
+                  class="py-1 rounded-lg"
+                  size="small"
+                  severity="secondary"
+                  text
+                  @click="handleArticleClaps"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    aria-labelledby="clap-filled-static-desc"
+                    viewBox="0 0 16 16"
+                    class="mt-[0.1rem]"
+                  >
+                    <desc id="clap-filled-static-desc">A clap icon</desc>
+                    <path
+                      fill="#6B6B6B"
+                      fill-rule="evenodd"
+                      d="m3.672 10.167 2.138 2.14h-.002c1.726 1.722 4.337 2.436 5.96.81 1.472-1.45 1.806-3.68.76-5.388l-1.815-3.484c-.353-.524-.849-1.22-1.337-.958-.49.261 0 1.56 0 1.56l.78 1.932L6.43 2.866c-.837-.958-1.467-1.108-1.928-.647-.33.33-.266.856.477 1.598.501.503 1.888 1.957 1.888 1.957.17.174.083.485-.093.655a.56.56 0 0 1-.34.163.43.43 0 0 1-.317-.135s-2.4-2.469-2.803-2.87c-.344-.346-.803-.54-1.194-.15-.408.406-.273 1.065.11 1.447.345.346 2.31 2.297 2.685 2.67l.062.06c.17.175.269.628.093.8-.193.188-.453.33-.678.273a.9.9 0 0 1-.446-.273S2.501 6.84 1.892 6.23c-.407-.406-.899-.333-1.229 0-.525.524.263 1.28 1.73 2.691.384.368.814.781 1.279 1.246m8.472-7.219c.372-.29.95-.28 1.303.244V3.19l1.563 3.006.036.074c.885 1.87.346 4.093-.512 5.159l-.035.044c-.211.264-.344.43-.74.61 1.382-1.855.963-3.478-.248-5.456L11.943 3.88l-.002-.037c-.017-.3-.039-.71.203-.895"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  <span class="text-sm">{{ article.likes }}</span>
+                </Button>
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="#editor">
+                  <Button
+                    class="py-1 rounded-lg"
+                    size="small"
+                    severity="secondary"
+                    text
+                  >
+                    <i class="pi pi-comments text-lg font-light"></i>
+                    <span class="text-sm">{{ article.totalComments }}</span>
+                  </Button>
+                </a>
+              </div>
+              <div class="flex items-center ml-auto gap-2" disabled>
+                <div class="ml-auto flex justify-center">
+                  <Button
+                    v-if="article.isSaved"
+                    v-tooltip.top="'Play'"
+                    class="text-sm"
+                    icon="pi pi-play-circle"
+                    severity="secondary"
+                    variant="text"
+                    rounded
+                    aria-label="Play"
+                    @click="removeArticleFromReadingList(article.id)"
+                  />
+
+                  <Button
+                    v-else
+                    v-tooltip.top="'Pause'"
+                    class="text-sm"
+                    icon="pi pi-pause-circle"
+                    severity="secondary"
+                    variant="text"
+                    rounded
+                    aria-label="Pause"
+                    @click="addArticleToReadingList(article.id)"
+                  />
+                </div>
+                <div class="ml-auto flex justify-center">
+                  <Button
+                    v-if="article.isSaved"
+                    v-tooltip.top="'Saved'"
+                    class="text-sm"
+                    icon="pi pi-bookmark-fill"
+                    severity="secondary"
+                    variant="text"
+                    rounded
+                    aria-label="Bookmark"
+                    @click="removeArticleFromReadingList(article.id)"
+                  />
+
+                  <Button
+                    v-else
+                    v-tooltip.top="'Save'"
+                    class="text-sm"
+                    icon="pi pi-bookmark"
+                    severity="secondary"
+                    variant="text"
+                    rounded
+                    aria-label="Bookmark"
+                    @click="addArticleToReadingList(article.id)"
+                  />
+                </div>
+                <Button
+                  class="py-1 rounded-lg"
+                  size="small"
+                  severity="secondary"
+                  text
+                >
+                  <i class="pi pi-share-alt text-lg"></i>
+                  <span class="text-sm">0</span>
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-2xl">
+                {{ article.description }}
+              </p>
+            </div>
+
+            <Image
+              v-if="article.image"
+              :src="article.image"
+              alt="Image"
+              class="w-full h-80"
+              imageClass="w-full h-full object-cover"
+              preview
+            />
+            <img
+              v-else
+              src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
+              alt="Image"
+              class="w-full h-80"
+            />
+
+            <div class="gap-1 hidden">
+              <Tag
+                v-for="tag in article.tags"
+                :key="tag"
+                :value="tag"
+                severity="contrast"
+                rounded
+                class="py-1 text-xs"
+              ></Tag>
+            </div>
+
+            <p :id="$style.content" v-html="article.content"></p>
+
+            <!-- WRITTEN BY -->
+            <Panel toggleable id="writtenBy">
+              <template #header>
+                <div class="flex items-center gap-2">
+                  <Avatar
+                    v-if="author.image"
+                    :image="author.image"
+                    shape="circle"
+                    size="large"
+                  />
+
+                  <Avatar
+                    v-else
+                    icon="pi pi-user text-white text-xs"
+                    shape="circle"
+                    size="large"
+                    class="bg-[#1B4D3E]"
+                  />
+                  <div>
+                    <span class="font-black"
+                      >Written by {{ author.firstName }}
+                      {{ author.lastName }}</span
+                    >
+                    <div class="flex gap-2 text-xs">
+                      <span
+                        >{{
+                          describeNumberScale(author?.followers)
+                        }}
+                        followers</span
+                      ><span></span
+                      >{{ describeNumberScale(author?.following) }} following
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <template #footer>
+                <div class="w-full flex justify-end">
+                  <Button
+                    v-if="author.isFollowed"
+                    class="text-xs"
+                    rounded
+                    severity="contrast"
+                    variant="outlined"
+                    label="Following"
+                    @click="removeAuthorFollower(author.id)"
+                  />
+                  <Button
+                    v-else
+                    class="text-xs"
+                    rounded
+                    severity="contrast"
+                    variant="outlined"
+                    label="Follow"
+                    @click="addAuthorFollower(author.id)"
+                  />
+                </div>
+              </template>
+
+              <p :id="$style.biography" v-html="author.biography"></p>
+            </Panel>
+
+            <ArticleComments :commentData="commentData" />
+          </div>
+          <ScrollTop
+            target="parent"
+            :threshold="100"
+            icon="pi pi-arrow-up"
+            :buttonProps="{ severity: 'contrast', raised: true, rounded: true }"
+          />
+        </ScrollPanel>
+      </div>
+
       <Divider layout="vertical" />
-      <div class="w-72"></div>
+
+      <div class="w-80 h-full mx-auto px-6">
+        <ArticleSkeleton />
+      </div>
     </div>
+    <ScrollTop />
   </div>
 </template>
 
 <script setup>
 import {
   addClaps,
+  addToReadingList,
   followAuthor,
   getAuthorById,
   getAuthorFollowers,
+  getAuthorReadingList,
+  getFollowedAuthors,
+  removeFromReadingList,
   unfollowAuthor,
 } from "@/assets/js/service.js";
 import { articleStore } from "../../stores/index.js";
 import { onMounted, ref } from "vue";
 import { userStore } from "@/stores";
+import { useToast } from "primevue/usetoast";
 
 import ArticleComments from "./ArticleComments.vue";
 import NavBar from "../NavBar.vue";
-import { handleDateFormat, handleImage } from "@/assets/js/util.js";
+import {
+  describeNumberScale,
+  handleDateFormat,
+  handleImage,
+} from "@/assets/js/util.js";
+import ArticleSkeleton from "./ArticleSkeleton.vue";
 
+const toast = useToast();
 const store = articleStore();
 const author = ref("");
 const user = ref("");
@@ -247,17 +336,40 @@ const commentData = ref({
 
 const fetchArticleById = async () => {
   const fetchedArticle = await store.getArticle();
-  const fetchedAuthor = await fetchArticleAuthor(fetchedArticle?.authorID);
-
+  console.log({ fetchedArticle });
   article.value = fetchedArticle;
+  await handleSavedArticles(fetchedArticle);
+
+  const fetchedAuthor = await fetchArticleAuthor(fetchedArticle?.authorID);
   author.value = fetchedAuthor;
-  handleAuthorFollowers(fetchedAuthor);
+  await handleAuthorFollowers(fetchedAuthor);
 
   commentData.value.likes = fetchedArticle.likes;
   commentData.value.comments = fetchedArticle.totalComments;
   commentData.value.id = fetchedArticle.id;
 
   calculateReadingTime(article.value.description, article.value.content);
+};
+
+const handleSavedArticles = async (article) => {
+  try {
+    const currentUserId = user.value.id;
+
+    const { data } = await getAuthorReadingList(currentUserId);
+    const { values: readingList = [] } = data;
+
+    if (!readingList.length) return;
+
+    // Create a Set for faster lookups
+    const isReadingListExist = readingList.some(
+      (list) => list.authorId === currentUserId && list.articleId === article.id
+    );
+
+    // Update articles' author.isSaved flag
+    article.isSaved = isReadingListExist;
+  } catch (error) {
+    console.error("Failed to fetch followed authors:", error);
+  }
 };
 
 const fetchArticleAuthor = async (id) => {
@@ -267,14 +379,23 @@ const fetchArticleAuthor = async (id) => {
 };
 
 const handleAuthorFollowers = async ({ id }) => {
-  const { data } = await getAuthorFollowers(id);
-  const followers = data?.values || [];
+  const { data: followedAuthorData } = await getFollowedAuthors(id);
+  const { values: followedAuthors = [], total: totalFollowedAuthors } =
+    followedAuthorData;
 
-  const isFollowing = followers.some(
+  const { data: authorFollowersData } = await getAuthorFollowers(id);
+  const { values: followingAuthors, total: totalAuthorFollowers } =
+    authorFollowersData;
+
+  if (!totalFollowedAuthors && !totalAuthorFollowers) return false;
+
+  const isFollowing = followingAuthors.some(
     (follower) => follower.id === user.value.id
   );
 
-  author.value.followed = isFollowing;
+  author.value.followers = totalAuthorFollowers;
+  author.value.following = totalFollowedAuthors;
+  author.value.isFollowed = isFollowing;
 };
 
 const addAuthorFollower = async (id) => {
@@ -311,14 +432,50 @@ const calculateReadingTime = (description, content) => {
   const wpm = 225;
   const words = text.trim().split(/\s+/).length;
   readingTime.value = Math.ceil(words / wpm);
+};
 
-  console.log(readingTime.value);
+const addArticleToReadingList = async (articleIdentifier) => {
+  const currentUserId = user.value.id;
+
+  const { result, ok } = await addToReadingList(
+    currentUserId,
+    articleIdentifier
+  );
+
+  toast.add({
+    severity: "contrast",
+    summary: result.message,
+    life: 3000,
+  });
+
+  if (ok) {
+    article.value.isSaved = true;
+  }
+};
+
+const removeArticleFromReadingList = async (articleIdentifier) => {
+  const currentUserId = user.value.id;
+
+  const { result, ok } = await removeFromReadingList(
+    currentUserId,
+    articleIdentifier
+  );
+
+  toast.add({
+    severity: "contrast",
+    summary: result.message,
+    life: 3000,
+  });
+
+  if (ok) {
+    article.value.isSaved = false;
+  }
 };
 
 onMounted(async () => {
-  await fetchArticleById();
   const { getUser } = userStore();
   user.value = await getUser();
+  await fetchArticleById();
 });
 </script>
 

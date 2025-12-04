@@ -277,17 +277,7 @@
 
 <script setup>
 import { useToast } from "primevue/usetoast";
-import {
-  ref,
-  reactive,
-  watch,
-  onMounted,
-  provide,
-  nextTick,
-  computed,
-} from "vue";
-import { z } from "zod";
-import { zodResolver } from "@primevue/forms/resolvers/zod";
+import { ref, watch, onMounted, provide, computed } from "vue";
 import Menu from "primevue/menu";
 import Editor from "../editors/ArticleEditor.vue";
 import {
@@ -299,7 +289,7 @@ import {
 } from "@/assets/js/service.js";
 import { articleStore, userStore } from "@/stores";
 import AddImage from "./AddImage.vue";
-import { handleDateFormat, capitalize, useDebounceFn } from "@/assets/js/util";
+import { handleDateFormat, capitalize } from "@/assets/js/util";
 import { useRouter, useRoute } from "vue-router";
 import dayjs from "dayjs";
 
@@ -340,70 +330,35 @@ const handleDateChange = (selected) => {
   pendingDate.value = handleDateFormat(selected, "YYYY-MM-DD HH:mm:ss");
 };
 
-// initial form data
-const initialValues = reactive({
-  title: "",
-  content: "",
-  description: "",
-  pendingDate: pendingDate.value,
-});
-
-const resolver = ref(
-  zodResolver(
-    z.object({
-      title: z
-        .string()
-        .min(1, { message: "Title is required." })
-        .min(5, { message: "Title must be at least 5 characters long." }),
-      content: z.string().optional(),
-      description: z.string().optional(),
-      pendingDate: z.preprocess(
-        (val) => {
-          if (!val) return null;
-          return new Date(val);
-        },
-        z.union([
-          z.date().refine(
-            (date) => {
-              const now = new Date();
-              now.setHours(0, 0, 0, 0);
-
-              return date >= now;
-            },
-            { message: "Date cannot be in the past." }
-          ),
-          z
-            .null()
-            .refine((val) => val !== null, { message: "Date is required." }),
-        ])
-      ),
-    })
-  )
-);
-
 const initialized = ref(false);
 
 watch(
   [title, description, image, content, selected],
   () => {
     if (!initialized.value) return;
-    nextTick(() => debouncedSave());
+    autoSave();
   },
   { deep: true }
 );
 
-const debouncedSave = useDebounceFn(() => {
-  const payload = {
-    title: title.value,
-    content: content.value,
-    description: description.value,
-    tags: selected.value.map((option) => option.name),
-    authorID: user.value.id,
-    status: currentStatus.value.value,
-  };
+let saveTimer;
 
-  onFormSubmit(payload);
-}, 300);
+const autoSave = () => {
+  clearTimeout(saveTimer);
+
+  saveTimer = setTimeout(() => {
+    const payload = {
+      title: title.value,
+      content: content.value,
+      description: description.value,
+      tags: selected.value.map((option) => option.name),
+      authorID: user.value.id,
+      status: currentStatus.value.value,
+    };
+
+    onFormSubmit(payload);
+  }, 300);
+};
 
 const onFormSubmit = async (payload) => {
   loading.value = true;

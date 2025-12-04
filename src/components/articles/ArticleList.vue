@@ -21,7 +21,7 @@
         <TabPanel value="0" class="h-full p-0">
           <ScrollPanel class="w-full h-full p-0">
             <Panel
-              v-for="article in mainArticles"
+              v-for="article in articlesFeed"
               :key="article.id"
               class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
             >
@@ -128,7 +128,7 @@
         <TabPanel value="1">
           <ScrollPanel class="w-full h-full">
             <Panel
-              v-for="article in mainArticles"
+              v-for="article in articlesFeed"
               :key="article.id"
               class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
             >
@@ -235,7 +235,7 @@
         <TabPanel value="2">
           <ScrollPanel class="w-full h-full">
             <Panel
-              v-for="article in mainArticles"
+              v-for="article in articlesFeed"
               :key="article.id"
               class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
             >
@@ -341,7 +341,9 @@
       </TabPanels>
     </Tabs>
     <Divider layout="vertical" />
-    <div class="w-72"></div>
+    <div class="w-72 h-full mx-auto">
+      <ArticleSkeleton />
+    </div>
   </div>
 </template>
 
@@ -354,6 +356,7 @@ import { userStore, articleStore } from "@/stores";
 import InfiniteLoading from "v3-infinite-loading";
 import { attachArticleImage, handleDateFormat } from "@/assets/js/util";
 import { useRoute } from "vue-router";
+import ArticleSkeleton from "./ArticleSkeleton.vue";
 
 const params = computed(() => ({
   start: 0,
@@ -377,7 +380,7 @@ watch(
   }
 );
 
-const mainArticles = ref([]);
+const articlesFeed = ref([]);
 
 const load = async ($state) => {
   console.log("loading...");
@@ -391,7 +394,7 @@ const load = async ($state) => {
     if (response.data) {
       if (response.data.length) {
         const { total, values: articles } = response.data;
-        mainArticles.value.push(...(await attachArticleImage(articles)));
+        articlesFeed.value.push(...(await attachArticleImage(articles)));
         $state.loaded();
       } else {
         $state.complete();
@@ -414,8 +417,8 @@ const fetchAuthorArticles = async (type) => {
 
   if (result.data) {
     const { total, values: articles } = result.data;
-    mainArticles.value = await attachArticleImage(articles);
-    console.log(mainArticles.value);
+    articlesFeed.value = await attachArticleImage(articles);
+    console.log(articlesFeed.value);
   } else {
     console.error("Failed to fetch articles:", result.error);
   }

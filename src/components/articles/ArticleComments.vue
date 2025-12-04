@@ -1,6 +1,4 @@
 <template>
-  <Toast />
-
   <div class="flex flex-col gap-10 w-full">
     <!-- COMMENTS -->
     <div class="flex flex-col gap-6">
@@ -53,7 +51,6 @@ import { ref, watch, onMounted, provide } from "vue";
 import CommentItem from "./CommentItem.vue";
 import { getAuthorById, getComments, addComment } from "@/assets/js/service";
 import { userStore } from "@/stores";
-import { useToast } from "primevue/usetoast";
 import { handleImage } from "@/assets/js/util";
 import Editor from "../editors/CommentEditor.vue";
 
@@ -68,7 +65,6 @@ const initialValues = ref({
   comment: "",
 });
 
-const toast = useToast();
 const content = defineModel("content");
 provide("content", content);
 const user = ref("");
@@ -116,14 +112,10 @@ const onFormSubmit = async ({ valid, states, reset }) => {
   if (valid) {
     const { ok, result } = await addComment(data);
 
-    toast.add({
-      severity: ok ? "success" : "error",
-      summary: result.message,
-      life: 10000,
-    });
-
-    fetchComments(data.articleID);
-    resetForm(states);
+    if (ok) {
+      fetchComments(data.articleID);
+      resetForm(states);
+    }
   }
 };
 

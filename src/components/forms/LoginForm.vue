@@ -95,13 +95,15 @@ import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "primevue/usetoast";
 import { login } from "../../assets/js/service.js";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { cookiesStore, userStore } from "../../stores/index.js";
 
 const toast = useToast();
 const size = ref();
 const keepLoggedIn = ref(false);
 const router = useRouter();
+const route = useRoute();
+
 const loading = ref(false);
 
 const resolver = zodResolver(
@@ -126,7 +128,11 @@ const onFormSubmit = async ({ valid, values }) => {
       loading.value = false;
       setTimeout(() => {
         handleCookies(result);
-        router.push("/");
+        const queryString = route.fullPath.split("?")[1];
+        const params = new URLSearchParams(queryString);
+        const redirectPath = params.get("redirect");
+        const url = redirectPath || "/";
+        router.push(url);
       }, 3000);
     } else {
       loading.value = false;

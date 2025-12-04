@@ -1,6 +1,4 @@
 <template>
-  <Toast position="top-center" class="w-[32rem] text-sm" />
-
   <div id="main-content" class="w-full h-dvh">
     <div class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52">
       <Tabs value="0" class="flex-1 mx-auto h-full">
@@ -234,10 +232,238 @@
       <Divider layout="vertical" />
 
       <div class="w-72 h-full mx-auto">
-        <ArticleSkeleton />
+        <ScrollPanel class="w-full h-full pb-16 pr-1">
+          <!-- RECOMMENDED TOPICS -->
+          <div class="flex flex-col gap-2">
+            <div class="px-2 pt-6 pb-4">
+              <h3 class="font-bold">Recommended Topics</h3>
+            </div>
+            <div class="card flex flex-wrap gap-2">
+              <router-link
+                v-for="topic in recommendedTopics"
+                :key="topic.id"
+                :to="{
+                  name: 'tag-detail',
+                  params: { name: topic.name },
+                }"
+              >
+                <Chip class="text-sm" :label="topic.name" />
+              </router-link>
+            </div>
+            <div>
+              <router-link>
+                <Button
+                  v-if="totalRecommendedTopics"
+                  label="See more topics"
+                  severity="secondary"
+                  variant="text"
+                  class="text-xs font-semibold"
+                  rounded
+                />
+              </router-link>
+            </div>
+          </div>
+
+          <!-- WHO TO FOLLOW -->
+          <div class="flex flex-col gap-2">
+            <div class="px-2 pt-6">
+              <h3 class="font-bold">Who to follow</h3>
+            </div>
+
+            <div
+              v-for="author in recommendedAuthors"
+              :key="author.id"
+              class="w-full flex items-start gap-2 pr-2"
+            >
+              <router-link>
+                <Panel
+                  class="border-0 py-2"
+                  pt:header:class="px-2 py-1"
+                  pt:content:class="px-2 py-1"
+                  pt:footer:class="px-2 py-1"
+                >
+                  <template #header>
+                    <div class="flex items-center gap-2">
+                      <Avatar
+                        v-if="author.image"
+                        :image="author.image"
+                        shape="circle"
+                      />
+
+                      <Avatar
+                        v-else
+                        icon="pi pi-user text-white text-xs"
+                        shape="circle"
+                        class="bg-[#1B4D3E]"
+                      />
+                      <span class="font-bold text-sm"
+                        >{{ author.firstName }} {{ author.lastName }}</span
+                      >
+                    </div>
+                  </template>
+
+                  <p class="m-0 text-sm w-[11rem]">
+                    {{ truncateText(author.biography) }}
+                  </p>
+                </Panel>
+              </router-link>
+              <div class="pt-4 ml-auto">
+                <Button
+                  v-if="author.isFollowed"
+                  class="text-xs"
+                  severity="contrast"
+                  variant="outlined"
+                  rounded
+                  label="Following"
+                  @click="removeAuthorFollower(author)"
+                />
+
+                <Button
+                  v-else
+                  class="text-xs"
+                  severity="contrast"
+                  variant="outlined"
+                  rounded
+                  label="Follow"
+                  @click="addAuthorFollower(author)"
+                />
+              </div>
+            </div>
+
+            <router-link>
+              <Button
+                v-if="totalRecommendedAuthors"
+                label="See more suggestions"
+                severity="secondary"
+                variant="text"
+                class="text-xs font-semibold"
+                rounded
+              />
+            </router-link>
+          </div>
+
+          <!-- YOUR READING LIST -->
+          <div>
+            <div class="px-2 pt-6 pb-2">
+              <h3 class="font-bold">Your reading list</h3>
+            </div>
+
+            <Panel
+              class="border-0 py-2"
+              pt:header:class="px-2 py-1"
+              pt:content:class="px-2 py-1"
+              pt:footer:class="px-2 py-1"
+              v-for="list in userReadingList"
+              :key="list.id"
+            >
+              <template #header>
+                <div class="flex items-center gap-2">
+                  <Avatar
+                    v-if="list.author.image"
+                    :image="list.author.image"
+                    shape="circle"
+                    size="small"
+                    class="w-7 h-7"
+                  />
+
+                  <Avatar
+                    v-else
+                    icon="pi pi-user text-white text-xs"
+                    size="small"
+                    shape="circle"
+                    class="bg-[#1B4D3E] w-7 h-7"
+                  />
+                  <span class="font-bold text-xs"
+                    >{{ list.author.firstName }}
+                    {{ list.author.lastName }}</span
+                  >
+                </div>
+              </template>
+              <template #footer>
+                <router-link>
+                  <div
+                    class="flex flex-wrap items-center justify-between gap-4"
+                  >
+                    <span
+                      class="text-surface-500 dark:text-surface-400 text-xs font-normal"
+                      >{{ handleDateFormat(list.createdAt, "MMM DD") }}</span
+                    >
+                  </div>
+                </router-link>
+              </template>
+              <router-link>
+                <p class="m-0 font-black">
+                  {{ truncateText(list.title) }}
+                </p>
+              </router-link>
+            </Panel>
+
+            <div>
+              <router-link>
+                <Button
+                  v-if="totalReadingList > 4"
+                  severity="secondary"
+                  variant="text"
+                  class="text-xs font-semibold"
+                  rounded
+                >
+                  <span>See all ({{ totalReadingList }})</span>
+                </Button>
+              </router-link>
+            </div>
+          </div>
+
+          <!-- AUTHORS YOU ARE FOLLOWING -->
+          <div>
+            <div class="flex items-center gap-2 px-2 pt-6 pb-2">
+              <i class="pi pi-users"></i>
+              <h3 class="font-bold">Following</h3>
+            </div>
+            <div class="card flex flex-col gap-2 px-2">
+              <div v-for="author in followedAuthors" :key="author.id">
+                <div class="flex items-center gap-2">
+                  <Avatar
+                    v-if="author.image"
+                    :image="author.image"
+                    shape="circle"
+                    size="small"
+                  />
+
+                  <Avatar
+                    v-else
+                    icon="pi pi-user text-white text-xs"
+                    size="small"
+                    shape="circle"
+                    class="bg-[#1B4D3E]"
+                  />
+                  <span class="font-bold text-sm"
+                    >{{ author.firstName }} {{ author.lastName }}</span
+                  >
+                  <div class="w-1 h-1 bg-green-700 rounded-full"></div>
+                </div>
+              </div>
+
+              <div class="flex items-start text-gray-500 gap-2">
+                <span class="pi pi-plus text-sm"> </span>
+                <span class="font-semibold text-xs w-[11rem]">
+                  Find writers to follow.
+                </span>
+              </div>
+
+              <router-link>
+                <Button
+                  label="See suggestions"
+                  severity="secondary"
+                  variant="text"
+                  class="text-xs font-semibold"
+                  rounded
+                />
+              </router-link>
+            </div>
+          </div>
+        </ScrollPanel>
       </div>
     </div>
-    <ScrollTop />
   </div>
 </template>
 
@@ -250,10 +476,12 @@ import {
   followAuthor,
   getAuthorInterestedArticles,
   unfollowAuthor,
+  getRecommendedTopic,
   getAuthorReadingList,
   addToReadingList,
   removeFromReadingList,
-  getAuthorFollowers,
+  getRecommendedAuthors,
+  getArticleById,
 } from "@/assets/js/service";
 
 import { userStore, articleStore } from "@/stores";
@@ -265,8 +493,6 @@ import {
   handleDateFormat,
   truncateText,
 } from "@/assets/js/util";
-import ArticleSkeleton from "./ArticleSkeleton.vue";
-import { useToast } from "primevue/usetoast";
 
 const params = computed(() => ({
   start: 0,
@@ -274,7 +500,8 @@ const params = computed(() => ({
   status: "published",
 }));
 
-const toast = useToast();
+const blocked = ref(false);
+
 const articlesFeed = ref([]);
 const totalRecords = ref();
 const id = localStorage.getItem("app-author-id");
@@ -370,34 +597,28 @@ const handleArticleAuthorFollowers = async (articles) => {
   try {
     // Update articles' author.isFollowed flag
     for (const article of articles) {
-      await attachAuthorFollowers(article.author);
+      article.author.isFollowed = await attachAuthorFollowers(
+        article.author.id
+      );
     }
   } catch (error) {
     console.error("Failed to fetch followed authors:", error);
   }
 };
 
-const attachAuthorFollowers = async (author) => {
-  const { data: followedAuthorData } = await getFollowedAuthors(author?.id);
-  const { values: followedAuthors = [], total: totalFollowedAuthors } =
-    followedAuthorData;
+const attachAuthorFollowers = async (userId) => {
+  const { data: followedAuthors = [] } = await getFollowedAuthors(userId);
 
-  const { data: authorFollowersData } = await getAuthorFollowers(author?.id);
-  const { values: followingAuthors = [], total: totalAuthorFollowers } =
-    authorFollowersData;
-
-  if (!totalFollowedAuthors && !totalAuthorFollowers) return false;
+  if (!followedAuthors.length) return false;
 
   // Create a Set for faster lookups
   const followedAuthorIds = new Set(
-    followingAuthors
-      .filter((followingAuthor) => followingAuthor.id !== author?.id)
-      .map((followedAuthor) => followedAuthor.id)
+    followedAuthors
+      .filter((author) => author.id !== userId)
+      .map((author) => author.id)
   );
 
-  author.followers = totalAuthorFollowers;
-  author.following = totalFollowedAuthors;
-  author.isFollowed = followedAuthorIds.has(user.value?.id);
+  return followedAuthorIds.has(userId);
 };
 
 const handleSavedArticles = async (articles) => {
@@ -416,6 +637,8 @@ const handleSavedArticles = async (articles) => {
         .filter((list) => list.authorId === currentUserId)
         .map((list) => list.articleId)
     );
+
+    fetchReadingListArticles(readingList);
 
     // Update articles' author.isSaved flag
     articles.forEach((article) => {
@@ -449,55 +672,79 @@ const removeAuthorFollower = async (author) => {
 const addArticleToReadingList = async (articleIdentifier) => {
   const currentUserId = user.value.id;
 
-  const { result, ok } = await addToReadingList(
+  const { data: newReadingListItem } = await addToReadingList(
     currentUserId,
     articleIdentifier
   );
 
-  toast.add({
-    severity: "contrast",
-    summary: result.message,
-    life: 3000,
-  });
+  const targetArticle = articlesFeed.value.find(
+    (article) => article.id === newReadingListItem.articleId
+  );
 
-  if (ok) {
-    const { data: newReadingListItem } = result;
-
-    const targetArticle = articlesFeed.value.find(
-      (article) => article.id === newReadingListItem.articleId
-    );
-
-    if (targetArticle) {
-      targetArticle.isSaved = true;
-    }
+  if (targetArticle) {
+    targetArticle.isSaved = true;
   }
 };
 
 const removeArticleFromReadingList = async (articleIdentifier) => {
   const currentUserId = user.value.id;
 
-  const { result, ok } = await removeFromReadingList(
+  const { data: removedReadingListItem } = await removeFromReadingList(
     currentUserId,
     articleIdentifier
   );
 
-  toast.add({
-    severity: "contrast",
-    summary: result.message,
-    life: 3000,
-  });
+  console.log({ removedReadingListItem });
 
-  if (ok) {
-    const { data: removedReadingListItem } = result;
+  const targetArticle = articlesFeed.value.find(
+    (article) => article.id === removedReadingListItem.articleId
+  );
 
-    const targetArticle = articlesFeed.value.find(
-      (article) => article.id === removedReadingListItem.articleId
-    );
-
-    if (targetArticle) {
-      targetArticle.isSaved = false;
-    }
+  if (targetArticle) {
+    targetArticle.isSaved = false;
   }
+};
+
+const totalRecommendedTopics = ref(0);
+const recommendedTopics = ref([]);
+const fetchRecommendedTopics = async () => {
+  const currentUserId = user.value.id;
+
+  const { data: fetchedTopics } = await getRecommendedTopic(currentUserId, 8);
+  totalRecommendedTopics.value = fetchedTopics.length;
+  recommendedTopics.value = fetchedTopics;
+};
+
+const totalRecommendedAuthors = ref(0);
+const recommendedAuthors = ref([]);
+const fetchRecommendedAuthors = async () => {
+  const currentUserId = user.value.id;
+
+  const { data: fetchedAuthors } = await getRecommendedAuthors(
+    currentUserId,
+    5
+  );
+
+  for (const author of fetchedAuthors) {
+    author.image = await handleImage(author.id);
+    author.isFollowed = await attachAuthorFollowers(author.id);
+  }
+
+  totalRecommendedAuthors.value = fetchedAuthors.length;
+  recommendedAuthors.value = fetchedAuthors.slice(0, 3);
+};
+
+const userReadingList = ref([]);
+const totalReadingList = ref(0);
+const fetchReadingListArticles = async (articles) => {
+  const readingListArticles = await Promise.all(
+    articles.values.map((article) => getArticleById(article.articleId))
+  );
+
+  totalReadingList.value = articles.total;
+
+  const readingList = readingListArticles.map((list) => list.data).slice(0, 4);
+  userReadingList.value = await attachAuthorToArticles(readingList);
 };
 
 const followedAuthors = ref([]);
@@ -519,6 +766,8 @@ onMounted(async () => {
   const { getUser } = userStore();
   user.value = await getUser();
   await fetchArticles();
+  await fetchRecommendedTopics();
+  await fetchRecommendedAuthors();
   await fetchFollowedAuthors();
 });
 

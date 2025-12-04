@@ -34,17 +34,35 @@ export const handleImage = async (id) => {
 
 export const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const useDebounceFn = (fn, delay = 300) => {
-  let timer;
+export const truncateText = (text, maxLength = 50) => {
+  if (!text) {
+    return text;
+  }
 
-  const debounced = (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      fn(...args);
-    }, delay);
-  };
-
-  debounced.cancel = () => clearTimeout(timer);
-
-  return debounced;
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 };
+
+export const describeNumberScale = (number) => {
+  // Handle non-numbers or null/undefined
+  if (typeof number !== "number" || !isFinite(number)) return String(number);
+
+  const abs = Math.abs(number);
+
+  if (abs < 1e3) return number.toString(); // < 1 000 → no suffix (e.g. 999)
+  if (abs < 1e6) return format(number, 1e3, "K"); // thousands
+  if (abs < 1e9) return format(number, 1e6, "M"); // millions
+  if (abs < 1e12) return format(number, 1e9, "B"); // billions
+  return format(number, 1e12, "T"); // trillions and above
+};
+
+function format(number, divisor, suffix) {
+  const scaled = number / divisor;
+
+  // Use 1 decimal place if it adds information, otherwise none
+  const rounded =
+    scaled >= 100
+      ? Math.round(scaled) // 127 → 127M
+      : Number(scaled.toFixed(1)); // 12.7 → 12.7M, 12.0 → 12M
+
+  return rounded + suffix;
+}

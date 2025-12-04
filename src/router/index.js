@@ -10,7 +10,8 @@ import DashBoard from "@/components/dashboard/DashBoard.vue";
 import LandingPage from "@/views/LandingPage.vue";
 import Profile from "@/components/Profile.vue";
 import Chats from "@/components/chats/Chats.vue";
-import TagDetail from "@/components/TagDetail.vue";
+import TagDetail from "@/components/tags/TagDetail.vue";
+
 // import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
