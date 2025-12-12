@@ -11,14 +11,14 @@
           :key="topic.id"
           :to="{
             name: 'tag-detail',
-            params: { name: topic.name },
+            params: { route: topic.route },
           }"
         >
           <Chip class="text-sm" :label="topic.name" />
         </router-link>
       </div>
       <div>
-        <router-link>
+        <router-link :to="{ path: '/explore-topics' }">
           <Button
             v-if="totalRecommendedTopics"
             label="See more topics"
@@ -235,7 +235,7 @@ import {
   getFollowedAuthors,
   followAuthor,
   unfollowAuthor,
-  getRecommendedTopic,
+  getRecommendedAuthorTopics,
   getAuthorReadingList,
   getRecommendedAuthors,
   getArticleById,
@@ -299,7 +299,15 @@ const recommendedTopics = ref([]);
 const fetchRecommendedTopics = async () => {
   const currentUserId = user.value.id;
 
-  const { data: fetchedTopics } = await getRecommendedTopic(currentUserId, 8);
+  const { data: fetchedTopics = [] } = await getRecommendedAuthorTopics(
+    currentUserId,
+    8
+  );
+
+  fetchedTopics.forEach((topic) => {
+    topic.route = topic.name.toLocaleLowerCase().split(" ").join("-");
+  });
+
   totalRecommendedTopics.value = fetchedTopics.length;
   recommendedTopics.value = fetchedTopics;
 };
@@ -311,6 +319,7 @@ const fetchRecommendedAuthors = async () => {
 
   const { data: fetchedAuthors } = await getRecommendedAuthors(
     currentUserId,
+    null,
     5
   );
 
@@ -367,7 +376,7 @@ onMounted(async () => {
   await fetchReadingList();
 });
 
-const handleArticleStore = (data) => {
+const handleTagStore = (data) => {
   const { setArticle } = articleStore();
   setArticle(data);
 };

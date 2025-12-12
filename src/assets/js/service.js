@@ -522,7 +522,7 @@ export const editAuthor = async (id, data) => {
   }
 };
 
-export const getRecommendedTopic = async (id, limit) => {
+export const getRecommendedAuthorTopics = async (authorId, limit) => {
   try {
     const options = {
       method: "GET",
@@ -530,7 +530,28 @@ export const getRecommendedTopic = async (id, limit) => {
         Authorization: `Bearer ${token()}`,
       },
     };
-    let url = `${API_URL}/tags/recommended/${id}`;
+    let url = `${API_URL}/tags/recommended/${authorId}`;
+    if (limit) url += `?limit=${limit}`;
+    const response = await fetch(url, options);
+    return response.json();
+  } catch (error) {
+    console.error("Error getting recommended topics:", error);
+  }
+};
+
+export const getRecommendedRandomTopics = async (
+  parentTagId,
+  tagId,
+  limit = 9
+) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    let url = `${API_URL}/tags/recommended-random/${parentTagId}/${tagId}`;
     if (limit) url += `?limit=${limit}`;
     const response = await fetch(url, options);
     return response.json();
@@ -610,7 +631,7 @@ export const removeFromReadingList = async (authorId, articleId) => {
   }
 };
 
-export const getRecommendedAuthors = async (id, limit) => {
+export const getRecommendedAuthors = async (id, tagId, limit) => {
   try {
     const options = {
       method: "GET",
@@ -618,8 +639,8 @@ export const getRecommendedAuthors = async (id, limit) => {
         Authorization: `Bearer ${token()}`,
       },
     };
-    let url = `${API_URL}/authors/recommended/${id}`;
-    if (limit) url += `?limit=${limit}`;
+    let url = `${API_URL}/authors/recommended/${id}?limit${limit}`;
+    if (tagId) url += `&?tagId=${tagId}`;
     const response = await fetch(url, options);
     return response.json();
   } catch (error) {

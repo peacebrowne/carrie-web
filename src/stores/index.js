@@ -4,7 +4,8 @@ import Cookies from "js-cookie";
 import {
   getAuthorById,
   getArticleById,
-  getRecommendedTopic,
+  getRecommendedAuthorTopics,
+  getInterests,
 } from "@/assets/js/service";
 import { jwtDecode } from "jwt-decode";
 import { attachArticleImage, handleImage } from "@/assets/js/util";
@@ -93,24 +94,18 @@ export const cookiesStore = defineStore("cookiesStore", () => {
 });
 
 export const tagStore = defineStore("tagStore", () => {
-  const tag = ref({});
+  const tags = ref([]);
 
-  const setTag = (data) => {
-    tag.value = data;
-    localStorage.setItem("tag-id", data.id);
+  const setTags = async () => {
+    if (!tags.value.length) {
+      const { data: fetchedTag } = await getInterests();
+      tags.value = fetchedTag;
+    }
   };
 
-  const getTag = async () => {
-    const cachedTag = article.value;
-
-    if (cachedTag) return cachedTag;
-    const id = localStorage.getItem("tag-id");
-    const { data: fetchedTag } = await getIn(id);
-
-    tag.value = fetchedTag;
-
-    return tag.value;
+  const getTags = async () => {
+    return tags.value;
   };
 
-  return { getTag, setTag };
+  return { getTags };
 });

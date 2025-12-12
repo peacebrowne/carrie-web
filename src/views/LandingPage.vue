@@ -13,6 +13,10 @@
 <script setup>
 import PublicArticleList from "@/components/articles/PublicArticleList.vue";
 import NavBar from "@/components/NavBar.vue";
+import { provide } from "vue";
+
+provide("writeMode", false);
+provide;
 </script>
 
 <style scoped></style>

@@ -8,10 +8,12 @@ import LoginForm from "@/components/forms/LoginForm.vue";
 import RegistrationForm from "@/components/forms/RegistrationForm.vue";
 import DashBoard from "@/components/dashboard/DashBoard.vue";
 import LandingPage from "@/views/LandingPage.vue";
-import Profile from "@/components/Profile.vue";
+import UserProfile from "@/components/profiles/UserProfile.vue";
 import Chats from "@/components/chats/Chats.vue";
 import TagDetail from "@/components/tags/TagDetail.vue";
+import ExploreTopics from "@/components/tags/ExploreTopics.vue";
 
+// import AuthorProfile from "@/components/profiles/AuthorProfile.vue";
 // import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
@@ -67,7 +69,7 @@ const routes = [
       },
       {
         path: "profile",
-        component: Profile,
+        component: UserProfile,
         name: "profile",
       },
     ],
@@ -98,12 +100,20 @@ const routes = [
     },
     children: [
       {
-        path: ":name",
+        path: ":route",
         component: TagDetail,
         name: "tag-detail",
         props: true,
       },
     ],
+  },
+  {
+    path: "/explore-topics",
+    name: "explore-topics",
+    meta: {
+      requiresAuth: true,
+    },
+    component: ExploreTopics,
   },
   {
     path: "/auth",

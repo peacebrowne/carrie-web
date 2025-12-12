@@ -470,8 +470,8 @@ import { z } from "zod";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { userStore } from "@/stores";
 import { addImage, editAuthor, getInterests } from "@/assets/js/service";
-import AddImage from "./articles/AddImage.vue";
-import Editor from "./editors/ArticleEditor.vue";
+import Editor from "../editors/ArticleEditor.vue";
+import AddImage from "../articles/AddImage.vue";
 import * as countryCodes from "country-codes-list";
 
 const author = ref("");

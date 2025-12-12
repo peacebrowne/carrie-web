@@ -1,4 +1,5 @@
 <template>
+  <Toast position="top-center" class="max-w-[32rem] text-sm" />
   <nav
     class="w-full sticky z-[200] flex top-0"
     style="transform: translateY(0px)"
@@ -9,6 +10,23 @@
     <div class="w-full">
       <Tabs v-model:value="activeTopicId" scrollable>
         <TabList>
+          <Tab :value="1">
+            <router-link
+              v-slot="{ href, navigate }"
+              :to="{ path: '/explore-topics' }"
+              custom
+            >
+              <a
+                v-ripple
+                :href="href"
+                @click="navigate"
+                class="flex items-center text-sm gap-2 text-inherit"
+              >
+                <i class="pi pi-compass"></i>
+                <span>Explore Topics</span>
+              </a>
+            </router-link>
+          </Tab>
           <Tab
             v-for="topic in recommendedTopics"
             :key="topic.name"
@@ -403,10 +421,10 @@
 
             <div class="p-6 flex flex-col gap-8">
               <span class="text-2xl font-bold">Who to follow</span>
-              <div class="grid grid-cols-5 gap-6">
+              <div class="grid grid-cols-4 gap-6">
                 <Card
-                  v-for="article in remainingArticles"
-                  :key="article.id"
+                  v-for="author in recommendedAuthors"
+                  :key="author.id"
                   class="w-full overflow-hidden rounded-none"
                   pt:footer:class="mt-auto"
                   pt:body:class="h-full"
@@ -418,8 +436,8 @@
                           class="text-sm font-bold flex flex-col gap-2"
                         >
                           <Avatar
-                            v-if="article.author.image"
-                            :image="article.author.image"
+                            v-if="author.image"
+                            :image="author.image"
                             shape="circle"
                             size="xlarge"
                           />
@@ -434,13 +452,18 @@
 
                           <div class="flex flex-col gap-2">
                             <span class="font-bold text-lg"
-                              >{{ article.author.firstName }}
-                              {{ article.author.lastName }}</span
+                              >{{ author.firstName }}
+                              {{ author.lastName }}</span
                             >
-                            <div class="flex gap-2 text-xs font-normal">
+                            <div class="flex gap-2 text-xs">
                               <span
-                                >{{ article.author?.followers }} followers</span
-                              >
+                                >{{
+                                  describeNumberScale(author?.followers)
+                                }}
+                                followers</span
+                              ><span></span
+                              >{{ describeNumberScale(author?.following) }}
+                              following
                             </div>
                           </div>
                         </router-link>
@@ -448,14 +471,10 @@
 
                       <router-link
                         class="w-full"
-                        :to="{
-                          name: 'public-article-detail',
-                          params: { title: article.title },
-                        }"
-                        @click="handleArticleStore(article)"
+                        @click="handleArticleStore(author)"
                       >
                         <p class="text-sm">
-                          {{ truncateText(article.description) }}
+                          {{ truncateText(author.biography) }}
                         </p>
                       </router-link>
                     </div>
@@ -463,24 +482,22 @@
                   <template #footer>
                     <div class="mt-4 flex items-center w-full">
                       <Button
-                        v-if="article.author.isFollowed"
+                        v-if="author.isFollowed"
                         severity="contrast"
                         variant="outlined"
                         class="text-xs w-full"
                         rounded
                         label="Following"
-                        @click="removeAuthorFollower(article.author.id)"
+                        @click="removeAuthorFollower(author.id)"
                       />
                       <Button
-                        v-else-if="
-                          !article.author.isFollowed && article.author.id !== id
-                        "
+                        v-else-if="!author.isFollowed && author.id !== id"
                         severity="contrast"
                         variant="outlined"
                         class="text-xs w-full"
                         rounded
                         label="Follow"
-                        @click="addAuthorFollower(article.author.id)"
+                        @click="addAuthorFollower(author.id)"
                       />
                     </div>
                   </template>
@@ -562,7 +579,6 @@
                       text
                       @click="toggle"
                     />
-                    <Menu ref="menu" id="config_menu" :model="items" popup />
                   </template>
                   <div class="">
                     <Card
@@ -731,13 +747,19 @@
 import {
   followTag,
   getArticleByTopicId,
-  getRecommendedTopic,
+  getRecommendedAuthorTopics,
   getAuthorReadingList,
+  getAuthorFollowers,
+  getRecommendedAuthors,
   getFollowedAuthors,
   unfollowTag,
   getAuthorById,
+  followAuthor,
+  unfollowAuthor,
   addToReadingList,
   removeFromReadingList,
+  getInterests,
+  getRecommendedRandomTopics,
 } from "@/assets/js/service";
 import NavBar from "../NavBar.vue";
 import { onMounted, ref, watch, computed } from "vue";
@@ -750,7 +772,9 @@ import {
   handleDateFormat,
   truncateText,
 } from "@/assets/js/util";
+import { useToast } from "primevue/usetoast";
 
+const toast = useToast();
 const user = ref("");
 const route = useRoute();
 const router = useRouter();
@@ -767,21 +791,28 @@ watch(activeTopicId, (n, o) => {
 });
 
 const recommendedTopics = ref([]);
-const fetchRecommendedTopics = async () => {
-  const { data } = await getRecommendedTopic(user.value.id, 10);
+const handleRecommendedTopics = async () => {
+  const { id, parentTagId } = INTERESTS.value.find(
+    (interest) => interest.route === route.params.route
+  );
 
-  recommendedTopics.value = data.map((topic, index) => {
+  const { data: topics } = await getRecommendedRandomTopics(
+    parentTagId ?? id,
+    id
+  );
+
+  recommendedTopics.value = topics.map((topic, index) => {
     topic.value = index;
-    topic.route = topic.name;
+    topic.route = topic.name.toLocaleLowerCase().split(" ").join("-");
     return topic;
   });
 
   handleActiveTopic();
 };
 
-const handleActiveTopic = async (name = route.params.name) => {
+const handleActiveTopic = async (name = route.params.route) => {
   activeTopic.value = recommendedTopics.value.find(
-    (topic) => topic.name === name || topic.id === name
+    (topic) => topic.route === name || topic.id === name
   );
 
   if (!activeTopic.value) {
@@ -795,10 +826,10 @@ const handleActiveTopic = async (name = route.params.name) => {
   const { total, values: articles } = result.data;
   const articleWithImage = await attachArticleImage(articles);
 
+  articlesFeed.value = await attachAuthorToArticles(articleWithImage);
+
   await handleFollowedAuthors(user.value.id, articlesFeed.value);
   await handleSavedArticles(user.value.id, articlesFeed.value);
-
-  articlesFeed.value = await attachAuthorToArticles(articleWithImage);
 
   firstTwoArticles.value = articlesFeed.value.slice(0, 2);
   remainingArticles.value = articlesFeed.value.slice(2);
@@ -829,12 +860,6 @@ const handleTopicFollow = async () => {
   isFollowTopic.value = !isFollowTopic.value;
 };
 
-onMounted(async () => {
-  const { getUser } = userStore();
-  user.value = await getUser();
-  await fetchRecommendedTopics();
-});
-
 const handleArticleStore = (data) => {
   const { setArticle } = articleStore();
   setArticle(data);
@@ -843,47 +868,62 @@ const handleArticleStore = (data) => {
 const removeArticleFromReadingList = async (articleIdentifier) => {
   const currentUserId = user.value.id;
 
-  const { data: removedReadingListItem } = await removeFromReadingList(
+  const { result, ok } = await removeFromReadingList(
     currentUserId,
     articleIdentifier
   );
 
-  console.log({ removedReadingListItem });
+  toast.add({
+    severity: "contrast",
+    summary: result.message,
+    life: 3000,
+  });
 
-  const targetArticle = articlesFeed.value.find(
-    (article) => article.id === removedReadingListItem.articleId
-  );
+  if (ok) {
+    const { data: removedReadingListItem } = result;
+    const targetArticle = articlesFeed.value.find(
+      (article) => article.id === removedReadingListItem.articleId
+    );
 
-  if (targetArticle) {
-    targetArticle.isSaved = false;
+    if (targetArticle) {
+      targetArticle.isSaved = false;
+    }
   }
 };
 
 const addArticleToReadingList = async (articleIdentifier) => {
   const currentUserId = user.value.id;
 
-  const { data: newReadingListItem } = await addToReadingList(
+  const { ok, result } = await addToReadingList(
     currentUserId,
     articleIdentifier
   );
 
-  const targetArticle = articlesFeed.value.find(
-    (article) => article.id === newReadingListItem.articleId
-  );
+  toast.add({
+    severity: "contrast",
+    summary: result.message,
+    life: 3000,
+  });
 
-  if (targetArticle) {
-    targetArticle.isSaved = true;
+  if (ok) {
+    const { data: newReadingListItem } = result;
+
+    const targetArticle = articlesFeed.value.find(
+      (article) => article.id === newReadingListItem.articleId
+    );
+
+    if (targetArticle) {
+      targetArticle.isSaved = true;
+    }
   }
 };
 
 const handleFollowedAuthors = async (userId, articles) => {
   try {
     const { data: followedAuthors = [] } = await getFollowedAuthors(userId);
-    console.log({ followedAuthors });
 
     if (!followedAuthors.length) return;
 
-    // Create a Set for faster lookups
     const followedAuthorIds = new Set(
       followedAuthors
         .filter((author) => author.id !== userId)
@@ -905,7 +945,6 @@ const handleSavedArticles = async (userId, articles) => {
 
     if (!readingList.values.length) return;
 
-    // Create a Set for faster lookups
     const readingListAuthorIds = new Set(
       readingList.values
         .filter((list) => list.authorId === userId)
@@ -920,4 +959,83 @@ const handleSavedArticles = async (userId, articles) => {
     console.error("Failed to fetch followed authors:", error);
   }
 };
+
+const totalRecommendedAuthors = ref(0);
+const recommendedAuthors = ref([]);
+const fetchRecommendedAuthors = async () => {
+  const currentUserId = user.value.id;
+
+  const { data: fetchedAuthors } = await getRecommendedAuthors(
+    currentUserId,
+    activeTopicId.value,
+    5
+  );
+
+  for (const author of fetchedAuthors) {
+    author.image = await handleImage(author.id);
+    await handleAuthorFollowers(author);
+  }
+
+  totalRecommendedAuthors.value = fetchedAuthors.length;
+  recommendedAuthors.value = fetchedAuthors.slice(0, 3);
+};
+
+const handleAuthorFollowers = async (author) => {
+  const { data: followedAuthorData } = await getFollowedAuthors(author?.id);
+  const { values: followedAuthors = [], total: totalFollowedAuthors } =
+    followedAuthorData;
+
+  const { data: authorFollowersData } = await getAuthorFollowers(author?.id);
+  const { values: followingAuthors, total: totalAuthorFollowers } =
+    authorFollowersData;
+
+  if (!totalFollowedAuthors && !totalAuthorFollowers) return false;
+
+  const isFollowing = followingAuthors.some(
+    (follower) => follower.id === user.value.id
+  );
+
+  author.followers = totalAuthorFollowers;
+  author.following = totalFollowedAuthors;
+  author.isFollowed = isFollowing;
+};
+
+const addAuthorFollower = async (id) => {
+  const follower = user.value?.id;
+
+  if (follower === id) return;
+
+  const { data: followedAuthor } = await followAuthor(follower, id);
+  if (followedAuthor) author.value.followed = true;
+};
+
+const removeAuthorFollower = async (id) => {
+  const follower = user.value?.id;
+
+  if (follower === id) return;
+
+  const { data: followedAuthor } = await unfollowAuthor(follower, id);
+  if (followedAuthor) author.value.followed = false;
+};
+
+const INTERESTS = ref([]);
+const fetchInterests = async () => {
+  if (INTERESTS.value.length) return;
+
+  const { data: interests = [] } = await getInterests();
+
+  INTERESTS.value = interests.map((interest) => {
+    interest.route = interest.name.toLocaleLowerCase().split(" ").join("-");
+    return interest;
+  });
+
+  await handleRecommendedTopics();
+};
+
+onMounted(async () => {
+  const { getUser } = userStore();
+  user.value = await getUser();
+  await fetchInterests();
+  await fetchRecommendedAuthors();
+});
 </script>

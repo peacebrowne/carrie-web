@@ -154,6 +154,11 @@ const isActive = (path) => route.path.split("/")[2] === path;
 
 const items = ref([
   {
+    label: "Home",
+    icon: "pi pi-home",
+    name: "landing-page",
+  },
+  {
     label: "Stats",
     icon: "pi pi-th-large",
     name: "dashboard",
