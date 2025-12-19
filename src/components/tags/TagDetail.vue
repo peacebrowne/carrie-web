@@ -128,13 +128,14 @@
                             v-if="article.author.image"
                             :image="article.author.image"
                             shape="circle"
+                            class="w-10 h-10"
                           />
 
                           <Avatar
                             v-else
                             icon="pi pi-user text-white text-xs"
                             shape="circle"
-                            class="bg-[#1B4D3E]"
+                            class="bg-[#1B4D3E] w-10 h-10 w-10 h-10"
                           />
                           <span class="font-bold"
                             >{{ article.author.firstName }}
@@ -287,13 +288,14 @@
                             v-if="article.author.image"
                             :image="article.author.image"
                             shape="circle"
+                            class="w-10 h-10"
                           />
 
                           <Avatar
                             v-else
                             icon="pi pi-user text-white text-xs"
                             shape="circle"
-                            class="bg-[#1B4D3E]"
+                            class="bg-[#1B4D3E] w-10 h-10"
                           />
                           <span class="font-bold"
                             >{{ article.author.firstName }}
@@ -537,13 +539,14 @@
                           v-if="article.author.image"
                           :image="article.author.image"
                           shape="circle"
+                          class="w-10 h-10"
                         />
 
                         <Avatar
                           v-else
                           icon="pi pi-user text-white text-xs"
                           shape="circle"
-                          class="bg-[#1B4D3E]"
+                          class="bg-[#1B4D3E] w-10 h-10"
                         />
                         <span class="font-bold"
                           >{{ article.author.firstName }}

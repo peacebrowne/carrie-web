@@ -13,7 +13,8 @@ import Chats from "@/components/chats/Chats.vue";
 import TagDetail from "@/components/tags/TagDetail.vue";
 import ExploreTopics from "@/components/tags/ExploreTopics.vue";
 
-// import AuthorProfile from "@/components/profiles/AuthorProfile.vue";
+import AuthorProfile from "@/components/profiles/AuthorProfile.vue";
+import Personalization from "@/components/personalization/Personalization.vue";
 // import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
@@ -38,18 +39,32 @@ const routes = [
             component: ArticleList,
             name: "stories",
           },
+
           {
             path: ":title",
             component: ArticleDetail,
             name: "me-article-detail",
             props: true,
           },
-          // {
-          //   path: ":title/edit",
-          //   component: AddArticle,
-          //   name: "edit-article",
-          //   props: true,
-          // },
+        ],
+      },
+      {
+        path: "personalization",
+        children: [
+          {
+            path: ":category",
+            component: Personalization,
+            name: "personalization-category",
+            props: true,
+          },
+
+          {
+            path: "",
+            redirect: {
+              name: "personalization-category",
+              params: { category: "suggestions" },
+            },
+          },
         ],
       },
       {
@@ -57,11 +72,18 @@ const routes = [
         component: Chats,
         name: "chats",
       },
-      // {
-      //   path: "write",
-      //   component: AddArticle,
-      //   name: "write",
-      // },
+      {
+        path: "following",
+        component: AddArticle,
+        name: "following",
+        children: [
+          {
+            path: "suggestions",
+            component: AddArticle,
+            name: "edit-article",
+          },
+        ],
+      },
       {
         path: "trash",
         // TODO add trash component.
@@ -85,8 +107,14 @@ const routes = [
         component: LandingPage,
         name: "landing-page",
       },
+      // {
+      //   path: ":title",
+      //   component: ArticleDetail,
+      //   name: "public-article-detail",
+      //   props: true,
+      // },
       {
-        path: ":title",
+        path: ":url",
         component: ArticleDetail,
         name: "public-article-detail",
         props: true,
@@ -114,6 +142,15 @@ const routes = [
       requiresAuth: true,
     },
     component: ExploreTopics,
+  },
+  {
+    path: "/@:username",
+    name: "author-profile",
+    meta: {
+      requiresAuth: true,
+    },
+    component: AuthorProfile,
+    props: true,
   },
   {
     path: "/auth",

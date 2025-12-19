@@ -7,17 +7,15 @@
   >
     <NavBar />
   </nav>
-  <div id="main-content" class="w-full h-dvh">
+  <div id="main-content" class="w-full h-full">
     <div
-      class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52 pt-6"
+      class="container m-auto flex w-full h-full md:px-8 lg:px-36 2xl:px-52 pt-6"
     >
       <div class="flex-1 mx-auto h-full">
         <ScrollPanel class="flex-1 w-full mx-auto px-2">
           <div id="article-detail" class="w-full flex flex-col gap-8">
             <div>
-              <h1
-                class="text-1xl sm:text-3xl md:text-4xl lg:text-5xl font-black"
-              >
+              <h1 class="text-4xl font-black">
                 {{ article.title }}
               </h1>
             </div>
@@ -118,66 +116,56 @@
                   </Button>
                 </a>
               </div>
-              <div class="flex items-center ml-auto gap-2" disabled>
+              <div class="flex items-center ml-auto gap-2">
                 <div class="ml-auto flex justify-center">
                   <Button
-                    v-if="article.isSaved"
-                    v-tooltip.top="'Play'"
+                    v-tooltip.top="isSpeaking && !isPaused ? 'Pause' : 'Listen'"
                     class="text-sm"
-                    icon="pi pi-play-circle"
-                    severity="secondary"
+                    :icon="
+                      isSpeaking && !isPaused
+                        ? 'pi pi-pause-circle'
+                        : 'pi pi-play-circle'
+                    "
+                    :severity="isSpeaking ? 'primary' : 'secondary'"
                     variant="text"
                     rounded
-                    aria-label="Play"
-                    @click="removeArticleFromReadingList(article.id)"
+                    @click="toggleSpeech(article)"
                   />
 
                   <Button
-                    v-else
-                    v-tooltip.top="'Pause'"
-                    class="text-sm"
-                    icon="pi pi-pause-circle"
-                    severity="secondary"
+                    v-if="isSpeaking"
+                    v-tooltip.top="'Stop'"
+                    icon="pi pi-stop-circle"
+                    severity="danger"
                     variant="text"
                     rounded
-                    aria-label="Pause"
-                    @click="addArticleToReadingList(article.id)"
+                    @click="
+                      synth.cancel();
+                      isSpeaking = false;
+                    "
                   />
                 </div>
+
                 <div class="ml-auto flex justify-center">
                   <Button
                     v-if="article.isSaved"
                     v-tooltip.top="'Saved'"
-                    class="text-sm"
                     icon="pi pi-bookmark-fill"
                     severity="secondary"
                     variant="text"
                     rounded
-                    aria-label="Bookmark"
                     @click="removeArticleFromReadingList(article.id)"
                   />
-
                   <Button
                     v-else
                     v-tooltip.top="'Save'"
-                    class="text-sm"
                     icon="pi pi-bookmark"
                     severity="secondary"
                     variant="text"
                     rounded
-                    aria-label="Bookmark"
                     @click="addArticleToReadingList(article.id)"
                   />
                 </div>
-                <Button
-                  class="py-1 rounded-lg"
-                  size="small"
-                  severity="secondary"
-                  text
-                >
-                  <i class="pi pi-share-alt text-lg"></i>
-                  <span class="text-sm">0</span>
-                </Button>
               </div>
             </div>
 
@@ -287,10 +275,14 @@
         </ScrollPanel>
       </div>
 
-      <Divider layout="vertical" />
+      <Divider layout="vertical" class="mx-8" />
 
-      <div class="w-80 h-full mx-auto px-6">
-        <ArticleSkeleton />
+      <div class="w-[21rem] h-full mx-auto pt-4">
+        <ScrollPanel class="w-full h-full pb-16">
+          <RecommendedTopics type="chips" />
+          <!-- <ReadingList :readingListItem="readingListItem" /> -->
+          <RecommendedAuthors type="home" />
+        </ScrollPanel>
       </div>
     </div>
     <ScrollTop />
@@ -302,6 +294,7 @@ import {
   addClaps,
   addToReadingList,
   followAuthor,
+  getArticleByTitle,
   getAuthorById,
   getAuthorFollowers,
   getAuthorReadingList,
@@ -314,6 +307,8 @@ import { onMounted, ref } from "vue";
 import { userStore } from "@/stores";
 import { useToast } from "primevue/usetoast";
 
+import RecommendedTopics from "../personalization/suggestions/TopicSuggestions.vue";
+import RecommendedAuthors from "../personalization/suggestions/AuthorSuggestions.vue";
 import ArticleComments from "./ArticleComments.vue";
 import NavBar from "../NavBar.vue";
 import {
@@ -321,7 +316,8 @@ import {
   handleDateFormat,
   handleImage,
 } from "@/assets/js/util.js";
-import ArticleSkeleton from "./ArticleSkeleton.vue";
+import { useRoute } from "vue-router";
+// import ArticleSkeleton from "../skeletons/ArticleSkeleton.vue";
 
 const toast = useToast();
 const store = articleStore();
@@ -333,10 +329,17 @@ const commentData = ref({
   comments: 0,
   id: null,
 });
+const route = useRoute();
 
 const fetchArticleById = async () => {
-  const fetchedArticle = await store.getArticle();
-  console.log({ fetchedArticle });
+  let fetchedArticle = await store.getArticle();
+
+  if (!fetchedArticle) {
+    const title = route.params.url || route.fullPath;
+    const { data } = await getArticleByTitle(title);
+    fetchedArticle = data;
+  }
+
   article.value = fetchedArticle;
   await handleSavedArticles(fetchedArticle);
 
@@ -404,7 +407,7 @@ const addAuthorFollower = async (id) => {
   if (follower === id) return;
 
   const { data: followedAuthor } = await followAuthor(follower, id);
-  if (followedAuthor) author.value.followed = true;
+  if (followedAuthor) author.value.isFollowed = true;
 };
 
 const removeAuthorFollower = async (id) => {
@@ -413,7 +416,7 @@ const removeAuthorFollower = async (id) => {
   if (follower === id) return;
 
   const { data: followedAuthor } = await unfollowAuthor(follower, id);
-  if (followedAuthor) author.value.followed = false;
+  if (followedAuthor) author.value.isFollowed = false;
 };
 
 const handleArticleClaps = async () => {
@@ -470,6 +473,55 @@ const removeArticleFromReadingList = async (articleIdentifier) => {
   if (ok) {
     article.value.isSaved = false;
   }
+};
+
+const isSpeaking = ref(false);
+const isPaused = ref(false);
+const synth = window.speechSynthesis;
+
+const toggleSpeech = (article) => {
+  // 1. If we are currently speaking (active or paused)
+  if (synth.speaking) {
+    if (isPaused.value) {
+      synth.resume();
+      isPaused.value = false;
+    } else {
+      // Force a slight delay or check before pausing
+      synth.pause();
+      isPaused.value = true;
+    }
+    return;
+  }
+
+  // 2. Start new speech
+  // It's safer to cancel any ghost processes before starting
+  synth.cancel();
+
+  const { title, description, content } = article;
+  const cleanContent = content.replace(/<[^>]*>/g, "");
+  const fullText = `${title}. ${description}. ${cleanContent}`;
+
+  const utterance = new SpeechSynthesisUtterance(fullText);
+  utterance.voice = synth.getVoices()[0];
+
+  // 3. State Management Listeners
+  utterance.onstart = () => {
+    isSpeaking.value = true;
+    isPaused.value = false;
+  };
+
+  utterance.onend = () => {
+    isSpeaking.value = false;
+    isPaused.value = false;
+  };
+
+  utterance.onerror = (event) => {
+    console.error("Speech error:", event);
+    isSpeaking.value = false;
+    isPaused.value = false;
+  };
+
+  synth.speak(utterance);
 };
 
 onMounted(async () => {

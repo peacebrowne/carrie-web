@@ -24,6 +24,11 @@ export const articleStore = defineStore("article", () => {
     if (cachedArticle) return cachedArticle;
 
     const id = localStorage.getItem("app-article-id");
+
+    if (!id) {
+      return;
+    }
+
     const { data: fetchedArticle } = await getArticleById(id);
 
     article.value = await attachArticleImage(fetchedArticle);

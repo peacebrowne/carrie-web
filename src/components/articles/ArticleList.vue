@@ -1,376 +1,136 @@
 <template>
-  <header>
-    <HeaderBar v-model:activeSection="activeSection" />
-  </header>
-  <div class="container m-auto flex w-full h-full">
-    <Tabs value="0" class="flex-1 mx-auto h-full">
-      <TabList>
-        <Tab value="0" @click="async () => await fetchAuthorArticles('draft')"
-          >Draft</Tab
-        >
-        <Tab value="1" @click="async () => await fetchAuthorArticles('pending')"
-          >Pending</Tab
-        >
-        <Tab
-          value="2"
-          @click="async () => await fetchAuthorArticles('published')"
-          >Published</Tab
-        >
-      </TabList>
-      <TabPanels class="h-full p-0">
-        <TabPanel value="0" class="h-full p-0">
-          <ScrollPanel class="w-full h-full p-0">
-            <Panel
-              v-for="article in articlesFeed"
-              :key="article.id"
-              class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
-            >
-              <div class="flex">
-                <router-link
-                  class="w-full"
-                  :to="{
-                    name: 'edit-article',
-                    params: { id: article.id },
-                  }"
-                  @click="handleArticleStore(article)"
+  <Toast position="top-center" class="w-[32rem] text-sm" />
+  <div id="main-content" class="w-full h-dvh">
+    <div class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52">
+      <div class="flex flex-col gap-4 flex-1">
+        <header class="w-full">
+          <HeaderBar :activeSection="'Stories'" />
+        </header>
+
+        <Tabs :value="currentTabParam" class="w-full mx-auto h-full">
+          <TabList>
+            <Tab v-for="item in feeds" :key="item.label" :value="item.param">
+              <router-link
+                v-if="item.route"
+                v-slot="{ href, navigate }"
+                :to="item.route"
+                custom
+              >
+                <a
+                  v-ripple
+                  :href="href"
+                  @click="navigate"
+                  class="flex items-center gap-2 text-inherit"
                 >
-                  <Card
-                    pt:header:class="w-48 h-32"
-                    pt:body:class="flex-1 pl-0 py-0 m-auto"
-                    class="shadow-none rounded-none items-start justify-between overflow-hidden flex-row-reverse w-full gap-4"
-                  >
-                    <!-- Image -->
-                    <template #header>
-                      <img
-                        v-if="article.image"
-                        :src="article.image"
-                        class="w-full h-full object-cover"
-                      />
-                      <img
-                        v-else
-                        src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
-                        alt="Mock Negotiation"
-                        class="w-full h-full object-cover"
-                      />
-                    </template>
+                  <i :class="item.icon" class="text-sm" />
+                  <span class="text-xs">{{ item.label }}</span>
+                </a>
+              </router-link>
+              <span v-else>
+                <i :class="item.icon" />
+                <span>{{ item.label }}</span>
+              </span>
+            </Tab>
+          </TabList>
 
-                    <!-- Text Content -->
-                    <template #content>
-                      <div class="text-start">
-                        <h3 class="font-black text-lg md:text-2xl">
-                          {{ handleTitleFormat(article.title) }}
-                        </h3>
-                        <p class="text-1xl">
-                          {{ handleDescriptionFormat(article.description) }}
-                        </p>
-                      </div>
-                    </template>
-
-                    <template #footer>
-                      <div
-                        class="flex flex-wrap items-center justify-between gap-4"
-                      >
-                        <div class="flex items-center gap-4">
-                          <div
-                            class="flex gap-1 items-enter"
-                            v-tooltip.top="`${article.likes} likes`"
-                          >
-                            <span class="pi pi-thumbs-up text-xs"></span>
-                            <span class="text-xs">{{ article.likes }}</span>
-                          </div>
-                          <div
-                            class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.dislikes} dislikes`"
-                          >
-                            <span class="pi pi-thumbs-down text-xs"></span>
-                            <span class="text-xs">{{ article.dislikes }}</span>
-                          </div>
-
-                          <div
-                            class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.totalComments} comments`"
-                          >
-                            <span class="pi pi-comments text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalComments
-                            }}</span>
-                          </div>
-
-                          <div
-                            v-tooltip.top="'50 shares'"
-                            class="flex gap-1 items-center"
-                          >
-                            <span class="pi pi-share-alt text-xs"></span>
-                            <span class="text-xs">50</span>
-                          </div>
-                        </div>
-
-                        <div class="flex gap-1 items-center">
-                          <span class="pi pi-calendar text-xs"></span>
-                          <span
-                            class="text-surface-500 text-xs font-bold dark:text-surface-400"
-                            >{{ handleDateFormat(article.createdAt) }}</span
-                          >
-                        </div>
-                      </div>
-                    </template>
-                  </Card>
-                </router-link>
-              </div>
-            </Panel>
-
-            <Divider type="dashed" />
-
-            <InfiniteLoading @infinite="load" />
-          </ScrollPanel>
-        </TabPanel>
-
-        <TabPanel value="1">
-          <ScrollPanel class="w-full h-full">
-            <Panel
-              v-for="article in articlesFeed"
-              :key="article.id"
-              class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
+          <TabPanels class="h-full p-0">
+            <TabPanel
+              v-for="item in feeds"
+              :key="item.param"
+              :value="item.param"
+              class="h-full p-0"
             >
-              <div class="flex">
-                <router-link
-                  class="w-full"
-                  :to="{
-                    name: 'edit-article',
-                    params: { id: article.id },
-                  }"
-                  @click="handleArticleStore(article)"
-                >
-                  <Card
-                    pt:header:class="w-48 h-32"
-                    pt:body:class="flex-1 pl-0 py-0 m-auto"
-                    class="shadow-none rounded-none items-start justify-between overflow-hidden flex-row-reverse w-full gap-4"
-                  >
-                    <!-- Image -->
-                    <template #header>
-                      <img
-                        v-if="article.image"
-                        :src="article.image"
-                        class="w-full h-full object-cover"
-                      />
-                      <img
-                        v-else
-                        src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
-                        alt="Mock Negotiation"
-                        class="w-full h-full object-cover"
-                      />
-                    </template>
+              <ScrollPanel class="w-full h-full pb-16">
+                <ArticleCard
+                  :articlesFeed="articlesFeed"
+                  :isLoading="isInitialLoading"
+                  type="private"
+                />
+                <Divider type="dashed" />
+                <InfiniteLoading :key="currentTabParam" @infinite="load">
+                  <template #complete>
+                    <p class="py-4 text-center text-gray-500">
+                      No more articles to show.
+                    </p>
+                  </template>
+                </InfiniteLoading>
+              </ScrollPanel>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      </div>
 
-                    <!-- Text Content -->
-                    <template #content>
-                      <div class="text-start">
-                        <h3 class="font-black text-lg md:text-2xl">
-                          {{ handleTitleFormat(article.title) }}
-                        </h3>
-                        <p class="text-1xl">
-                          {{ handleDescriptionFormat(article.description) }}
-                        </p>
-                      </div>
-                    </template>
-
-                    <template #footer>
-                      <div
-                        class="flex flex-wrap items-center justify-between gap-4"
-                      >
-                        <div class="flex items-center gap-4">
-                          <div
-                            class="flex gap-1 items-enter"
-                            v-tooltip.top="`${article.likes} likes`"
-                          >
-                            <span class="pi pi-thumbs-up text-xs"></span>
-                            <span class="text-xs">{{ article.likes }}</span>
-                          </div>
-                          <div
-                            class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.dislikes} dislikes`"
-                          >
-                            <span class="pi pi-thumbs-down text-xs"></span>
-                            <span class="text-xs">{{ article.dislikes }}</span>
-                          </div>
-
-                          <div
-                            class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.totalComments} comments`"
-                          >
-                            <span class="pi pi-comments text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalComments
-                            }}</span>
-                          </div>
-
-                          <div
-                            v-tooltip.top="'50 shares'"
-                            class="flex gap-1 items-center"
-                          >
-                            <span class="pi pi-share-alt text-xs"></span>
-                            <span class="text-xs">50</span>
-                          </div>
-                        </div>
-
-                        <div class="flex gap-1 items-center">
-                          <span class="pi pi-calendar text-xs"></span>
-                          <span
-                            class="text-surface-500 text-xs font-bold dark:text-surface-400"
-                            >{{ handleDateFormat(article.createdAt) }}</span
-                          >
-                        </div>
-                      </div>
-                    </template>
-                  </Card>
-                </router-link>
-              </div>
-            </Panel>
-
-            <Divider type="dashed" />
-
-            <InfiniteLoading @infinite="load" />
-          </ScrollPanel>
-        </TabPanel>
-
-        <TabPanel value="2">
-          <ScrollPanel class="w-full h-full">
-            <Panel
-              v-for="article in articlesFeed"
-              :key="article.id"
-              class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
-            >
-              <div class="flex">
-                <router-link
-                  class="w-full"
-                  :to="{
-                    name: 'edit-article',
-                    params: { id: article.id },
-                  }"
-                  @click="handleArticleStore(article)"
-                >
-                  <Card
-                    pt:header:class="w-48 h-32"
-                    pt:body:class="flex-1 pl-0 py-0 m-auto"
-                    class="shadow-none rounded-none items-start justify-between overflow-hidden flex-row-reverse w-full gap-4"
-                  >
-                    <!-- Image -->
-                    <template #header>
-                      <img
-                        v-if="article.image"
-                        :src="article.image"
-                        class="w-full h-full object-cover"
-                      />
-                      <img
-                        v-else
-                        src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
-                        alt="Mock Negotiation"
-                        class="w-full h-full object-cover"
-                      />
-                    </template>
-
-                    <!-- Text Content -->
-                    <template #content>
-                      <div class="text-start">
-                        <h3 class="font-black text-lg md:text-2xl">
-                          {{ handleTitleFormat(article.title) }}
-                        </h3>
-                        <p class="text-1xl">
-                          {{ handleDescriptionFormat(article.description) }}
-                        </p>
-                      </div>
-                    </template>
-
-                    <template #footer>
-                      <div
-                        class="flex flex-wrap items-center justify-between gap-4"
-                      >
-                        <div class="flex items-center gap-4">
-                          <div
-                            class="flex gap-1 items-enter"
-                            v-tooltip.top="`${article.likes} likes`"
-                          >
-                            <span class="pi pi-thumbs-up text-xs"></span>
-                            <span class="text-xs">{{ article.likes }}</span>
-                          </div>
-                          <div
-                            class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.dislikes} dislikes`"
-                          >
-                            <span class="pi pi-thumbs-down text-xs"></span>
-                            <span class="text-xs">{{ article.dislikes }}</span>
-                          </div>
-
-                          <div
-                            class="flex gap-1 items-center"
-                            v-tooltip.top="`${article.totalComments} comments`"
-                          >
-                            <span class="pi pi-comments text-xs"></span>
-                            <span class="text-xs">{{
-                              article.totalComments
-                            }}</span>
-                          </div>
-
-                          <div
-                            v-tooltip.top="'50 shares'"
-                            class="flex gap-1 items-center"
-                          >
-                            <span class="pi pi-share-alt text-xs"></span>
-                            <span class="text-xs">50</span>
-                          </div>
-                        </div>
-
-                        <div class="flex gap-1 items-center">
-                          <span class="pi pi-calendar text-xs"></span>
-                          <span
-                            class="text-surface-500 text-xs font-bold dark:text-surface-400"
-                            >{{ handleDateFormat(article.createdAt) }}</span
-                          >
-                        </div>
-                      </div>
-                    </template>
-                  </Card>
-                </router-link>
-              </div>
-            </Panel>
-
-            <Divider type="dashed" />
-
-            <InfiniteLoading @infinite="load" />
-          </ScrollPanel>
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
-    <Divider layout="vertical" />
-    <div class="w-72 h-full mx-auto">
-      <ArticleSkeleton />
+      <Divider layout="vertical" />
+      <div class="w-[21rem] h-full mx-auto pt-4">
+        <ScrollPanel class="w-full h-full pb-16">
+          <RecommendedTopics type="chips" />
+          <ReadingList />
+          <RecommendedAuthors type="home" />
+        </ScrollPanel>
+      </div>
     </div>
+    <ScrollTop />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import HeaderBar from "@/components/HeaderBar.vue";
-import { getAuthorArticles } from "@/assets/js/service";
-import { userStore, articleStore } from "@/stores";
-
+import ArticleCard from "./ArticleCard.vue"; // Same as in publish feed
+import { userStore } from "@/stores";
 import InfiniteLoading from "v3-infinite-loading";
-import { attachArticleImage, handleDateFormat } from "@/assets/js/util";
-import { useRoute } from "vue-router";
-import ArticleSkeleton from "./ArticleSkeleton.vue";
+import { attachArticleImage, handleImage } from "@/assets/js/util";
+import { useToast } from "primevue/usetoast";
+import RecommendedTopics from "../personalization/suggestions/TopicSuggestions.vue";
+import RecommendedAuthors from "../personalization/suggestions/AuthorSuggestions.vue";
+import { getAuthorArticles } from "@/assets/js/service";
+import ReadingList from "./ReadingList.vue";
 
-const params = computed(() => ({
-  start: 0,
-  limit: 10,
-  status: "draft",
-}));
-
-const breadCrumbs = defineModel("breadCrumbs");
-const activeSection = defineModel("activeSection");
+const toast = useToast();
 const route = useRoute();
-const user = ref("");
+const router = useRouter();
 
-activeSection.value = route.path.split("/")[2];
+const user = ref(null);
+const articlesFeed = ref([]);
+const totalRecords = ref();
+const isInitialLoading = ref(true);
+const params = ref({ start: 0, limit: 10, status: "draft" });
 
+const activeSection = defineModel("activeSection");
+const breadCrumbs = defineModel("breadCrumbs");
+
+// Define feeds/tabs
+const feeds = ref([
+  {
+    label: "Draft",
+    param: "draft",
+    icon: "pi pi-file-edit",
+    route: { name: "stories", query: { tab: "drafts" } },
+  },
+  {
+    label: "Scheduled",
+    param: "scheduled",
+    icon: "pi pi-clock",
+    route: { name: "stories", query: { tab: "posts-scheduled" } },
+  },
+  {
+    label: "Published",
+    param: "published",
+    icon: "pi pi-check-circle",
+    route: { name: "stories", query: { tab: "post-published" } },
+  },
+]);
+
+// Determine current tab from route query (fallback to draft)
+const currentTabParam = computed(() => {
+  const tab = route.query.tab;
+  if (tab === "posts-scheduled") return "scheduled";
+  if (tab === "post-published") return "published";
+  return "draft";
+});
+
+// Update activeSection and breadcrumbs on route change
 watch(
   () => route.path,
   (path) => {
@@ -380,49 +140,71 @@ watch(
   }
 );
 
-const articlesFeed = ref([]);
-
+// Infinite scroll loader
 const load = async ($state) => {
-  console.log("loading...");
-
   try {
-    params.value.start += 10;
-    console.log(params.value);
-    // return;
-    const response = await getAuthorArticles(user.value.id);
+    const newArticles = await fetchAuthorArticles();
 
-    if (response.data) {
-      if (response.data.length) {
-        const { total, values: articles } = response.data;
-        articlesFeed.value.push(...(await attachArticleImage(articles)));
-        $state.loaded();
-      } else {
-        $state.complete();
-      }
+    if (newArticles.length > 0) {
+      articlesFeed.value.push(...newArticles);
+      params.value.start += params.value.limit;
+      $state.loaded();
     } else {
-      console.error("Failed to fetch articles:", response.error);
+      $state.complete();
     }
   } catch (error) {
-    console.log({ error });
+    console.error("Infinite Load Error:", error);
     $state.error();
+  } finally {
+    isInitialLoading.value = false;
   }
 };
 
-const fetchAuthorArticles = async (type) => {
-  params.value.status = type;
-  console.log(params.value);
+const fetchAuthorArticles = async () => {
+  // 1. Safety check: If user isn't loaded yet, return empty so load() can try again later
+  if (!user.value) {
+    return [];
+  }
+
+  isInitialLoading.value = true;
   const cleanedParams = cleanParams(params.value);
 
-  const result = await getAuthorArticles(user.value.id, cleanedParams);
+  try {
+    const result = await getAuthorArticles(user.value.id, cleanedParams);
 
-  if (result.data) {
-    const { total, values: articles } = result.data;
-    articlesFeed.value = await attachArticleImage(articles);
-    console.log(articlesFeed.value);
-  } else {
-    console.error("Failed to fetch articles:", result.error);
+    if (result?.data) {
+      const { values: articles } = result.data;
+
+      const articlesWithImage = await attachArticleImage(articles);
+
+      // Map author data
+      for (const article of articlesWithImage) {
+        article.author = {
+          ...user.value,
+          image: await handleImage(user.value.id),
+        };
+      }
+
+      return articlesWithImage;
+    }
+    return [];
+  } catch (error) {
+    console.error("Fetch Error:", error);
+    return [];
+  } finally {
+    isInitialLoading.value = false;
   }
 };
+
+watch(
+  currentTabParam,
+  async (newTab) => {
+    params.value = { start: 0, limit: 10, status: newTab };
+    isInitialLoading.value = true;
+    articlesFeed.value = await fetchAuthorArticles();
+  },
+  { immediate: true }
+);
 
 const cleanParams = (params) => {
   const cleanedParams = {};
@@ -438,30 +220,18 @@ const cleanParams = (params) => {
   return cleanedParams;
 };
 
-const handleTitleFormat = (title) => {
-  const characters = 50;
-
-  return title.length > characters ? `${title.slice(0, characters)}...` : title;
-};
-
-const handleDescriptionFormat = (description) => {
-  let characters = 50;
-
-  return description && description.length > characters
-    ? `${description.slice(0, characters)}...`
-    : description;
-};
-
-onMounted(async () => {
-  const { getUser } = userStore();
-  user.value = await getUser();
-  await fetchAuthorArticles("draft");
-});
-
 const handleArticleStore = (data) => {
   const { setArticle } = articleStore();
   setArticle(data);
 };
+
+// Initial load on mount
+onMounted(async () => {
+  const { getUser } = userStore();
+  const userData = await getUser();
+  user.value = userData;
+  articlesFeed.value = await fetchAuthorArticles();
+});
 </script>
 
 <style scoped></style>

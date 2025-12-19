@@ -152,6 +152,23 @@ export const getArticleById = async (id) => {
   }
 };
 
+export const getArticleByTitle = async (title) => {
+  try {
+    const { getCookie } = cookiesStore();
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${getCookie()}`,
+      },
+    };
+    const response = await fetch(`${API_URL}/articles/title/${title}`, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching a single article");
+  }
+};
+
 export const getImage = async (id) => {
   try {
     const options = {
@@ -415,8 +432,6 @@ export const followAuthor = async (follower, author) => {
 
 export const unfollowAuthor = async (follower, author) => {
   try {
-    console.log({ follower, author });
-
     const options = {
       method: "DELETE",
       headers: {
@@ -646,4 +661,63 @@ export const getRecommendedAuthors = async (id, tagId, limit) => {
   } catch (error) {
     console.error("Error getting recommended topics:", error);
   }
+};
+
+export const getSingleAuthorInterest = async (tagId, authorId) => {
+  try {
+    const url = new URL(`${API_URL}/tags/author-interest/${tagId}/${authorId}`);
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching author single interest", error);
+  }
+};
+
+export const getAuthorInterests = async (authorId) => {
+  try {
+    const url = new URL(`${API_URL}/tags/author-interests/${authorId}`);
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching author single interest", error);
+  }
+};
+
+export const getFeaturedArticles = async (id, params = {}) => {
+  try {
+    const url = new URL(`${API_URL}/articles/personalized-feeds/${id}`);
+    url.search = new URLSearchParams(params).toString();
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching articles", error);
+  }
+};
+
+export const getTrendingArticles = async () => {
+  return [];
 };

@@ -459,7 +459,7 @@
       </div>
     </div>
     <Divider layout="vertical" />
-    <div class="w-72 p-8"></div>
+    <div class="w-[21rem] p-8"></div>
   </div>
 </template>
 

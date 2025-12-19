@@ -1,0 +1,206 @@
+<template>
+  <div id="main-content" class="w-full h-dvh">
+    <div class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52">
+      <div class="flex flex-col gap-4">
+        <header class="w-full">
+          <HeaderBar v-model:activeSection="activeSection" />
+        </header>
+        <Tabs :value="currentTabParam" class="flex-1 mx-auto h-full pt-4">
+          <TabList>
+            <Tab v-for="item in feeds" :key="item.label" :value="item.param">
+              <router-link
+                v-if="item.route"
+                v-slot="{ href, navigate }"
+                :to="item.route"
+                custom
+              >
+                <a
+                  v-ripple
+                  :href="href"
+                  @click="navigate"
+                  class="flex items-center gap-2 text-inherit"
+                >
+                  <i :class="item.icon" class="text-sm" />
+                  <span class="text-xs">{{ item.label }}</span>
+                </a>
+              </router-link>
+
+              <span v-else>
+                <i :class="item.icon" />
+                <span>{{ item.label }}</span>
+              </span>
+            </Tab>
+          </TabList>
+          <TabPanels class="h-full p-0">
+            <TabPanel
+              v-for="item in feeds"
+              :value="item.param"
+              :key="item.label"
+              class="h-full p-0"
+            >
+              <ScrollPanel class="w-full h-full pb-16">
+                {{ item.label }}
+              </ScrollPanel>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      </div>
+
+      <Divider layout="vertical" />
+
+      <div class="w-[21rem] h-full mx-auto pt-4">
+        <ScrollPanel class="w-full h-full pb-16">
+          <RecommendedTopics type="chips" />
+          <RecommendedAuthors type="home" />
+        </ScrollPanel>
+      </div>
+    </div>
+  </div>
+
+  <ScrollTop />
+</template>
+
+<script setup>
+import { ref, onMounted, computed, watch } from "vue";
+import HeaderBar from "@/components/HeaderBar.vue";
+import { getAuthorArticles } from "@/assets/js/service";
+import { userStore, articleStore } from "@/stores";
+
+import InfiniteLoading from "v3-infinite-loading";
+import { attachArticleImage, handleDateFormat } from "@/assets/js/util";
+import { useRoute } from "vue-router";
+
+import RecommendedAuthors from "../personalization/suggestions/AuthorSuggestions.vue";
+import RecommendedTopics from "../personalization/suggestions/TopicSuggestions.vue";
+
+const params = computed(() => ({
+  start: 0,
+  limit: 10,
+  status: "draft",
+}));
+
+const breadCrumbs = defineModel("breadCrumbs");
+const activeSection = defineModel("activeSection");
+const route = useRoute();
+const user = ref("");
+
+activeSection.value = route.path.split("/")[2];
+
+watch(
+  () => route.path,
+  (path) => {
+    const currentSection = path.split("/")[2];
+    activeSection.value = currentSection;
+    breadCrumbs.value = [currentSection];
+  }
+);
+
+const articlesFeed = ref([]);
+
+const load = async ($state) => {
+  console.log("loading...");
+
+  try {
+    params.value.start += 10;
+    console.log(params.value);
+    // return;
+    const response = await getAuthorArticles(user.value.id);
+
+    if (response.data) {
+      if (response.data.length) {
+        const { total, values: articles } = response.data;
+        articlesFeed.value.push(...(await attachArticleImage(articles)));
+        $state.loaded();
+      } else {
+        $state.complete();
+      }
+    } else {
+      console.error("Failed to fetch articles:", response.error);
+    }
+  } catch (error) {
+    console.log({ error });
+    $state.error();
+  }
+};
+
+const fetchAuthorArticles = async (type) => {
+  params.value.status = type;
+  console.log(params.value);
+  const cleanedParams = cleanParams(params.value);
+
+  const result = await getAuthorArticles(user.value.id, cleanedParams);
+
+  if (result.data) {
+    const { total, values: articles } = result.data;
+    articlesFeed.value = await attachArticleImage(articles);
+    console.log(articlesFeed.value);
+  } else {
+    console.error("Failed to fetch articles:", result.error);
+  }
+};
+
+const cleanParams = (params) => {
+  const cleanedParams = {};
+  for (const key in params) {
+    if (
+      params[key] !== undefined &&
+      params[key] !== null &&
+      params[key] !== ""
+    ) {
+      cleanedParams[key] = params[key];
+    }
+  }
+  return cleanedParams;
+};
+
+const handleTitleFormat = (title) => {
+  const characters = 50;
+
+  return title.length > characters ? `${title.slice(0, characters)}...` : title;
+};
+
+const handleDescriptionFormat = (description) => {
+  let characters = 50;
+
+  return description && description.length > characters
+    ? `${description.slice(0, characters)}...`
+    : description;
+};
+
+onMounted(async () => {
+  const { getUser } = userStore();
+  user.value = await getUser();
+  await fetchAuthorArticles("draft");
+});
+
+const handleArticleStore = (data) => {
+  const { setArticle } = articleStore();
+  setArticle(data);
+};
+
+const currentFeedParam = computed(() => route.query.feed || "default");
+
+const feeds = ref([
+  {
+    label: "Draft",
+    param: "default",
+    icon: "pi pi-compass",
+    route: { name: "stories", query: {} },
+  },
+
+  {
+    label: "Scheduled",
+    param: "scheduled",
+    icon: "pi pi-chart-line",
+    route: { name: "stories", query: { tab: "posts-scheduled" } },
+  },
+  {
+    label: "Published",
+    param: "published",
+    icon: "pi pi-chart-line",
+    route: { name: "stories", query: { tab: "post-published" } },
+  },
+]);
+</script>
+
+<style scoped></style>

@@ -1,5 +1,5 @@
 <template>
-  <Toast />
+  <Toast position="top-center" class="w-[32rem] text-sm" />
   <nav
     class="w-full sticky z-[200] flex top-0"
     style="transform: translateY(0px)"
@@ -396,6 +396,12 @@ const onFormSubmit = async (payload) => {
 
       //  EDIT SAVE → just show toast
       saving.value = true;
+    } else {
+      toast.add({
+        severity: "error",
+        summary: result.message || "Something went wrong",
+        life: 5000,
+      });
     }
   } catch (error) {
     toast.add({

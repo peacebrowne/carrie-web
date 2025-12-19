@@ -3,238 +3,84 @@
 
   <div id="main-content" class="w-full h-dvh">
     <div class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52">
-      <Tabs value="0" class="flex-1 mx-auto h-full">
+      <Tabs :value="currentFeedParam" class="flex-1 mx-auto h-full pt-4">
         <TabList>
-          <Tab value="0">Home</Tab>
-          <Tab value="1">Following</Tab>
-          <Tab value="2">Shared</Tab>
-        </TabList>
-        <TabPanels class="h-full p-0">
-          <TabPanel value="0" class="h-full p-0">
-            <ScrollPanel class="w-full h-full pb-16">
-              <Panel
-                v-for="article in articlesFeed"
-                :key="article.id"
-                class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
+          <Tab v-for="item in feeds" :key="item.label" :value="item.param">
+            <router-link
+              v-if="item.route"
+              v-slot="{ href, navigate }"
+              :to="item.route"
+              custom
+            >
+              <a
+                v-ripple
+                :href="href"
+                @click="navigate"
+                class="flex items-center gap-2 text-inherit"
               >
-                <template #header>
-                  <div class="flex items-center gap-2">
-                    <router-link
-                      class="text-sm font-bold flex items-center gap-2"
-                    >
-                      <Avatar
-                        v-if="article.author.image"
-                        :image="article.author.image"
-                        shape="circle"
-                      />
+                <i :class="item.icon" class="text-sm" />
+                <span class="text-xs">{{ item.label }}</span>
+              </a>
+            </router-link>
 
-                      <Avatar
-                        v-else
-                        icon="pi pi-user text-white text-xs"
-                        shape="circle"
-                        class="bg-[#1B4D3E]"
-                      />
-                      <span class="font-bold"
-                        >{{ article.author.firstName }}
-                        {{ article.author.lastName }}</span
-                      >
-                    </router-link>
+            <span v-else>
+              <i :class="item.icon" />
+              <span>{{ item.label }}</span>
+            </span>
+          </Tab>
+        </TabList>
 
-                    <Button
-                      v-if="article.author.isFollowed"
-                      class="text-xs"
-                      rounded
-                      text
-                      label="Following"
-                      @click="removeAuthorFollower(article.author)"
-                    />
-                    <Button
-                      v-else-if="
-                        !article.author.isFollowed && article.author.id !== id
-                      "
-                      class="text-xs"
-                      rounded
-                      text
-                      label="Follow"
-                      @click="addAuthorFollower(article.author)"
-                    />
-                  </div>
-                </template>
-                <template #icons>
-                  <Button
-                    icon="pi pi-ellipsis-h"
-                    severity="secondary"
-                    rounded
-                    text
-                    @click="toggle"
-                  />
-                  <Menu ref="menu" id="config_menu" :model="items" popup />
-                </template>
-                <div class="">
-                  <Card
-                    pt:body:class="flex-1 p-0 m-auto"
-                    class="shadow-none rounded-none items-start justify-between overflow-hidden flex-row-reverse w-full gap-4"
-                  >
-                    <!-- Text Content -->
-                    <template #content>
-                      <div class="flex flex-row w-full">
-                        <div class="basis-3/4">
-                          <router-link
-                            class="w-full"
-                            :to="{
-                              name: 'public-article-detail',
-                              params: { title: article.title },
-                            }"
-                            @click="handleArticleStore(article)"
-                          >
-                            <h3 class="font-black text-xl md:text-2xl">
-                              {{ truncateText(article.title) }}
-                            </h3>
-
-                            <p class="text-lg">
-                              {{ truncateText(article.description) }}
-                            </p>
-                          </router-link>
-
-                          <div class="mt-4 flex items-center w-full">
-                            <router-link
-                              class="flex items-center gap-4"
-                              :to="{
-                                name: 'public-article-detail',
-                                params: { title: article.title },
-                              }"
-                              @click="handleArticleStore(article)"
-                            >
-                              <div class="flex gap-1 items-center">
-                                <span
-                                  class="text-surface-500 text-sm font-normal dark:text-surface-400"
-                                  >{{
-                                    handleDateFormat(
-                                      article.createdAt,
-                                      "MMM DD"
-                                    )
-                                  }}</span
-                                >
-                              </div>
-
-                              <div
-                                class="flex gap-1 items-enter"
-                                v-tooltip.top="`${article.likes} likes`"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  fill="none"
-                                  aria-labelledby="clap-filled-static-desc"
-                                  viewBox="0 0 16 16"
-                                  class="mt-[0.1rem]"
-                                >
-                                  <desc id="clap-filled-static-desc">
-                                    A clap icon
-                                  </desc>
-                                  <path
-                                    fill="#6B6B6B"
-                                    fill-rule="evenodd"
-                                    d="m3.672 10.167 2.138 2.14h-.002c1.726 1.722 4.337 2.436 5.96.81 1.472-1.45 1.806-3.68.76-5.388l-1.815-3.484c-.353-.524-.849-1.22-1.337-.958-.49.261 0 1.56 0 1.56l.78 1.932L6.43 2.866c-.837-.958-1.467-1.108-1.928-.647-.33.33-.266.856.477 1.598.501.503 1.888 1.957 1.888 1.957.17.174.083.485-.093.655a.56.56 0 0 1-.34.163.43.43 0 0 1-.317-.135s-2.4-2.469-2.803-2.87c-.344-.346-.803-.54-1.194-.15-.408.406-.273 1.065.11 1.447.345.346 2.31 2.297 2.685 2.67l.062.06c.17.175.269.628.093.8-.193.188-.453.33-.678.273a.9.9 0 0 1-.446-.273S2.501 6.84 1.892 6.23c-.407-.406-.899-.333-1.229 0-.525.524.263 1.28 1.73 2.691.384.368.814.781 1.279 1.246m8.472-7.219c.372-.29.95-.28 1.303.244V3.19l1.563 3.006.036.074c.885 1.87.346 4.093-.512 5.159l-.035.044c-.211.264-.344.43-.74.61 1.382-1.855.963-3.478-.248-5.456L11.943 3.88l-.002-.037c-.017-.3-.039-.71.203-.895"
-                                    clip-rule="evenodd"
-                                  ></path>
-                                </svg>
-                                <span class="text-sm">{{ article.likes }}</span>
-                              </div>
-
-                              <div
-                                class="flex gap-1 items-center"
-                                v-tooltip.top="
-                                  `${article.totalComments} comments`
-                                "
-                              >
-                                <span class="pi pi-comments text-sm"></span>
-                                <span class="text-sm">{{
-                                  article.totalComments
-                                }}</span>
-                              </div>
-                            </router-link>
-
-                            <div class="ml-auto w-32 flex justify-center">
-                              <Button
-                                v-if="article.isSaved"
-                                v-tooltip.top="'Saved'"
-                                class="text-sm"
-                                icon="pi pi-bookmark-fill"
-                                severity="secondary"
-                                variant="text"
-                                rounded
-                                aria-label="Bookmark"
-                                @click="
-                                  removeArticleFromReadingList(article.id)
-                                "
-                              />
-
-                              <Button
-                                v-else
-                                v-tooltip.top="'Save'"
-                                class="text-sm"
-                                icon="pi pi-bookmark"
-                                severity="secondary"
-                                variant="text"
-                                rounded
-                                aria-label="Bookmark"
-                                @click="addArticleToReadingList(article.id)"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Image -->
-                        <div class="basis-1/4 max-h-24">
-                          <router-link
-                            class="w-full"
-                            :to="{
-                              name: 'public-article-detail',
-                              params: { title: article.title },
-                            }"
-                            @click="handleArticleStore(article)"
-                          >
-                            <img
-                              v-if="article.image"
-                              :src="article.image"
-                              class="w-full h-full object-cover"
-                            />
-                            <img
-                              v-else
-                              src="../../assets/images/pexels-vlada-karpovich-4452120.jpg"
-                              alt="Mock Negotiation"
-                              class="w-full h-full object-cover bas"
-                            />
-                          </router-link>
-                        </div>
-                      </div>
-                    </template>
-                  </Card>
-                </div>
-              </Panel>
+        <TabPanels class="h-full p-0">
+          <TabPanel value="default" key="default" class="h-full p-0">
+            <ScrollPanel class="w-full h-full pb-16">
+              <ArticleCard
+                :articlesFeed="articlesFeed"
+                :isLoading="isInitialLoading"
+                @reading-list="handleReadingList"
+              />
 
               <Divider type="dashed" />
 
               <InfiniteLoading @infinite="load" />
             </ScrollPanel>
           </TabPanel>
+        </TabPanels>
 
-          <TabPanel value="1">
-            <p class="m-0">Coming soon!</p>
-          </TabPanel>
+        <TabPanels class="h-full p-0">
+          <TabPanel value="trending" key="trending" class="h-full p-0">
+            <ScrollPanel class="w-full h-full pb-16">
+              <Panel
+                v-for="article in articlesFeed"
+                :key="article.id"
+                class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
+              >
+                <template #header> TRENDING </template>
+                <template #icons> </template>
+                <div class="articles-content"></div>
+              </Panel>
 
-          <TabPanel value="2">
-            <p class="m-0">Coming soon!</p>
+              <Divider type="dashed" />
+
+              <InfiniteLoading :key="currentFeedParam" @infinite="load">
+                <template #complete>
+                  <p class="py-4 text-center text-gray-500">
+                    No more articles to show.
+                  </p>
+                </template>
+              </InfiniteLoading>
+            </ScrollPanel>
           </TabPanel>
         </TabPanels>
       </Tabs>
 
       <Divider layout="vertical" />
 
-      <div class="w-72 h-full mx-auto">
-        <ArticleSkeleton />
+      <div class="w-[21rem] h-full mx-auto pt-4">
+        <ScrollPanel class="w-full h-full pb-16">
+          <RecommendedTopics type="chips" />
+          <ReadingList :readingListItem="readingListItem" />
+          <RecommendedAuthors type="home" />
+        </ScrollPanel>
       </div>
     </div>
     <ScrollTop />
@@ -242,91 +88,120 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import Menu from "primevue/menu";
+import { ref, onMounted, computed, watch, provide } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
   getAuthorById,
   getFollowedAuthors,
-  followAuthor,
   getAuthorInterestedArticles,
-  unfollowAuthor,
   getAuthorReadingList,
-  addToReadingList,
-  removeFromReadingList,
+  getTrendingArticles,
   getAuthorFollowers,
+  getFeaturedArticles,
 } from "@/assets/js/service";
 
-import { userStore, articleStore } from "@/stores";
+import { userStore } from "@/stores";
 
 import InfiniteLoading from "v3-infinite-loading";
-import {
-  attachArticleImage,
-  handleImage,
-  handleDateFormat,
-  truncateText,
-} from "@/assets/js/util";
-import ArticleSkeleton from "./ArticleSkeleton.vue";
+import { attachArticleImage, handleImage, slugify } from "@/assets/js/util";
 import { useToast } from "primevue/usetoast";
+import RecommendedTopics from "../personalization/suggestions/TopicSuggestions.vue";
+import RecommendedAuthors from "../personalization/suggestions/AuthorSuggestions.vue";
+import ArticleCard from "./ArticleCard.vue";
 
-const params = computed(() => ({
-  start: 0,
-  limit: 10,
-  status: "published",
-}));
+const params = ref({ start: 0, limit: 10 });
 
 const toast = useToast();
 const articlesFeed = ref([]);
 const totalRecords = ref();
 const id = localStorage.getItem("app-author-id");
 const user = ref("");
+const isInitialLoading = ref(true);
+
+const route = useRoute();
+const router = useRouter();
+
+const feeds = ref([
+  {
+    label: "For You",
+    param: "default",
+    icon: "pi pi-compass",
+    route: { name: "landing-page", query: {} },
+  },
+
+  {
+    label: "Trending",
+    param: "trending",
+    icon: "pi pi-chart-line",
+    route: { name: "landing-page", query: { feed: "trending" } },
+  },
+]);
+
+const currentFeedParam = computed(() => route.query.feed || "default");
 
 const load = async ($state) => {
-  console.log("loading...");
-
   try {
-    params.value.start += 10;
-    // const result = await getArticles(params.value);
+    const newArticles = await fetchArticles(currentFeedParam.value);
 
-    const result = await getAuthorInterestedArticles(id, params.value);
+    if (newArticles && newArticles.length > 0) {
+      // SPREAD the new articles into the feed
+      articlesFeed.value.push(...newArticles);
 
-    if (result.data) {
-      if (result.data.length) {
-        const { total, values: articles } = result.data;
-        const articleWithImage = await attachArticleImage(articles);
-        articlesFeed.value.push(
-          ...(await attachAuthorToArticles(articleWithImage))
-        );
-        totalRecords.value = total;
-        await handleArticleAuthorFollowers(id, articlesFeed.value);
-        $state.loaded();
-      } else {
-        $state.complete();
-      }
+      // Move the pointer for the NEXT request
+      params.value.start += params.value.limit;
+
+      $state.loaded();
     } else {
-      console.error("Failed to fetch articles:", result.error);
+      $state.complete();
     }
   } catch (error) {
-    console.log({ error });
+    console.error("Infinite Load Error:", error);
     $state.error();
   }
 };
 
-const fetchArticles = async () => {
-  const result = await getAuthorInterestedArticles(user.value.id, params.value);
+const fetchArticles = async (feedName) => {
+  isInitialLoading.value = true;
+  let fetchedArticles;
+  const currentParams = params.value;
 
-  if (result.data) {
-    const { total, values: articles } = result.data;
+  // API Call logic
+  switch (feedName) {
+    case "trending":
+      fetchedArticles = await getTrendingArticles();
+      break;
+    case "default":
+    default:
+      fetchedArticles = await getFeaturedArticles(user.value.id, currentParams);
+      break;
+  }
 
-    const articleWithImage = await attachArticleImage(articles);
+  try {
+    if (fetchedArticles?.data) {
+      const { total, values: articles } = fetchedArticles.data;
+      totalRecords.value = total;
 
-    articlesFeed.value = await attachAuthorToArticles(articleWithImage);
+      // Transform the NEW articles batch only
+      const articleWithImage = await attachArticleImage(articles);
+      const articleWithAuthor = await attachAuthorToArticles(articleWithImage);
 
-    await handleArticleAuthorFollowers(articlesFeed.value);
-    await handleSavedArticles(articlesFeed.value);
+      await handleArticleAuthorFollowers(articleWithAuthor);
+      await handleSavedArticles(articleWithAuthor);
+      handleArticleUrl(articleWithAuthor);
 
-    totalRecords.value = total;
-  } else {
-    console.error("Failed to fetch articles:", result.error);
+      return articleWithAuthor;
+    }
+    isInitialLoading.value = false;
+    return [];
+  } catch (error) {
+    console.error("Fetch Logic Error:", error);
+    return [];
+  }
+};
+
+const handleArticleUrl = (articles) => {
+  for (const article of articles) {
+    article.url = slugify(article.title);
   }
 };
 
@@ -342,29 +217,17 @@ const attachAuthorToArticles = (articles) => {
   );
 };
 
-const menu = ref(null);
-
-const items = ref([
-  {
-    label: "Refresh",
-    icon: "pi pi-refresh",
+/**
+ *  Watch the value fo the current feed parameter and pass
+ *  the new feed name directly to the function
+ * */
+watch(
+  currentFeedParam,
+  (newFeed) => {
+    fetchArticles(newFeed);
   },
-  {
-    label: "Search",
-    icon: "pi pi-search",
-  },
-  {
-    separator: true,
-  },
-  {
-    label: "Delete",
-    icon: "pi pi-times",
-  },
-]);
-
-const toggle = (event) => {
-  menu.value.toggle(event);
-};
+  { immediate: false }
+);
 
 const handleArticleAuthorFollowers = async (articles) => {
   try {
@@ -426,80 +289,6 @@ const handleSavedArticles = async (articles) => {
   }
 };
 
-const addAuthorFollower = async (author) => {
-  const follower = user.value?.id;
-
-  if (follower === author?.id) return;
-
-  const { data: followedAuthors } = await followAuthor(follower, author?.id);
-
-  if (followedAuthors) author.isFollowed = true;
-};
-
-const removeAuthorFollower = async (author) => {
-  const follower = user.value?.id;
-
-  if (follower === author?.id) return;
-
-  const { data: followedAuthors } = await unfollowAuthor(follower, author?.id);
-
-  if (followedAuthors) author.isFollowed = false;
-};
-
-const addArticleToReadingList = async (articleIdentifier) => {
-  const currentUserId = user.value.id;
-
-  const { result, ok } = await addToReadingList(
-    currentUserId,
-    articleIdentifier
-  );
-
-  toast.add({
-    severity: "contrast",
-    summary: result.message,
-    life: 3000,
-  });
-
-  if (ok) {
-    const { data: newReadingListItem } = result;
-
-    const targetArticle = articlesFeed.value.find(
-      (article) => article.id === newReadingListItem.articleId
-    );
-
-    if (targetArticle) {
-      targetArticle.isSaved = true;
-    }
-  }
-};
-
-const removeArticleFromReadingList = async (articleIdentifier) => {
-  const currentUserId = user.value.id;
-
-  const { result, ok } = await removeFromReadingList(
-    currentUserId,
-    articleIdentifier
-  );
-
-  toast.add({
-    severity: "contrast",
-    summary: result.message,
-    life: 3000,
-  });
-
-  if (ok) {
-    const { data: removedReadingListItem } = result;
-
-    const targetArticle = articlesFeed.value.find(
-      (article) => article.id === removedReadingListItem.articleId
-    );
-
-    if (targetArticle) {
-      targetArticle.isSaved = false;
-    }
-  }
-};
-
 const followedAuthors = ref([]);
 const fetchFollowedAuthors = async () => {
   const currentUserId = user.value.id;
@@ -515,15 +304,24 @@ const fetchFollowedAuthors = async () => {
   followedAuthors.value = authors.slice(0, 10);
 };
 
+const readingListItem = ref("");
+const handleReadingList = (data) => {
+  readingListItem.value = data;
+};
+
 onMounted(async () => {
   const { getUser } = userStore();
   user.value = await getUser();
-  await fetchArticles();
+  // Get the initial feed (default or from query) and pass it
+  articlesFeed.value = await fetchArticles(currentFeedParam.value);
   await fetchFollowedAuthors();
 });
 
-const handleArticleStore = (data) => {
-  const { setArticle } = articleStore();
-  setArticle(data);
+// Reset the infinite loader params when switching feeds
+const resetParams = () => {
+  params.value = {
+    start: 0,
+    limit: 10,
+  };
 };
 </script>

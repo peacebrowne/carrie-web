@@ -1,7 +1,7 @@
 <template>
-  <div class="">
-    <div class="w-[60%] flex items-center justify-between">
-      <span class="text-4xl font-semibold p-4">{{ title }}</span>
+  <div class="px-4 pt-8">
+    <div class="w-full flex items-center justify-between">
+      <span class="text-3xl font-semibold">{{ title }}</span>
       <div class="flex justify-center items-center gap-4">
         <router-link :to="{ name: 'write' }">
           <Button
@@ -16,6 +16,7 @@
           class="text-xs"
           variant="outlined"
           rounded
+          disabled
         />
       </div>
       <!-- <BreadCrumbs /> -->

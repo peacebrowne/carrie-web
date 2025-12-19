@@ -51,11 +51,11 @@
         <div class="m-0 p-8 flex flex-col justify-center items-center gap-10">
           <span class="text-4xl font-black">Explore topics</span>
           <div class="flex items-center gap-2 font-normal w-6/12">
-            <IconField id="search" class="w-full">
+            <IconField id="search" class="w-full items-center">
               <InputIcon class="pi pi-search text-sm" />
               <InputText
-                class="py-1 rounded-full w-full"
-                placeholder="Search"
+                class="rounded-full w-full"
+                placeholder="Search all topics"
               />
             </IconField>
           </div>
@@ -64,7 +64,7 @@
         <div
           class="grid grid-cols-1 mx-auto sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          <div v-for="mainTopic in INTERESTS" :key="mainTopic.id" class="p-5">
+          <div v-for="mainTopic in TOPICS" :key="mainTopic.id" class="p-5">
             <!-- Main Topic -->
             <router-link
               v-slot="{ href, navigate }"
@@ -121,21 +121,28 @@
   </div>
 </template>
 <script setup>
-import { getRecommendedAuthorTopics, getInterests } from "@/assets/js/service";
+import {
+  getRecommendedAuthorTopics,
+  getInterests,
+  getRecommendedRandomTopics,
+} from "@/assets/js/service";
 import NavBar from "../NavBar.vue";
 import { onMounted, ref } from "vue";
 import { userStore } from "@/stores";
+import { useRoute } from "vue-router";
 
 const user = ref("");
 const activeTopicId = ref(1);
+const route = useRoute();
 
-const INTERESTS = ref([]);
+const TOPICS = ref([]);
 const fetchInterests = async () => {
   const { data: interests } = await getInterests();
 
   interests.forEach((interest) => {
     interest.route = interest.name.toLocaleLowerCase().split(" ").join("-");
   });
+
   const mainTopics = interests.filter(
     (interest) => interest.parentTagId === null
   );
@@ -153,16 +160,18 @@ const fetchInterests = async () => {
     mainTopic.subTopics = subTopics;
   });
 
-  INTERESTS.value = mainTopics;
+  TOPICS.value = mainTopics;
+
+  await handleRecommendedTopics();
 };
 
 const recommendedTopics = ref([]);
-const fetchRecommendedTopics = async () => {
+const handleRecommendedTopics = async () => {
   const { data } = await getRecommendedAuthorTopics(user.value.id, 10);
 
   recommendedTopics.value = data.map((topic, index) => {
     topic.value = index;
-    topic.route = topic.name;
+    topic.route = topic.name.toLocaleLowerCase().split(" ").join("-");
     return topic;
   });
 };
@@ -170,7 +179,6 @@ const fetchRecommendedTopics = async () => {
 onMounted(async () => {
   const { getUser } = userStore();
   user.value = await getUser();
-  await fetchRecommendedTopics();
   await fetchInterests();
 });
 </script>

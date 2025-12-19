@@ -20,18 +20,18 @@
       <router-link
         v-if="item.name"
         :to="{ name: item.name }"
-        class="flex items-center font-bold cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
+        class="flex items-center font-bold cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1 text-sm"
         :class="{ 'p-panelmenu-item-active': isActive(item.name) }"
       >
         <span
           :class="[
-            isActive(item.name) ? 'p-panelmenu-item-icon' : '',
+            isActive(item.name) ? 'p-panelmenu-item-icon text-xs' : '',
             item.icon,
           ]"
         />
         <span
           :class="{ 'p-panelmenu-item-icon': isActive(item.name) }"
-          class="ml-2 text-sm"
+          class="ml-2 text-xs"
           >{{ item.label }}</span
         >
       </router-link>

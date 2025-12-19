@@ -1,83 +1,5 @@
 <template>
   <div class="card flex justify-center">
-    <!-- <Drawer
-      pt:header:class="flex items-center shadow-sm pb-3"
-      v-model:visible="visible"
-      header="Right Drawer"
-      position="right"
-    >
-      <template #header>
-        <div class="flex items-center gap-2">
-          <Avatar v-if="src" :image="src" shape="circle" />
-
-          <Avatar
-            v-else
-            icon="pi pi-user text-white text-xs"
-            shape="circle"
-            class="bg-[#1B4D3E]"
-          />
-          <span class="font-bold"
-            >{{ author.firstName }} {{ author.lastName }}</span
-          >
-        </div>
-      </template>
-      <Menu :model="items" class="border-none h-full">
-        <template #item="{ item }">
-          <router-link
-            v-if="item.name"
-            :to="{ name: item.name }"
-            class="flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
-            :class="{ 'p-panelmenu-item-active': isActive(item.name) }"
-          >
-            <span
-              :class="[
-                isActive(item.name) ? 'p-panelmenu-item-icon' : '',
-                item.icon,
-              ]"
-            />
-            <span
-              :class="{ 'p-panelmenu-item-icon': isActive(item.name) }"
-              class="ml-2 text-xs"
-              >{{ item.label }}</span
-            >
-          </router-link>
-          <a
-            v-else
-            v-ripple
-            class="test flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-1"
-            :to="{ name: item.name }"
-            :target="item.target"
-            @click="toggleDropdownIcon"
-          >
-            <span :class="item.icon" />
-            <span class="ml-2 text-xs">{{ item.label }}</span>
-            <span
-              v-if="item.items"
-              :class="[
-                'pi',
-                dropdown ? ' pi-angle-up' : 'pi-angle-down',
-                'text-secondary ml-auto',
-              ]"
-            />
-          </a>
-        </template>
-      </Menu>
-      <template #footer>
-        <div class="flex items-center gap-2">
-          <router-link class="w-full" :to="{ name: 'login' }">
-            <Button
-              label="Logout"
-              icon="pi pi-sign-out text-sm"
-              class="flex-auto text-sm w-full"
-              severity="danger"
-              text
-            ></Button>
-          </router-link>
-        </div>
-      </template>
-    </Drawer> -->
-    <!-- <Button icon="pi pi-bars" @click="visible = true" /> -->
-
     <TieredMenu
       :model="items"
       popup
@@ -93,15 +15,13 @@
                 <Avatar
                   v-if="src"
                   :image="src"
-                  class="mr-2"
-                  size="small"
+                  class="w-10 h-10 mr-2"
                   shape="circle"
                 />
                 <Avatar
                   v-else
                   icon="pi pi-user"
-                  class="mr-2 border"
-                  size="small"
+                  class="mr-2 border w-10 h-10"
                   shape="circle"
                 />
               </div>
@@ -152,13 +72,13 @@
     </TieredMenu>
 
     <div @click="toggle" class="cursor-pointer">
-      <Avatar v-if="src" :image="src" shape="circle" />
+      <Avatar v-if="src" :image="src" shape="circle" class="w-10 h-10" />
 
       <Avatar
         v-else
         icon="pi pi-user text-white text-xs"
         shape="circle"
-        class="bg-[#1B4D3E]"
+        class="bg-[#1B4D3E] w-10 h-10"
       />
     </div>
   </div>

@@ -6,15 +6,9 @@
     <NavBar />
   </nav>
   <main class="flex-1 overflow-hidden">
-    <ScrollPanel id="main-content" class="flex w-full h-full">
-      <div
-        class="container flex flex-col w-full h-full m-auto md:px-8 lg:px-36 2xl:px-52"
-      >
-        <section>
-          <RouterView class="w-full" />
-        </section>
-      </div>
-    </ScrollPanel>
+    <section>
+      <RouterView class="w-full" />
+    </section>
   </main>
 </template>
 

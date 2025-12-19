@@ -3,8 +3,8 @@
 
   <div class="flex flex-col gap-4 p-8 rounded-xl bg-[#FBFBFB] shadow-lg">
     <div class="flex flex-col gap-1 mb-3">
-      <span class="text-4xl font-black">Welcome Back</span>
-      <span class="text-lg">Please enter your account details</span>
+      <span class="text-3xl font-black">Welcome Back</span>
+      <span class="text-sm">Please enter your account details</span>
     </div>
 
     <Form
