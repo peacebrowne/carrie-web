@@ -173,12 +173,6 @@ const items = ref([
     icon: "pi pi-comments",
     name: "chats",
   },
-
-  {
-    label: "Trash",
-    icon: "pi pi-trash",
-    name: "trash",
-  },
 ]);
 </script>
 

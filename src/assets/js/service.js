@@ -721,3 +721,20 @@ export const getFeaturedArticles = async (id, params = {}) => {
 export const getTrendingArticles = async () => {
   return [];
 };
+
+export const deleteArticle = async (id) => {
+  try {
+    const options = {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(`${API_URL}/articles/${id}`, options);
+    const result = await response.json();
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.log("Error");
+  }
+};

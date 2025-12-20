@@ -1,63 +1,73 @@
 <template>
   <Toast position="top-center" class="w-[32rem] text-sm" />
+  <ConfirmDialog />
+
   <div id="main-content" class="w-full h-dvh">
     <div class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52">
-      <div class="flex flex-col gap-4 flex-1">
-        <header class="w-full">
-          <HeaderBar :activeSection="'Stories'" />
-        </header>
+      <div class="flex flex-col gap-4 h-full w-full">
+        <ScrollPanel
+          class="w-full h-full pb-16"
+          :dt="{
+            bar: {
+              background: 'red-500',
+            },
+          }"
+        >
+          <header class="w-full">
+            <HeaderBar :activeSection="'Stories'" />
+          </header>
 
-        <Tabs :value="currentTabParam" class="w-full mx-auto h-full">
-          <TabList>
-            <Tab v-for="item in feeds" :key="item.label" :value="item.param">
-              <router-link
-                v-if="item.route"
-                v-slot="{ href, navigate }"
-                :to="item.route"
-                custom
-              >
-                <a
-                  v-ripple
-                  :href="href"
-                  @click="navigate"
-                  class="flex items-center gap-2 text-inherit"
+          <Tabs :value="currentTabParam" class="w-full mx-auto h-full">
+            <TabList>
+              <Tab v-for="item in feeds" :key="item.label" :value="item.param">
+                <router-link
+                  v-if="item.route"
+                  v-slot="{ href, navigate }"
+                  :to="item.route"
+                  custom
                 >
-                  <i :class="item.icon" class="text-sm" />
-                  <span class="text-xs">{{ item.label }}</span>
-                </a>
-              </router-link>
-              <span v-else>
-                <i :class="item.icon" />
-                <span>{{ item.label }}</span>
-              </span>
-            </Tab>
-          </TabList>
+                  <a
+                    v-ripple
+                    :href="href"
+                    @click="navigate"
+                    class="flex items-center gap-2 text-inherit"
+                  >
+                    <i :class="item.icon" class="text-sm" />
+                    <span class="text-xs">{{ item.label }}</span>
+                  </a>
+                </router-link>
+                <span v-else>
+                  <i :class="item.icon" />
+                  <span>{{ item.label }}</span>
+                </span>
+              </Tab>
+            </TabList>
 
-          <TabPanels class="h-full p-0">
-            <TabPanel
-              v-for="item in feeds"
-              :key="item.param"
-              :value="item.param"
-              class="h-full p-0"
-            >
-              <ScrollPanel class="w-full h-full pb-16">
+            <TabPanels class="w-full h-full p-0">
+              <TabPanel
+                v-for="item in feeds"
+                :key="item.param"
+                :value="item.param"
+                class="h-full p-0"
+              >
                 <ArticleCard
                   :articlesFeed="articlesFeed"
                   :isLoading="isInitialLoading"
                   type="private"
+                  @delete-article="handleDelete"
                 />
                 <Divider type="dashed" />
                 <InfiniteLoading :key="currentTabParam" @infinite="load">
                   <template #complete>
                     <p class="py-4 text-center text-gray-500">
-                      No more articles to show.
+                      <!-- No more articles to show. -->
                     </p>
                   </template>
                 </InfiniteLoading>
-              </ScrollPanel>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </ScrollPanel>
       </div>
 
       <Divider layout="vertical" />
@@ -84,7 +94,7 @@ import { attachArticleImage, handleImage } from "@/assets/js/util";
 import { useToast } from "primevue/usetoast";
 import RecommendedTopics from "../personalization/suggestions/TopicSuggestions.vue";
 import RecommendedAuthors from "../personalization/suggestions/AuthorSuggestions.vue";
-import { getAuthorArticles } from "@/assets/js/service";
+import { getAuthorArticles, deleteArticle } from "@/assets/js/service";
 import ReadingList from "./ReadingList.vue";
 
 const toast = useToast();
@@ -143,11 +153,12 @@ watch(
 // Infinite scroll loader
 const load = async ($state) => {
   try {
+    params.value.start += params.value.limit;
     const newArticles = await fetchAuthorArticles();
 
-    if (newArticles.length > 0) {
+    if (newArticles.length) {
       articlesFeed.value.push(...newArticles);
-      params.value.start += params.value.limit;
+      // params.value.start += params.value.limit;
       $state.loaded();
     } else {
       $state.complete();
@@ -161,7 +172,7 @@ const load = async ($state) => {
 };
 
 const fetchAuthorArticles = async () => {
-  // 1. Safety check: If user isn't loaded yet, return empty so load() can try again later
+  // Safety check: If user isn't loaded yet, return empty so load() can try again later
   if (!user.value) {
     return [];
   }
@@ -220,9 +231,32 @@ const cleanParams = (params) => {
   return cleanedParams;
 };
 
-const handleArticleStore = (data) => {
-  const { setArticle } = articleStore();
-  setArticle(data);
+const handleDelete = async (articleIdentifier) => {
+  try {
+    const { ok, result } = await deleteArticle(articleIdentifier);
+
+    if (ok) {
+      const filtered = articlesFeed.value.filter(
+        (article) => article.id !== articleIdentifier
+      );
+
+      articlesFeed.value = filtered;
+
+      toast.add({
+        severity: "contrast",
+        summary: result.message,
+        life: 3000,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    toast.add({
+      severity: "error",
+      summary: "Rejected",
+      detail: result?.message,
+      life: 3000,
+    });
+  }
 };
 
 // Initial load on mount
@@ -231,7 +265,12 @@ onMounted(async () => {
   const userData = await getUser();
   user.value = userData;
   articlesFeed.value = await fetchAuthorArticles();
+  console.log(articlesFeed.value);
 });
 </script>
 
-<style scoped></style>
+<style>
+.p-scrollpanel-bar {
+  display: none !important;
+}
+</style>

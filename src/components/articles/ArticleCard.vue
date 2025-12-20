@@ -58,6 +58,7 @@
           </div>
         </div>
       </template>
+
       <template #icons>
         <Button
           icon="pi pi-ellipsis-h"
@@ -68,6 +69,7 @@
         />
         <Menu ref="menu" id="config_menu" :model="items" popup />
       </template>
+
       <router-link
         class="w-full"
         :to="{
@@ -133,7 +135,7 @@
                   </div>
 
                   <div
-                    class="ml-auto w-32 flex absolute z-30 justify-center bottom-5 right-[12rem]"
+                    class="ml-auto w-32 flex absolute z-30 justify-center bottom-0 right-0"
                   >
                     <Button
                       v-if="article.isSaved"
@@ -191,7 +193,7 @@
       v-for="(article, index) in articlesFeed"
       :key="article.id"
       class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
-      >.
+    >
       <router-link
         class="w-full"
         :to="{
@@ -209,7 +211,7 @@
           <!-- Text Content -->
           <template #content>
             <div class="flex flex-row w-full">
-              <div class="basis-3/4">
+              <div class="basis-3/4 relative">
                 <h3 class="title-preview font-black text-2xl pr-4">
                   {{ article.title }}
                 </h3>
@@ -261,6 +263,79 @@
                     </div>
                   </div>
                 </div>
+
+                <div
+                  class="ml-auto w-32 flex justify-center absolute bottom-0 z-30 right-0"
+                  @click.stop
+                >
+                  <Button
+                    icon="pi pi-ellipsis-h"
+                    severity="secondary"
+                    rounded
+                    type="button"
+                    text
+                    aria-haspopup="true"
+                    aria-controls="overlay_menu"
+                    @click.stop.prevent="toggleMenu($event, article, index)"
+                  />
+
+                  <Popover ref="op">
+                    <div class="flex flex-col gap-4">
+                      <div>
+                        <div class="w-full px-2 flex items-center"></div>
+                        <ul class="list-none p-0 m-0 flex flex-col w-36">
+                          <li
+                            key="copy-link"
+                            class="flex items-center gap-2 p-2 cursor-pointer rounded-border"
+                          >
+                            <div
+                              class="flex items-center gap-2"
+                              @click="copyToClipboard(article.id)"
+                            >
+                              <i class="pi pi-link text-xs"></i>
+                              <span class="text-xs font-medium">Copy link</span>
+                            </div>
+                          </li>
+                          <li
+                            key="edit-story"
+                            class="flex items-center gap-2 p-2 cursor-pointer rounded-border"
+                          >
+                            <router-link
+                              class="w-full"
+                              :to="{
+                                name: 'edit-article',
+                                params: { id: article.id },
+                              }"
+                              @click="handleArticleStore(article)"
+                            >
+                              <div class="flex items-center gap-2">
+                                <i class="pi pi-pencil text-xs" />
+
+                                <span class="font-medium text-xs"
+                                  >Edit Story</span
+                                >
+                              </div>
+                            </router-link>
+                          </li>
+                          <Divider class="my-2" />
+                          <li
+                            key="delete-story"
+                            class="flex items-center gap-2 cursor-pointer rounded-border"
+                          >
+                            <Button
+                              @click="confirmDelete(article.id)"
+                              label="Delete Story"
+                              icon="pi pi-trash text-xs"
+                              class="font-medium text-xs w-full"
+                              severity="danger"
+                              variant="text"
+                            />
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </Popover>
+                </div>
               </div>
 
               <!-- Image -->
@@ -278,77 +353,6 @@
                     class="w-full h-full object-cover bas"
                   />
                 </div>
-              </div>
-
-              <div
-                class="ml-auto w-32 flex justify-center absolute bottom-5 z-30 right-[12rem]"
-                @click.stop
-              >
-                <Button
-                  icon="pi pi-ellipsis-h"
-                  severity="secondary"
-                  rounded
-                  type="button"
-                  text
-                  aria-haspopup="true"
-                  aria-controls="overlay_menu"
-                  @click.stop.prevent="toggleMenu($event, article, index)"
-                />
-                <Popover ref="op">
-                  <div class="flex flex-col gap-4">
-                    <div>
-                      <div class="w-full px-2 flex items-center"></div>
-                      <ul class="list-none p-0 m-0 flex flex-col w-36">
-                        <li
-                          key="copy-link"
-                          class="flex items-center gap-2 p-2 cursor-pointer rounded-border"
-                        >
-                          <div
-                            class="flex items-center gap-2"
-                            @click="copyToClipboard(article.id)"
-                          >
-                            <i class="pi pi-link text-xs"></i>
-                            <span class="text-xs font-medium">Copy link</span>
-                          </div>
-                        </li>
-                        <li
-                          key="edit-story"
-                          class="flex items-center gap-2 p-2 cursor-pointer rounded-border"
-                        >
-                          <router-link
-                            class="w-full"
-                            :to="{
-                              name: 'edit-article',
-                              params: { id: article.id },
-                            }"
-                            @click="handleArticleStore(article)"
-                          >
-                            <div class="flex items-center gap-2">
-                              <i class="pi pi-pencil text-xs" />
-
-                              <span class="font-medium text-xs"
-                                >Edit Story</span
-                              >
-                            </div>
-                          </router-link>
-                        </li>
-                        <Divider class="my-2" />
-                        <li
-                          key="delete-story"
-                          class="flex items-center gap-2 p-2 cursor-pointer rounded-border"
-                        >
-                          <div class="flex items-center gap-2 text-red-500">
-                            <i class="pi pi-trash text-xs" />
-
-                            <span class="font-medium text-xs"
-                              >Delete Story</span
-                            >
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </Popover>
               </div>
             </div>
           </template>
@@ -372,9 +376,11 @@ import {
 import { articleStore, userStore } from "@/stores";
 import { handleDateFormat } from "@/assets/js/util";
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
 
+const confirm = useConfirm();
 const toast = useToast();
-const emit = defineEmits(["reading-list"]);
+const emit = defineEmits(["reading-list", "delete-article"]);
 const user = ref("");
 const props = defineProps({
   articlesFeed: { type: Object, required: true },
@@ -418,10 +424,6 @@ const selectedArticle = ref(null);
 const toggleMenu = (event, article, index) => {
   selectedArticle.value = article;
   op.value[index].toggle(event);
-};
-
-const deleteArticle = (article) => {
-  console.log("Deleting article:", article.id);
 };
 
 const copyToClipboard = async (articleIdentifier) => {
@@ -486,6 +488,31 @@ const addArticleToReadingList = async (targetArticle) => {
       emit("reading-list", { action: "add", targetArticle });
     }
   }
+};
+
+const confirmDelete = (articleIdentifier) => {
+  confirm.require({
+    message:
+      "Are you sure you want to delete this post? This action cannot be undone.",
+    header: "Delete story",
+    rejectLabel: "Cancel",
+    rejectProps: {
+      label: "Cancel",
+      severity: "contrast",
+      class: "text-xs rounded-full",
+      outlined: true,
+    },
+    acceptProps: {
+      label: "Delete",
+      severity: "danger",
+      class: "text-xs rounded-full",
+      outlined: true,
+    },
+    accept: () => {
+      emit("delete-article", articleIdentifier);
+    },
+    reject: () => {},
+  });
 };
 
 onMounted(async () => {

@@ -7,7 +7,7 @@
         <div
           class="layout-content-container flex flex-col w-full max-w-6xl flex-1 px-4 sm:px-6 lg:px-8"
         >
-          <main class="flex-1 mt-8">
+          <main class="flex-1 mt-6">
             <div class="flex flex-wrap justify-between gap-4 items-center p-4">
               <p
                 class="text-neutral-900 dark:text-neutral-100 text-4xl font-black leading-tight tracking-[-0.033em] min-w-72"

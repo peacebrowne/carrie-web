@@ -34,6 +34,16 @@
 
       <div class="flex gap-2">
         <Button
+          v-if="isEditPage"
+          icon="pi pi-trash"
+          severity="danger"
+          rounded
+          variant="outlined"
+          aria-label="Trash"
+          @click="handleDelete"
+        />
+
+        <Button
           severity="warn"
           label="Publish"
           class="py-1 text-sm flex items-center rounded-full"
@@ -205,7 +215,7 @@
                     id="datepicker-24h"
                     v-model="displayDate"
                     updateModelType="date"
-                    name="pendingDate"
+                    name="scheduledDate"
                     showTime
                     hourFormat="12"
                     showIcon
@@ -217,11 +227,11 @@
                   />
                 </div>
                 <Message
-                  v-if="$form.pendingDate?.invalid"
+                  v-if="$form.scheduledDate?.invalid"
                   severity="error"
                   size="small"
                   variant="simple"
-                  >{{ $form.pendingDate.error?.message }}</Message
+                  >{{ $form.scheduledDate.error?.message }}</Message
                 >
               </div>
               <div>
@@ -286,6 +296,7 @@ import {
   publishArticleLater,
   publishArticleNow,
   searchTags,
+  deleteArticle,
 } from "@/assets/js/service.js";
 import { articleStore, userStore } from "@/stores";
 import AddImage from "./AddImage.vue";
@@ -322,12 +333,12 @@ provide("writeMode", writeMode);
 const in30Minutes = dayjs().add(30, "minute");
 
 const displayDate = ref(in30Minutes.toDate());
-const pendingDate = ref(handleDateFormat(in30Minutes, "YYYY-MM-DD HH:mm:ss"));
+const scheduledDate = ref(handleDateFormat(in30Minutes, "YYYY-MM-DD HH:mm:ss"));
 
 const handleDateChange = (selected) => {
   if (!selected) return;
   displayDate.value = selected;
-  pendingDate.value = handleDateFormat(selected, "YYYY-MM-DD HH:mm:ss");
+  scheduledDate.value = handleDateFormat(selected, "YYYY-MM-DD HH:mm:ss");
 };
 
 const initialized = ref(false);
@@ -419,7 +430,7 @@ watch(saving, (val) => {
 });
 
 const showPendingSchedule = (status) => {
-  pendingSchedule.value = status.value === "pending";
+  pendingSchedule.value = status.value === "scheduled";
 };
 
 const currentStatus = ref({
@@ -504,14 +515,6 @@ const switchFormMode = async () => {
   isEditPage.value ? await fetchArticleById() : await resetForm();
 };
 
-onMounted(async () => {
-  await switchFormMode();
-  const { getUser } = userStore();
-  user.value = await getUser();
-
-  initialized.value = true;
-});
-
 const menu = ref(null);
 
 const items = ref([
@@ -592,7 +595,7 @@ const publishLater = async () => {
   const { getArticle } = articleStore();
   const { id } = await getArticle();
 
-  const { ok, result } = await publishArticleLater(id, pendingDate.value);
+  const { ok, result } = await publishArticleLater(id, scheduledDate.value);
   if (ok) {
     toast.add({
       severity: "success",
@@ -610,6 +613,46 @@ const publishLater = async () => {
     setTimeout(() => (initialized.value = true), 500);
   }
 };
+
+const handleDelete = async () => {
+  try {
+    const articleIdentifier = route.path.split("/")[1];
+
+    const { ok, result } = await deleteArticle(articleIdentifier);
+
+    if (ok) {
+      toast.add({
+        severity: "contrast",
+        summary: result.message,
+        life: 3000,
+      });
+
+      setTimeout(async () => {
+        await router.replace({
+          name: "write",
+        });
+        initialized.value = false;
+        await resetForm();
+      }, 3000);
+    }
+  } catch (error) {
+    console.log(error);
+    toast.add({
+      severity: "error",
+      summary: "Rejected",
+      detail: error.message,
+      life: 3000,
+    });
+  }
+};
+
+onMounted(async () => {
+  await switchFormMode();
+  const { getUser } = userStore();
+  user.value = await getUser();
+
+  initialized.value = true;
+});
 </script>
 
 <style>
