@@ -63,8 +63,6 @@
       </div>
     </div>
 
-    <!-- :initialValues="initialValues"
-    :resolver="resolver" -->
     <Form
       v-slot="$form"
       id="article-form"
@@ -181,21 +179,17 @@
                   story is about</span
                 >
               </div>
-              <div class="border rounded-ss-none rounded-se-none flex flex-col">
+              <div class="flex flex-col">
                 <div id="tag-input" class="flex w-full justify-between">
-                  <MultiSelect
+                  <AutoComplete
                     v-model="selected"
-                    display="chip"
-                    :options="topicOptions"
-                    @filter="onFilter"
-                    optionLabel="name"
-                    filter
-                    :selectAll="selectAll"
-                    placeholder="Select Topics"
-                    :maxSelectedLabels="5"
-                    class="w-full border-none rounded-none p-2 text-sm bg-gray-50"
-                    @selectall-change="onSelectAllChange($event)"
-                    @change="onChange($event)"
+                    inputId="multiple-ac-1"
+                    multiple
+                    fluid
+                    :suggestions="topicOptions"
+                    @complete="onFilter"
+                    class="w-full text-xs"
+                    showClear
                   />
                 </div>
               </div>
@@ -323,7 +317,7 @@ const writeMode = ref(true);
 const saving = ref(false);
 const router = useRouter();
 const pendingSchedule = ref(false);
-const progress = ref(false);
+const progress = ref(true);
 const route = useRoute();
 const isEditPage = computed(() => route.path.includes("/edit"));
 
@@ -362,7 +356,7 @@ const autoSave = () => {
       title: title.value,
       content: content.value,
       description: description.value,
-      tags: selected.value.map((option) => option.name),
+      tags: selected.value,
       authorID: user.value.id,
       status: currentStatus.value.value,
     };
@@ -474,9 +468,7 @@ const fetchArticleById = async () => {
   );
 
   // Convert saved tags (strings) → objects
-  selected.value = (cachedArticle.tags || []).map((tag) => ({
-    name: capitalize(tag),
-  }));
+  selected.value = cachedArticle.tags || [];
 
   // pre-fill topicOptions with selected so chips show immediately
   topicOptions.value = [...selected.value];
@@ -537,17 +529,20 @@ const items = ref([
 
 const toggle = (event) => menu.value.toggle(event);
 const onFilter = async (event) => {
-  const query = event.value;
+  const { query } = event;
 
   if (!query || query.length < 2) return;
 
   const { data } = await searchTags(query);
 
+  const topics = data.map((topic) => topic.name);
+
   // Merge selected items with new results (avoid duplicates)
-  const merged = [...selected.value, ...data];
-  topicOptions.value = merged.filter(
-    (v, i, arr) => arr.findIndex((o) => o.name === v.name) === i
-  );
+  const merged = [...selected.value, ...topics];
+  topicOptions.value = merged;
+  // merged.filter(
+  //   (v, i, arr) => arr.findIndex((o) => o.name === v.name) === i
+  // );
 };
 
 const openScheduling = (value) => {

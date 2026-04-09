@@ -5,23 +5,28 @@
       popup
       id="overlay_tmenu"
       ref="menu"
-      class="pb-3 mt-2 min-w-[15rem]"
+      class="py-3 mt-2 min-w-[15rem] w-64"
     >
       <template #start>
-        <router-link :to="{ name: 'profile' }">
+        <router-link
+          :to="{
+            name: 'author-profile',
+            params: { username: author?.username },
+          }"
+        >
           <Button variant="text" severity="secondary" class="w-full">
             <div class="flex items-center justify-start w-full px-1">
               <div class="relative">
                 <Avatar
                   v-if="src"
                   :image="src"
-                  class="w-10 h-10 mr-2"
+                  class="w-8 h-8 mr-2"
                   shape="circle"
                 />
                 <Avatar
                   v-else
                   icon="pi pi-user"
-                  class="mr-2 border w-10 h-10"
+                  class="mr-2 border w-8 h-8"
                   shape="circle"
                 />
               </div>
@@ -72,13 +77,13 @@
     </TieredMenu>
 
     <div @click="toggle" class="cursor-pointer">
-      <Avatar v-if="src" :image="src" shape="circle" class="w-10 h-10" />
+      <Avatar v-if="src" :image="src" shape="circle" class="w-8 h-8" />
 
       <Avatar
         v-else
         icon="pi pi-user text-white text-xs"
         shape="circle"
-        class="bg-[#1B4D3E] w-10 h-10"
+        class="bg-[#1B4D3E] w-8 h-8"
       />
     </div>
   </div>
@@ -120,16 +125,16 @@ const items = ref([
     label: "Settings",
     icon: "pi pi-cog text-lg",
     command: () => {
-      router.push("/settings");
+      router.push("/me/settings");
     },
   },
-  {
-    label: "Help",
-    icon: "pi pi-question-circle text-lg",
-    command: () => {
-      router.push("/help");
-    },
-  },
+  // {
+  //   label: "Help",
+  //   icon: "pi pi-question-circle text-lg",
+  //   command: () => {
+  //     router.push("/help");
+  //   },
+  // },
 ]);
 
 const toggle = (event) => {

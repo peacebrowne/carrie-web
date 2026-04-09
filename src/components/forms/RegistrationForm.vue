@@ -1,9 +1,9 @@
 <template>
   <Toast />
 
-  <div class="card flex justify-center">
-    <Stepper v-model:value="activeStep" class="basis-[40rem]" linear>
-      <StepList>
+  <div class="card flex justify-center p-2 sm:p-4">
+    <Stepper v-model:value="activeStep" class="w-full max-w-[45rem]" linear>
+      <StepList class="overflow-x-auto">
         <Step
           v-slot="{ activateCallback, value, a11yAttrs }"
           asChild
@@ -17,21 +17,19 @@
             >
               <span
                 :class="[
-                  'rounded-full border-2 w-12 h-12 inline-flex items-center justify-center',
-                  {
-                    'bg-primary text-primary-contrast border-primary':
-                      value <= activeStep,
-                    'border-surface-200 dark:border-surface-700':
-                      value > activeStep,
-                  },
+                  'rounded-full border-2 w-10 h-10 md:w-12 md:h-12 inline-flex items-center justify-center transition-colors',
+                  value <= activeStep
+                    ? 'bg-primary text-primary-contrast border-primary'
+                    : 'border-surface-200 dark:border-surface-700',
                 ]"
               >
-                <i class="pi pi-user" />
+                <i class="pi pi-user text-sm md:text-base" />
               </span>
             </button>
             <Divider />
           </div>
         </Step>
+
         <Step
           v-slot="{ activateCallback, value, a11yAttrs }"
           asChild
@@ -48,21 +46,19 @@
             >
               <span
                 :class="[
-                  'rounded-full border-2 w-12 h-12 inline-flex items-center justify-center',
-                  {
-                    'bg-primary text-primary-contrast border-primary':
-                      value <= activeStep,
-                    'border-surface-200 dark:border-surface-700':
-                      value > activeStep,
-                  },
+                  'rounded-full border-2 w-10 h-10 md:w-12 md:h-12 inline-flex items-center justify-center transition-colors',
+                  value <= activeStep
+                    ? 'bg-primary text-primary-contrast border-primary'
+                    : 'border-surface-200 dark:border-surface-700',
                 ]"
               >
-                <i class="pi pi-star" />
+                <i class="pi pi-star text-sm md:text-base" />
               </span>
             </button>
             <Divider />
           </div>
         </Step>
+
         <Step
           v-slot="{ activateCallback, value, a11yAttrs }"
           asChild
@@ -76,29 +72,29 @@
             >
               <span
                 :class="[
-                  'rounded-full border-2 w-12 h-12 inline-flex items-center justify-center',
-                  {
-                    'bg-primary text-primary-contrast border-primary':
-                      value <= activeStep,
-                    'border-surface-200 dark:border-surface-700':
-                      value > activeStep,
-                  },
+                  'rounded-full border-2 w-10 h-10 md:w-12 md:h-12 inline-flex items-center justify-center transition-colors',
+                  value <= activeStep
+                    ? 'bg-primary text-primary-contrast border-primary'
+                    : 'border-surface-200 dark:border-surface-700',
                 ]"
               >
-                <i class="pi pi-id-card" />
+                <i class="pi pi-id-card text-sm md:text-base" />
               </span>
             </button>
           </div>
         </Step>
       </StepList>
+
       <StepPanels>
-        <StepPanel v-slot="{ activateCallback }" :value="1" class="w-[30rem]">
+        <StepPanel v-slot="{ activateCallback }" :value="1" class="w-full">
           <div
-            class="flex flex-col gap-2 p-6 rounded-xl bg-[#FBFBFB] shadow-lg"
+            class="flex flex-col gap-2 p-4 md:p-6 rounded-xl bg-[#FBFBFB] shadow-lg"
           >
             <div class="flex flex-col mb-4">
-              <span class="text-3xl font-black">Create an account</span>
-              <!-- <span class="text-lg">Register now to access your account.</span> -->
+              <span
+                class="text-2xl md:text-3xl font-black text-center md:text-left"
+                >Create an account</span
+              >
             </div>
 
             <Form
@@ -107,22 +103,22 @@
               :initialValues="initialValues"
               class="flex flex-col gap-3 w-full"
             >
-              <div class="flex justify-between gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   v-slot="$field"
                   as="section"
                   name="firstName"
-                  initialValue=""
-                  class="flex flex-col gap-2 text-sm w-[50%]"
+                  class="flex flex-col gap-2 text-sm"
                 >
-                  <!-- <pre class="whitespace-pre-wrap">{{ $field }}</pre> -->
                   <div class="flex gap-2 items-center">
-                    <label for="firstName">First name</label>
+                    <label for="firstName" class="font-semibold"
+                      >First name</label
+                    >
                     <span
                       class="pi pi-asterisk text-[.5rem] text-red-600"
                     ></span>
                   </div>
-                  <InputText type="text" />
+                  <InputText type="text" class="w-full" />
                   <Message
                     v-if="$field?.invalid"
                     severity="error"
@@ -131,15 +127,15 @@
                     >{{ $field.error?.message }}</Message
                   >
                 </FormField>
+
                 <FormField
                   v-slot="$field"
                   as="section"
                   name="lastName"
-                  initialValue=""
-                  class="flex flex-col gap-2 text-sm mt-[0.22rem] w-[50%]"
+                  class="flex flex-col gap-2 text-sm"
                 >
-                  <label for="lastName">Last name</label>
-                  <InputText type="text" />
+                  <label for="lastName" class="font-semibold">Last name</label>
+                  <InputText type="text" class="w-full" />
                   <Message
                     v-if="$field?.invalid"
                     severity="error"
@@ -149,21 +145,21 @@
                   >
                 </FormField>
               </div>
-              <div class="flex justify-between gap-4">
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   v-slot="$field"
                   as="section"
                   name="username"
-                  initialValue=""
-                  class="flex flex-col gap-2 text-sm w-[50%]"
+                  class="flex flex-col gap-2 text-sm"
                 >
                   <div class="flex gap-2 items-center">
-                    <label for="username">Username</label>
+                    <label for="username" class="font-semibold">Username</label>
                     <span
                       class="pi pi-asterisk text-[.5rem] text-red-600"
                     ></span>
                   </div>
-                  <InputText type="text" />
+                  <InputText type="text" class="w-full" />
                   <Message
                     v-if="$field?.invalid"
                     severity="error"
@@ -172,20 +168,20 @@
                     >{{ $field.error?.message }}</Message
                   >
                 </FormField>
+
                 <FormField
                   v-slot="$field"
                   as="section"
                   name="email"
-                  initialValue=""
-                  class="flex flex-col gap-2 text-sm w-[50%]"
+                  class="flex flex-col gap-2 text-sm"
                 >
                   <div class="flex gap-2 items-center">
-                    <label for="email">Email</label>
+                    <label for="email" class="font-semibold">Email</label>
                     <span
                       class="pi pi-asterisk text-[.5rem] text-red-600"
                     ></span>
                   </div>
-                  <InputText type="email" />
+                  <InputText type="email" class="w-full" />
                   <Message
                     v-if="$field?.invalid"
                     severity="error"
@@ -195,30 +191,16 @@
                   >
                 </FormField>
               </div>
-              <FormField
-                v-slot="$field"
-                asChild
-                name="password"
-                initialValue=""
-                autocomplete
-              >
-                <section
-                  class="flex flex-col gap-2 text-sm"
-                  aria-autocomplete="true"
-                >
+
+              <FormField v-slot="$field" asChild name="password" autocomplete>
+                <section class="flex flex-col gap-2 text-sm">
                   <div class="flex gap-2 items-center">
-                    <label for="password">Password</label>
+                    <label for="password" class="font-semibold">Password</label>
                     <span
                       class="pi pi-asterisk text-[.5rem] text-red-600"
                     ></span>
                   </div>
-                  <Password
-                    type="password"
-                    :feedback="false"
-                    toggleMask
-                    fluid
-                    autocomplete
-                  />
+                  <Password :feedback="false" toggleMask fluid autocomplete />
                   <Message
                     v-if="$field?.invalid"
                     severity="error"
@@ -229,14 +211,10 @@
                 </section>
               </FormField>
 
-              <div
-                as="section"
-                initialValue=""
-                class="flex justify-center items-center gap-2"
-              >
+              <div class="flex justify-center items-center gap-2 mt-2">
                 <span class="text-xs">Already have an account?</span>
-                <router-link class="cursor-pointer" :to="{ name: 'login' }">
-                  <span class="text-xs underline">Sign in</span>
+                <router-link :to="{ name: 'login' }">
+                  <span class="text-xs underline font-bold">Sign in</span>
                 </router-link>
               </div>
             </Form>
@@ -244,78 +222,81 @@
           <div class="flex pt-6 justify-end">
             <Button
               label="Next"
-              icon="pi pi-arrow-right text-xs"
+              icon="pi pi-arrow-right"
               iconPos="right"
               @click="validateStepOne(activateCallback)"
-              class="py-1"
+              class="w-full md:w-auto"
             />
           </div>
         </StepPanel>
-        <StepPanel v-slot="{ activateCallback }" :value="2" class="w-[30rem]">
-          <div
-            class="flex flex-col gap-4 p-8 rounded-xl bg-[#FBFBFB] shadow-lg w-full h-full m-auto"
-          >
-            <div class="text-2xl font-black">Choose your interests</div>
 
+        <StepPanel v-slot="{ activateCallback }" :value="2" class="w-full">
+          <div
+            class="flex flex-col gap-4 p-6 md:p-8 rounded-xl bg-[#FBFBFB] shadow-lg w-full"
+          >
+            <div class="text-2xl font-black text-center md:text-left">
+              Choose your interests
+            </div>
             <MultiSelect
               v-model="interests"
               :options="items"
-              :maxSelectedLabels="3"
-              :selectAll="selectAll"
               optionLabel="label"
               optionValue="value"
-              @selectall-change="onSelectAllChange($event)"
-              @change="onChange($event)"
-              :virtualScrollerOptions="{ itemSize: 44 }"
-              filter
-              placeholder="Select Item"
-              class="w-full md:w-80"
+              placeholder="Select Interests"
+              class="w-full"
+              fluid
             />
           </div>
-          <div class="flex pt-6 justify-between">
+          <div class="flex flex-col md:flex-row pt-6 gap-3">
             <Button
               label="Back"
               severity="secondary"
-              icon="pi pi-arrow-left text-xs"
+              icon="pi pi-arrow-left"
               @click="activateCallback(1)"
-              class="py-1"
+              class="w-full md:w-auto order-2 md:order-1"
             />
             <Button
               label="Next"
-              icon="pi pi-arrow-right text-xs"
+              icon="pi pi-arrow-right"
               iconPos="right"
               @click="activateCallback(3)"
-              class="py-1"
+              class="w-full md:w-auto order-1 md:order-2 md:ml-auto"
             />
           </div>
         </StepPanel>
-        <StepPanel v-slot="{ activateCallback }" :value="3" class="w-[30rem]">
+
+        <StepPanel v-slot="{ activateCallback }" :value="3" class="w-full">
           <div
-            class="flex flex-col gap-4 p-8 rounded-xl bg-[#FBFBFB] shadow-lg w-full h-full m-auto"
+            class="flex flex-col gap-4 p-6 md:p-8 rounded-xl bg-[#FBFBFB] shadow-lg w-full"
           >
-            <div class="text-2xl font-black">Add profile picture</div>
-            <div class="text-center">
-              <AddImage name="image" v-model:src="src" v-model:image="image" />
+            <div class="text-2xl font-black text-center md:text-left">
+              Add profile picture
+            </div>
+            <div class="flex justify-center py-4">
+              <AddImage
+                name="image"
+                v-model:src="src"
+                v-model:image="image"
+                class="max-w-full"
+              />
             </div>
           </div>
-          <div class="flex pt-6 justify-between">
+          <div class="flex flex-col md:flex-row pt-6 gap-3">
             <Button
               label="Back"
               severity="secondary"
-              icon="pi pi-arrow-left text-xs"
+              icon="pi pi-arrow-left"
               @click="activateCallback(2)"
-              class="py-1"
+              class="w-full md:w-auto order-2 md:order-1"
             />
-
             <Button
               type="submit"
-              icon="pi pi-user-plus text-xs"
               severity="warn"
               label="Create account"
               :loading="loading"
-              class="py-1"
               raised
               @click="onFormSubmit"
+              class="w-full md:w-auto order-1 md:order-2 md:ml-auto"
             />
           </div>
         </StepPanel>
@@ -323,7 +304,6 @@
     </Stepper>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import { zodResolver } from "@primevue/forms/resolvers/zod";

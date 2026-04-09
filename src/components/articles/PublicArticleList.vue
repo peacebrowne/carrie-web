@@ -49,15 +49,11 @@
         <TabPanels class="h-full p-0">
           <TabPanel value="trending" key="trending" class="h-full p-0">
             <ScrollPanel class="w-full h-full pb-16">
-              <Panel
-                v-for="article in articlesFeed"
-                :key="article.id"
-                class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
-              >
-                <template #header> TRENDING </template>
-                <template #icons> </template>
-                <div class="articles-content"></div>
-              </Panel>
+              <ArticleCard
+                :articlesFeed="articlesFeed"
+                :isLoading="isInitialLoading"
+                @reading-list="handleReadingList"
+              />
 
               <Divider type="dashed" />
 
@@ -141,6 +137,7 @@ const currentFeedParam = computed(() => route.query.feed || "default");
 
 const load = async ($state) => {
   try {
+    params.value.start += params.value.limit;
     const newArticles = await fetchArticles(currentFeedParam.value);
 
     if (newArticles && newArticles.length > 0) {
@@ -148,7 +145,7 @@ const load = async ($state) => {
       articlesFeed.value.push(...newArticles);
 
       // Move the pointer for the NEXT request
-      params.value.start += params.value.limit;
+      // params.value.start += params.value.limit;
 
       $state.loaded();
     } else {
@@ -178,8 +175,13 @@ const fetchArticles = async (feedName) => {
 
   try {
     if (fetchedArticles?.data) {
-      const { total, values: articles } = fetchedArticles.data;
+      const { total, values: articles = [] } = fetchedArticles.data;
       totalRecords.value = total;
+
+      if (!total) {
+        isInitialLoading.value = false;
+        return [];
+      }
 
       // Transform the NEW articles batch only
       const articleWithImage = await attachArticleImage(articles);
@@ -187,7 +189,7 @@ const fetchArticles = async (feedName) => {
 
       await handleArticleAuthorFollowers(articleWithAuthor);
       await handleSavedArticles(articleWithAuthor);
-      handleArticleUrl(articleWithAuthor);
+      handleArticleRoute(articleWithAuthor);
 
       return articleWithAuthor;
     }
@@ -199,9 +201,9 @@ const fetchArticles = async (feedName) => {
   }
 };
 
-const handleArticleUrl = (articles) => {
+const handleArticleRoute = (articles) => {
   for (const article of articles) {
-    article.url = slugify(article.title);
+    article.route = slugify(article.title);
   }
 };
 

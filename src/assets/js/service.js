@@ -75,6 +75,88 @@ export const addArticle = async (data) => {
   }
 };
 
+export const addArticleView = async (params) => {
+  const authToken = token();
+  if (!authToken) {
+    return { ok: false, result: { message: "No token" } };
+  }
+
+  try {
+    const options = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    };
+
+    const url = new URL(`${API_URL}/articles/views`);
+
+    url.search = new URLSearchParams(params).toString();
+
+    const response = await fetch(url, options);
+    const result = await response.json();
+
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error adding article:", error);
+    return { ok: false, result: { message: error.message } };
+  }
+};
+
+export const addArticleRead = async (params) => {
+  const authToken = token();
+  if (!authToken) {
+    return { ok: false, result: { message: "No token" } };
+  }
+
+  try {
+    const options = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    };
+
+    const url = new URL(`${API_URL}/articles/reads`);
+
+    url.search = new URLSearchParams(params).toString();
+
+    const response = await fetch(url, options);
+    const result = await response.json();
+
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error adding article:", error);
+    return { ok: false, result: { message: error.message } };
+  }
+};
+
+export const addArticleReadSession = async (params) => {
+  const authToken = token();
+  if (!authToken) {
+    return { ok: false, result: { message: "No token" } };
+  }
+
+  try {
+    const options = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    };
+    const url = new URL(`${API_URL}/articles/read-session`);
+
+    url.search = new URLSearchParams(params).toString();
+    const response = await fetch(url, options);
+    const result = await response.json();
+
+    return { ok: response.ok, result };
+  } catch (error) {
+    console.error("Error adding article:", error);
+    return { ok: false, result: { message: error.message } };
+  }
+};
+
 export const addImage = async (id, data, type) => {
   try {
     const options = {
@@ -115,9 +197,7 @@ export const editArticle = async (id, data) => {
 
 export const getAuthorArticles = async (id, params = {}) => {
   try {
-    const url = new URL(
-      `${API_URL}/articles/authors/${id}${params?.term ? "/search" : ""}`
-    );
+    const url = new URL(`${API_URL}/articles/authors/${id}`);
 
     url.search = new URLSearchParams(params).toString();
 
@@ -210,6 +290,26 @@ export const getAuthorById = async (id) => {
     };
 
     const response = await fetch(`${API_URL}/authors/${id}`, options);
+    return await response.json();
+  } catch (error) {
+    console.log({ error });
+    console.error("Error fetching author data");
+  }
+};
+
+export const getAuthorByUsername = async (username) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(
+      `${API_URL}/authors/username/${username}`,
+      options
+    );
     return await response.json();
   } catch (error) {
     console.log({ error });
@@ -314,7 +414,7 @@ export const getArticleAnalytics = async (id) => {
     };
 
     const response = await fetch(
-      `${API_URL}/articles/${id}/article-analytics`,
+      `${API_URL}/articles/${id}/analytics`,
       options
     );
     return await response.json();
@@ -391,8 +491,11 @@ export const getTagById = async (id) => {
   }
 };
 
-export const searchTags = async (query) => {
+export const searchArticles = async (params) => {
   try {
+    const url = new URL(`${API_URL}/articles/search`);
+    url.search = new URLSearchParams(params).toString();
+
     const options = {
       method: "GET",
       headers: {
@@ -400,14 +503,51 @@ export const searchTags = async (query) => {
       },
     };
 
-    const response = await fetch(
-      `${API_URL}/tags/search?term=${encodeURIComponent(query)}`,
-      options
-    );
+    const response = await fetch(url, options);
     return await response.json();
   } catch (error) {
     console.log({ error });
-    console.error("Error fetching author data");
+    console.error("Error searching for articles");
+  }
+};
+
+export const searchTags = async (params) => {
+  try {
+    const url = new URL(`${API_URL}/tags/search`);
+    url.search = new URLSearchParams(params).toString();
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.log({ error });
+    console.error("Error searching for tags");
+  }
+};
+
+export const searchAuthors = async (params) => {
+  try {
+    const url = new URL(`${API_URL}/authors/search`);
+    url.search = new URLSearchParams(params).toString();
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.log({ error });
+    console.error("Error searching for tags");
   }
 };
 
@@ -663,6 +803,22 @@ export const getRecommendedAuthors = async (id, tagId, limit) => {
   }
 };
 
+export const getRecommendedTopicAuthors = async (id, tagId, limit) => {
+  try {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+    let url = `${API_URL}/authors/recommended-tags-authors/${id}?limit${limit}&?tagId=${tagId}`;
+    const response = await fetch(url, options);
+    return response.json();
+  } catch (error) {
+    console.error("Error getting recommended topics:", error);
+  }
+};
+
 export const getSingleAuthorInterest = async (tagId, authorId) => {
   try {
     const url = new URL(`${API_URL}/tags/author-interest/${tagId}/${authorId}`);
@@ -719,7 +875,94 @@ export const getFeaturedArticles = async (id, params = {}) => {
 };
 
 export const getTrendingArticles = async () => {
-  return [];
+  try {
+    const url = new URL(`${API_URL}/articles/trending-feeds`);
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching articles", error);
+  }
+};
+
+export const getLatestTagArticles = async (tagId) => {
+  try {
+    const url = new URL(`${API_URL}/articles/tag/${tagId}/latest-tag-feeds`);
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching articles", error);
+  }
+};
+
+export const getUserStats = async (params) => {
+  try {
+    const url = new URL(`${API_URL}/articles/author-stats`);
+    url.search = new URLSearchParams(params).toString();
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching author stats", error);
+  }
+};
+
+export const getUserDailyStats = async (id) => {
+  try {
+    const url = `${API_URL}/articles/author-daily-stats/${id}`;
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching author stats", error);
+  }
+};
+
+export const getUserBestPerformingArticles = async (id) => {
+  try {
+    const url = `${API_URL}/articles/author-best-articles/${id}`;
+
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching author stats", error);
+  }
 };
 
 export const deleteArticle = async (id) => {

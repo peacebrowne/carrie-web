@@ -9,8 +9,13 @@
       v-for="article in articlesFeed"
       :key="article.id"
       class="border relative p-2 rounded-none border-t-0 border-r-0 border-l-0"
+      :pt="{
+        icons: {
+          class: 'hidden',
+        },
+      }"
     >
-      <template #header>
+      <template v-if="article.author" #header>
         <div class="flex items-center gap-2">
           <router-link
             :to="{
@@ -59,24 +64,12 @@
         </div>
       </template>
 
-      <template #icons>
-        <Button
-          icon="pi pi-ellipsis-h"
-          severity="secondary"
-          rounded
-          text
-          @click="toggle"
-        />
-        <Menu ref="menu" id="config_menu" :model="items" popup />
-      </template>
-
       <router-link
         class="w-full"
         :to="{
           name: 'public-article-detail',
-          params: { url: article.url },
+          params: { route: article.route },
         }"
-        @click="handleArticleStore(article)"
       >
         <Card
           pt:body:class="flex-1 p-0 m-auto"
@@ -85,7 +78,7 @@
           <!-- Text Content -->
           <template #content>
             <div class="flex flex-row w-full">
-              <div class="basis-3/4">
+              <div class="basis-3/4 relative">
                 <h3 class="title-preview font-black text-2xl pr-4">
                   {{ article.title }}
                 </h3>
@@ -133,36 +126,34 @@
                     <span class="pi pi-comments text-sm"></span>
                     <span class="text-sm">{{ article.totalComments }}</span>
                   </div>
+                </div>
 
-                  <div
-                    class="ml-auto w-32 flex absolute z-30 justify-center bottom-0 right-0"
-                  >
-                    <Button
-                      v-if="article.isSaved"
-                      v-tooltip.top="'Saved'"
-                      class="text-sm"
-                      icon="pi pi-bookmark-fill"
-                      severity="secondary"
-                      variant="text"
-                      rounded
-                      aria-label="Bookmark"
-                      @click.stop.prevent="
-                        removeArticleFromReadingList(article)
-                      "
-                    />
+                <div
+                  class="ml-auto w-32 flex absolute z-30 justify-center bottom-0 right-0"
+                >
+                  <Button
+                    v-if="article.isSaved"
+                    v-tooltip.top="'Saved'"
+                    class="text-sm"
+                    icon="pi pi-bookmark-fill"
+                    severity="secondary"
+                    variant="text"
+                    rounded
+                    aria-label="Bookmark"
+                    @click.stop.prevent="removeArticleFromReadingList(article)"
+                  />
 
-                    <Button
-                      v-else
-                      v-tooltip.top="'Save'"
-                      class="text-sm"
-                      icon="pi pi-bookmark"
-                      severity="secondary"
-                      variant="text"
-                      rounded
-                      aria-label="Bookmark"
-                      @click.stop.prevent="addArticleToReadingList(article)"
-                    />
-                  </div>
+                  <Button
+                    v-else
+                    v-tooltip.top="'Save'"
+                    class="text-sm"
+                    icon="pi pi-bookmark"
+                    severity="secondary"
+                    variant="text"
+                    rounded
+                    aria-label="Bookmark"
+                    @click.stop.prevent="addArticleToReadingList(article)"
+                  />
                 </div>
               </div>
 
@@ -201,7 +192,6 @@
           params: { id: article.id },
         }"
         v-slot="{ navigate }"
-        @click="handleArticleStore(article)"
       >
         <Card
           pt:body:class="flex-1 p-0 m-auto"
@@ -306,7 +296,6 @@
                                 name: 'edit-article',
                                 params: { id: article.id },
                               }"
-                              @click="handleArticleStore(article)"
                             >
                               <div class="flex items-center gap-2">
                                 <i class="pi pi-pencil text-xs" />
@@ -431,7 +420,6 @@ const copyToClipboard = async (articleIdentifier) => {
   const url = `${window.location.origin}/@${user.value?.username}/${articleIdentifier}`;
   try {
     await navigator.clipboard.writeText(url);
-    console.log(await navigator.clipboard.readText());
 
     // Show a success toast
     toast.add({

@@ -73,7 +73,7 @@ export const cookiesStore = defineStore("cookiesStore", () => {
     console.log({ decoded });
 
     Cookies.set("token", token, {
-      expires: (1 / 1440) * 30,
+      expires: 1,
       sameSite: "Strict",
     });
   };

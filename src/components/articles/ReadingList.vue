@@ -48,9 +48,8 @@
           class="w-full"
           :to="{
             name: 'public-article-detail',
-            params: { url: list.url },
+            params: { route: list.route },
           }"
-          @click="handleArticleStore(list)"
         >
           <Card
             pt:body:class="flex-1 p-0 m-auto"
@@ -157,9 +156,9 @@ const handleReadingList = ({ action, targetArticle }) => {
   }
 };
 
-const handleArticleUrl = (articles) => {
+const handleArticleRoute = (articles) => {
   for (const article of articles) {
-    article.data.url = slugify(article.data.title);
+    article.data.route = slugify(article.data.title);
   }
 };
 
@@ -180,7 +179,7 @@ const fetchReadingList = async () => {
     );
 
     totalReadingList.value = total;
-    handleArticleUrl(readingListArticles);
+    handleArticleRoute(readingListArticles);
     const articles = readingListArticles
       .map((article) => article.data)
       .slice(0, 4);

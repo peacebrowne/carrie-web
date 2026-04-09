@@ -5,14 +5,7 @@
   <div id="main-content" class="w-full h-dvh">
     <div class="container m-auto flex w-full h-dvh md:px-8 lg:px-36 2xl:px-52">
       <div class="flex flex-col gap-4 h-full w-full">
-        <ScrollPanel
-          class="w-full h-full pb-16"
-          :dt="{
-            bar: {
-              background: 'red-500',
-            },
-          }"
-        >
+        <ScrollPanel class="w-full h-full pb-16">
           <header class="w-full">
             <HeaderBar :activeSection="'Stories'" />
           </header>
@@ -105,7 +98,7 @@ const user = ref(null);
 const articlesFeed = ref([]);
 const totalRecords = ref();
 const isInitialLoading = ref(true);
-const params = ref({ start: 0, limit: 10, status: "draft" });
+const params = ref({ start: 0, limit: 10, status: "DRAFT" });
 
 const activeSection = defineModel("activeSection");
 const breadCrumbs = defineModel("breadCrumbs");
@@ -135,9 +128,9 @@ const feeds = ref([
 // Determine current tab from route query (fallback to draft)
 const currentTabParam = computed(() => {
   const tab = route.query.tab;
-  if (tab === "posts-scheduled") return "scheduled";
-  if (tab === "post-published") return "published";
-  return "draft";
+  if (tab === "posts-scheduled") return "SCHEDULED";
+  if (tab === "post-published") return "PUBLISHED";
+  return "DRAFT";
 });
 
 // Update activeSection and breadcrumbs on route change

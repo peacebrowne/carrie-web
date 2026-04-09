@@ -20,7 +20,7 @@
                 v-ripple
                 :href="href"
                 @click="navigate"
-                class="flex items-center text-sm gap-2 text-inherit"
+                class="flex items-center text-xs gap-2 text-inherit"
               >
                 <i class="pi pi-compass"></i>
                 <span>Explore Topics</span>
@@ -41,7 +41,7 @@
                 v-ripple
                 :href="href"
                 @click="navigate"
-                class="flex items-center text-sm gap-2 text-inherit"
+                class="flex items-center text-xs gap-2 text-inherit"
               >
                 <span>{{ topic.name }}</span>
               </a>

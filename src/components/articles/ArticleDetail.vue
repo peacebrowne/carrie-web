@@ -9,11 +9,12 @@
   </nav>
   <div id="main-content" class="w-full h-full">
     <div
-      class="container m-auto flex w-full h-full md:px-8 lg:px-36 2xl:px-52 pt-6"
+      id="article-detail"
+      class="container m-auto flex w-full h-full md:px-8 lg:px-24 2xl:px-52 pt-6"
     >
       <div class="flex-1 mx-auto h-full">
         <ScrollPanel class="flex-1 w-full mx-auto px-2">
-          <div id="article-detail" class="w-full flex flex-col gap-8">
+          <div class="w-full flex flex-col gap-8">
             <div>
               <h1 class="text-4xl font-black">
                 {{ article.title }}
@@ -100,7 +101,7 @@
                       clip-rule="evenodd"
                     ></path>
                   </svg>
-                  <span class="text-sm">{{ article.likes }}</span>
+                  <span class="text-sm">{{ article.totalLikes }}</span>
                 </Button>
               </div>
               <div class="flex items-center gap-2">
@@ -170,7 +171,7 @@
             </div>
 
             <div>
-              <p class="text-2xl">
+              <p class="text-lg">
                 {{ article.description }}
               </p>
             </div>
@@ -264,7 +265,10 @@
               <p :id="$style.biography" v-html="author.biography"></p>
             </Panel>
 
-            <ArticleComments :commentData="commentData" />
+            <ArticleComments
+              v-model:commentData="commentData"
+              @update-total-comments="updateTotalComment"
+            />
           </div>
           <ScrollTop
             target="parent"
@@ -280,7 +284,6 @@
       <div class="w-[21rem] h-full mx-auto pt-4">
         <ScrollPanel class="w-full h-full pb-16">
           <RecommendedTopics type="chips" />
-          <!-- <ReadingList :readingListItem="readingListItem" /> -->
           <RecommendedAuthors type="home" />
         </ScrollPanel>
       </div>
@@ -301,9 +304,12 @@ import {
   getFollowedAuthors,
   removeFromReadingList,
   unfollowAuthor,
+  addArticleView,
+  addArticleRead,
+  addArticleReadSession,
 } from "@/assets/js/service.js";
 import { articleStore } from "../../stores/index.js";
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { userStore } from "@/stores";
 import { useToast } from "primevue/usetoast";
 
@@ -330,12 +336,18 @@ const commentData = ref({
   id: null,
 });
 const route = useRoute();
+const startTime = ref(null);
+
+const updateTotalComment = (n) => {
+  commentData.value.comments = n;
+  article.value.totalComments = n;
+};
 
 const fetchArticleById = async () => {
   let fetchedArticle = await store.getArticle();
 
   if (!fetchedArticle) {
-    const title = route.params.url || route.fullPath;
+    const title = route.params?.route || route.fullPath;
     const { data } = await getArticleByTitle(title);
     fetchedArticle = data;
   }
@@ -347,7 +359,7 @@ const fetchArticleById = async () => {
   author.value = fetchedAuthor;
   await handleAuthorFollowers(fetchedAuthor);
 
-  commentData.value.likes = fetchedArticle.likes;
+  commentData.value.likes = fetchedArticle.totalLikes;
   commentData.value.comments = fetchedArticle.totalComments;
   commentData.value.id = fetchedArticle.id;
 
@@ -426,7 +438,7 @@ const handleArticleClaps = async () => {
   };
 
   const { result, ok } = await addClaps(data);
-  if (ok) article.value.likes++;
+  if (ok) article.value.totalLikes++;
 };
 
 const readingTime = ref(0);
@@ -480,21 +492,19 @@ const isPaused = ref(false);
 const synth = window.speechSynthesis;
 
 const toggleSpeech = (article) => {
-  // 1. If we are currently speaking (active or paused)
+  // If we are currently speaking (active or paused)
   if (synth.speaking) {
     if (isPaused.value) {
       synth.resume();
       isPaused.value = false;
     } else {
-      // Force a slight delay or check before pausing
       synth.pause();
       isPaused.value = true;
     }
     return;
   }
 
-  // 2. Start new speech
-  // It's safer to cancel any ghost processes before starting
+  // Start new speech
   synth.cancel();
 
   const { title, description, content } = article;
@@ -504,7 +514,7 @@ const toggleSpeech = (article) => {
   const utterance = new SpeechSynthesisUtterance(fullText);
   utterance.voice = synth.getVoices()[0];
 
-  // 3. State Management Listeners
+  // State Management Listeners
   utterance.onstart = () => {
     isSpeaking.value = true;
     isPaused.value = false;
@@ -524,10 +534,120 @@ const toggleSpeech = (article) => {
   synth.speak(utterance);
 };
 
+const hasViewed = ref(false);
+const hasRead = ref(false);
+const articleObserver = ref(null);
+
+const initViewObserver = () => {
+  const target = document.querySelector("nav");
+
+  if (!target) return;
+
+  articleObserver.value = new IntersectionObserver(
+    ([entry]) => {
+      console.log({ entry });
+      if (entry.isIntersecting && !hasViewed.value) {
+        hasViewed.value = true;
+
+        setTimeout(async () => {
+          if (!hasViewed.value) return;
+
+          await addArticleView({
+            articleId: article.value.id,
+            userId: user.value.id,
+          });
+
+          console.log("📈 Article view recorded");
+        }, 3000);
+      }
+    },
+    { threshold: 0.6 }
+  );
+
+  articleObserver.value.observe(target);
+};
+
+const handleScrollRead = async () => {
+  if (hasRead.value) return;
+
+  const content = document.querySelector("#article-detail");
+  if (!content) return;
+
+  const scrollTop = window.scrollY;
+  const viewportHeight = window.innerHeight;
+  const contentHeight = content.offsetHeight;
+
+  const scrollPercent = (scrollTop + viewportHeight) / contentHeight;
+
+  if (scrollPercent >= 0.7) {
+    hasRead.value = true;
+
+    await addArticleRead({
+      articleId: article.value.id,
+      userId: user.value.id,
+    });
+
+    console.log("📘 Article read recorded");
+  }
+};
+
+const recordReadSession = async () => {
+  if (!startTime.value || !article.value?.id || !user.value?.id) return;
+
+  const endTime = Date.now();
+  // Calculate duration in seconds
+  const durationInSeconds = Math.floor((endTime - startTime.value) / 1000);
+
+  // Only record if the user stayed for more than 5 seconds
+  if (durationInSeconds > 5) {
+    try {
+      await addArticleReadSession({
+        articleId: article.value.id,
+        userId: user.value.id,
+        duration: durationInSeconds,
+      });
+      console.log(`⏱️ Session recorded: ${durationInSeconds}s`);
+    } catch (error) {
+      console.error("Failed to record session:", error);
+    }
+  }
+
+  // Reset start time to prevent double recording
+  startTime.value = null;
+};
+
+// Handle cases where user switches tabs or minimizes browser
+const handleVisibilityChange = () => {
+  if (document.visibilityState === "hidden") {
+    recordReadSession();
+  } else {
+    // Restart timer if they come back
+    startTime.value = Date.now();
+  }
+};
+
 onMounted(async () => {
   const { getUser } = userStore();
   user.value = await getUser();
   await fetchArticleById();
+
+  // Start the timer
+  startTime.value = Date.now();
+
+  synth.cancel();
+  initViewObserver();
+  window.addEventListener("scroll", handleScrollRead);
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+});
+
+onUnmounted(() => {
+  // Record session before leaving
+  recordReadSession();
+
+  synth.cancel();
+  articleObserver.value?.disconnect();
+  window.removeEventListener("scroll", handleScrollRead);
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
 });
 </script>
 
@@ -542,8 +662,9 @@ onMounted(async () => {
 }
 
 #content > p > span,
-#content > p {
-  font-size: large;
+#content > p,
+#content > ol > li {
+  font-size: small;
 }
 
 #biography > p > span,

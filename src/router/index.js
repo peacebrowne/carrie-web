@@ -15,6 +15,7 @@ import ExploreTopics from "@/components/tags/ExploreTopics.vue";
 
 import AuthorProfile from "@/components/profiles/AuthorProfile.vue";
 import Personalization from "@/components/personalization/Personalization.vue";
+import SearchList from "@/components/search/SearchList.vue";
 // import NotFound from "@/views/NotFound.vue"; // Uncomment and create NotFound component
 
 const routes = [
@@ -67,6 +68,7 @@ const routes = [
           },
         ],
       },
+
       {
         path: "chats",
         component: Chats,
@@ -114,7 +116,7 @@ const routes = [
       //   props: true,
       // },
       {
-        path: ":url",
+        path: ":route",
         component: ArticleDetail,
         name: "public-article-detail",
         props: true,
@@ -145,13 +147,23 @@ const routes = [
   },
   {
     path: "/@:username",
-    name: "author-profile",
-    meta: {
-      requiresAuth: true,
-    },
     component: AuthorProfile,
+    meta: { requiresAuth: true },
     props: true,
+    children: [
+      {
+        path: "",
+        name: "author-profile",
+        component: AuthorProfile,
+      },
+      {
+        path: "about",
+        name: "author-about",
+        component: AuthorProfile,
+      },
+    ],
   },
+
   {
     path: "/auth",
     component: LoginView,
@@ -180,6 +192,20 @@ const routes = [
     path: "/write",
     component: AddArticle,
     name: "write",
+  },
+  {
+    path: "/search",
+    children: [
+      {
+        path: ":type",
+        component: SearchList,
+        name: "search",
+      },
+      {
+        path: "",
+        redirect: "/search/posts",
+      },
+    ],
   },
   {
     path: "/:id/edit",

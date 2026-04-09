@@ -28,7 +28,10 @@
     </div>
   </div>
 
-  <div v-else class="flex flex-col gap-2 px-2 animate-pulse">
+  <div
+    v-else-if="type === 'chip'"
+    class="flex flex-col gap-2 px-2 animate-pulse"
+  >
     <div class="pt-4 pb-4">
       <Skeleton width="8rem" height="1rem"></Skeleton>
     </div>

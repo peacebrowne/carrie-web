@@ -34,7 +34,7 @@ export const handleImage = async (id) => {
 
 export const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const truncateText = (text, maxLength = 50) => {
+export const truncateText = (text, maxLength = 40) => {
   if (!text) {
     return text;
   }

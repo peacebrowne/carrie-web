@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-neutral-900 dark:text-neutral-100"
+    class="container m-auto md:px-8 lg:px-36 2xl:px-52 pt-6 relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-neutral-900 dark:text-neutral-100"
   >
     <div class="layout-container flex h-full grow flex-col">
       <div class="flex flex-1 justify-center py-5">
@@ -10,33 +10,24 @@
           <main class="flex-1 mt-6">
             <div class="flex flex-wrap justify-between gap-4 items-center p-4">
               <p
-                class="text-neutral-900 dark:text-neutral-100 text-4xl font-black leading-tight tracking-[-0.033em] min-w-72"
+                class="text-neutral-900 dark:text-neutral-100 text-3xl font-black leading-tight tracking-[-0.033em] min-w-72"
               >
                 Your Stats
               </p>
               <div class="flex flex-wrap gap-2">
-                <PButton
-                  label="Last 30 days"
-                  icon="pi pi-angle-down"
-                  iconPos="right"
-                  class="h-9 pl-4 pr-2 !bg-primary/20 dark:!bg-primary/30 text-primary dark:text-primary text-sm font-bold !border-none"
-                />
-                <PButton
-                  label="Last 90 days"
-                  class="h-9 px-4 !bg-neutral-100 dark:!bg-neutral-500/20 text-neutral-900 dark:text-neutral-100 text-sm font-medium !border-none"
-                />
-                <PButton
-                  label="This year"
-                  class="h-9 px-4 !bg-neutral-100 dark:!bg-neutral-500/20 text-neutral-900 dark:text-neutral-100 text-sm font-medium !border-none"
-                />
-                <PButton
-                  label="All time"
-                  class="h-9 px-4 !bg-neutral-100 dark:!bg-neutral-500/20 text-neutral-900 dark:text-neutral-100 text-sm font-medium !border-none"
+                <Select
+                  v-model="selectedTimeRange"
+                  :options="timeRanges"
+                  optionLabel="label"
+                  class="w-full md:w-56 rounded-full text-sm"
+                  placeholder="Last 30 days"
+                  @change="onChange"
+                  variant="outlined"
                 />
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
               <PCard
                 v-for="stat in stats"
                 :key="stat.title"
@@ -54,176 +45,48 @@
                     >
                       {{ stat.value }}
                     </p>
-                    <div
-                      class="flex items-center gap-1 text-success text-sm font-medium leading-normal"
-                    >
-                      <i class="pi pi-chart-line text-base"></i>
-                      <span>{{ stat.change }}</span>
-                    </div>
+                  </div>
+
+                  <div
+                    class="flex items-center gap-1 text-sm font-medium leading-normal"
+                    :class="stat.isPositive ? 'text-green-700' : 'text-red-700'"
+                  >
+                    <i
+                      :class="
+                        stat.isPositive
+                          ? 'pi pi-chart-line'
+                          : 'pi pi-chart-scatter'
+                      "
+                      class="text-base"
+                    ></i>
+
+                    <span>{{ stat.change }}</span>
                   </div>
                 </template>
               </PCard>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4">
+            <div class="w-full p-4">
               <PCard
-                class="lg:col-span-2 !shadow-none !border border-neutral-200 dark:border-neutral-500/20 !bg-white dark:!bg-background-dark"
+                class="w-full !shadow-none !border border-neutral-200 dark:border-neutral-500/20 !bg-white dark:!bg-background-dark"
               >
                 <template #content>
-                  <div class="flex flex-col gap-2">
-                    <p
-                      class="text-neutral-900 dark:text-neutral-100 text-base font-medium leading-normal"
+                  <div class="flex flex-col px-4 gap-2">
+                    <h4
+                      class="text-neutral-900 dark:text-neutral-100 text-base font-black leading-normal"
                     >
-                      Views (Last 30 Days)
+                      Monthly
+                      <Chip
+                        :label="currentDate.month"
+                        variant="contrast"
+                        class="text-sm py-1"
+                      />
+                    </h4>
+                    <p class="text-xs">
+                      {{ currentDate.fullDate }} – Today (UTC)
                     </p>
-                    <p
-                      class="text-neutral-900 dark:text-neutral-100 tracking-light text-4xl font-bold leading-tight truncate"
-                    >
-                      12,149
-                    </p>
-                    <div class="flex gap-1">
-                      <p
-                        class="text-neutral-500 text-sm font-normal leading-normal"
-                      >
-                        vs. previous 30 days
-                      </p>
-                      <p
-                        class="text-success text-sm font-medium leading-normal"
-                      >
-                        +15.2%
-                      </p>
-                    </div>
-                    <div class="flex min-h-[220px] flex-1 flex-col gap-8 py-4">
-                      <svg
-                        fill="none"
-                        height="100%"
-                        preserveaspectratio="none"
-                        viewBox="-3 0 478 150"
-                        width="100%"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z"
-                          fill="url(#paint0_linear_1131_5935)"
-                        ></path>
-                        <path
-                          d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25"
-                          stroke="#17cf91"
-                          stroke-linecap="round"
-                          stroke-width="3"
-                        ></path>
-                        <defs>
-                          <lineargradient
-                            gradientUnits="userSpaceOnUse"
-                            id="paint0_linear_1131_5935"
-                            x1="236"
-                            x2="236"
-                            y1="1"
-                            y2="149"
-                          >
-                            <stop
-                              stop-color="#17cf91"
-                              stop-opacity="0.3"
-                            ></stop>
-                            <stop
-                              offset="1"
-                              stop-color="#17cf91"
-                              stop-opacity="0"
-                            ></stop>
-                          </lineargradient>
-                        </defs>
-                      </svg>
-                      <div class="flex justify-between">
-                        <p
-                          class="text-neutral-500 text-xs font-bold leading-normal tracking-[0.015em]"
-                          v-for="i in 6"
-                          :key="i"
-                        >
-                          {{ i * 5 }}
-                        </p>
-                        <p
-                          class="text-neutral-500 text-xs font-bold leading-normal tracking-[0.015em]"
-                        >
-                          30
-                        </p>
-                      </div>
-                    </div>
                   </div>
-                </template>
-              </PCard>
-
-              <PCard
-                class="!shadow-none !border border-neutral-200 dark:border-neutral-500/20 !bg-white dark:!bg-background-dark"
-              >
-                <template #content>
-                  <p
-                    class="text-neutral-900 dark:text-neutral-100 text-base font-medium leading-normal"
-                  >
-                    Traffic Sources
-                  </p>
-                  <div
-                    class="flex items-center justify-center min-h-[220px] flex-1"
-                  >
-                    <div class="relative w-48 h-48">
-                      <svg class="w-full h-full" viewBox="0 0 36 36">
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="#6366f1"
-                          stroke-dasharray="60, 100"
-                          stroke-width="3.8"
-                        ></path>
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="#ec4899"
-                          stroke-dasharray="25, 100"
-                          stroke-dashoffset="-60"
-                          stroke-width="3.8"
-                        ></path>
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="#8b5cf6"
-                          stroke-dasharray="10, 100"
-                          stroke-dashoffset="-85"
-                          stroke-width="3.8"
-                        ></path>
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="#10b981"
-                          stroke-dasharray="5, 100"
-                          stroke-dashoffset="-95"
-                          stroke-width="3.8"
-                        ></path>
-                      </svg>
-                      <div
-                        class="absolute inset-0 flex flex-col items-center justify-center"
-                      >
-                        <span
-                          class="text-3xl font-bold text-neutral-900 dark:text-neutral-100"
-                          >2.1k</span
-                        >
-                        <span class="text-sm text-neutral-500">Referrals</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                    <div
-                      v-for="source in trafficSources"
-                      :key="source.name"
-                      class="flex items-center gap-2"
-                    >
-                      <div
-                        class="w-2 h-2 rounded-full"
-                        :style="{ backgroundColor: source.color }"
-                      ></div>
-                      <span class="text-neutral-900 dark:text-neutral-100"
-                        >{{ source.name }} ({{ source.percent }})</span
-                      >
-                    </div>
-                  </div>
+                  <Line />
                 </template>
               </PCard>
             </div>
@@ -237,39 +100,51 @@
                 >
                   Story Stats
                 </h3>
-                <PDataTable
+                <DataTable
                   :value="storyData"
                   stripedRows
-                  class="p-datatable-sm"
+                  tableStyle="min-width: 50rem"
                   :pt="{
                     header: {
                       class: '!bg-neutral-100 dark:!bg-neutral-500/10',
                     },
                     thead: {
                       class:
-                        'text-neutral-500 uppercase tracking-wider font-medium',
+                        'text-neutral-500 uppercase text-xs tracking-wider font-medium',
                     },
                     bodyRow: {
                       class:
-                        'hover:!bg-neutral-100/50 dark:hover:!bg-neutral-500/10',
+                        'hover:!bg-neutral-100/50 dark:hover:!bg-neutral-500/10 text-xs text-center',
                     },
                     column: {
-                      headercell: { class: 'px-6 py-3' },
-                      bodycell: { class: 'px-6 py-4' },
+                      headercell: { class: 'px-6 py-3 ' },
+                      bodycell: { class: 'px-6 py-4 ' },
                     },
                   }"
                 >
-                  <PColumn
-                    field="story"
+                  <Column
                     header="Story"
-                    class="font-medium text-neutral-900 dark:text-neutral-100"
-                  ></PColumn>
-                  <PColumn field="views" header="Views"></PColumn>
-                  <PColumn field="reads" header="Reads"></PColumn>
-                  <PColumn field="readRatio" header="Read Ratio"></PColumn>
-                  <PColumn field="claps" header="Claps"></PColumn>
-                  <PColumn field="published" header="Published"></PColumn>
-                </PDataTable>
+                    class="font-medium text-neutral-900 dark:text-neutral-100 text-left"
+                  >
+                    <template #body="slotProps">
+                      <router-link
+                        :to="{
+                          name: 'public-article-detail',
+                          params: { route: slotProps.data.route },
+                        }"
+                        class="hover:text-blue-500 hover:underline transition-colors duration-200 title-preview"
+                      >
+                        {{ truncateText(slotProps.data.title) }}
+                      </router-link>
+                    </template>
+                  </Column>
+
+                  <Column field="views" header="Views"></Column>
+                  <Column field="reads" header="Reads"></Column>
+                  <Column field="readRatio" header="Read Ratio"></Column>
+                  <Column field="claps" header="Claps"></Column>
+                  <Column field="published" header="Published"></Column>
+                </DataTable>
               </div>
             </div>
           </main>
@@ -280,93 +155,141 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import PCard from "primevue/card";
-import PButton from "primevue/button";
-import PDataTable from "primevue/datatable";
-import PColumn from "primevue/column";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import { userStore } from "@/stores";
+import {
+  getArticleAnalytics,
+  getUserBestPerformingArticles,
+  getUserStats,
+} from "@/assets/js/service";
+import {
+  capitalize,
+  describeNumberScale,
+  handleDateFormat,
+  slugify,
+  truncateText,
+} from "@/assets/js/util";
+import Line from "./charts/Line.vue";
 
-// Navigation data for Menubar (though custom HTML was used in the template)
-const menuItems = ref([
-  {
-    label: "Home",
-    url: "#",
-    class:
-      "text-neutral-900 dark:text-neutral-100 text-sm font-medium leading-normal",
-  },
-  {
-    label: "Stories",
-    url: "#",
-    class:
-      "text-neutral-900 dark:text-neutral-100 text-sm font-medium leading-normal",
-  },
-  {
-    label: "Stats",
-    url: "#",
-    class: "text-primary dark:text-primary text-sm font-bold leading-normal",
-  },
-]);
-
-// Data for the summary stats cards
-const stats = ref([
-  { title: "Views", value: "12.1K", change: "+15.2%" },
-  { title: "Reads", value: "8,432", change: "+12.8%" },
-  { title: "Claps", value: "1,204", change: "+9.1%" },
-]);
-
-// Data for the traffic sources legend
-const trafficSources = ref([
-  { name: "Internal", percent: "60%", color: "#6366f1" },
-  { name: "Social", percent: "25%", color: "#ec4899" },
-  { name: "Search", percent: "10%", color: "#8b5cf6" },
-  { name: "Direct", percent: "5%", color: "#10b981" },
+const selectedTimeRange = ref();
+const stats = ref([]);
+const user = ref("");
+const currentDate = ref({
+  month: "",
+  fullDate: "",
+});
+const timeRanges = ref([
+  { label: "Last 30 days", value: "30 days" },
+  { label: "Last 90 days", value: "90 days" },
+  { label: "This year", value: "this_year" },
+  { label: "All time", value: "" },
 ]);
 
 // Data for the DataTable
-const storyData = ref([
-  {
-    story: "The Future of UI Design in a Post-AI World",
-    views: "4,812",
-    reads: "3,120",
-    readRatio: "65%",
-    claps: "405",
-    published: "Oct 2, 2023",
-  },
-  {
-    story: "10 Tailwind CSS Tricks You Didn't Know",
-    views: "3,509",
-    reads: "2,980",
-    readRatio: "85%",
-    claps: "312",
-    published: "Sep 15, 2023",
-  },
-  {
-    story: "A Guide to Minimalist Web Design",
-    views: "2,105",
-    reads: "1,450",
-    readRatio: "69%",
-    claps: "250",
-    published: "Aug 28, 2023",
-  },
-  {
-    story: "Why I Switched from Figma to Penpot",
-    views: "1,560",
-    reads: "980",
-    readRatio: "63%",
-    claps: "188",
-    published: "Aug 5, 2023",
-  },
-  {
-    story: "Creating Your First Design System",
-    views: "976",
-    reads: "761",
-    readRatio: "78%",
-    claps: "149",
-    published: "Jul 21, 2023",
-  },
-]);
+const storyData = ref([]);
+
+const fetchUserStatistics = async (duration) => {
+  const { data: statistics } = await getUserStats({
+    userId: user.value.id,
+    duration,
+  });
+
+  const currentKeys = Object.keys(statistics).filter((key) =>
+    key.startsWith("current_")
+  );
+
+  const values = currentKeys.map((key) => {
+    // Transform 'current_views' -> 'views'
+    const baseName = key.replace("current_", "");
+
+    const currentValue = statistics[key] || 0;
+    const previousValue = statistics[`previous_${baseName}`] || 0;
+
+    return {
+      title: capitalize(baseName.split("_").join(" ")),
+      value: describeNumberScale(currentValue),
+      change: calculatePercentageChange(currentValue, previousValue),
+      isPositive: currentValue >= previousValue,
+    };
+  });
+
+  stats.value = values;
+};
+
+const calculatePercentageChange = (current, previous) => {
+  if (!previous || previous === 0) {
+    return current > 0 ? "+100%" : "0%";
+  }
+  const diff = ((current - previous) / previous) * 100;
+  return `${diff >= 0 ? "+" : ""}${diff.toFixed(1)}%`;
+};
+
+const onChange = async (event) => {
+  fetchUserStatistics(event.value.value);
+};
+
+const startOfMonth = () => {
+  const date = new Date();
+  currentDate.value.fullDate = handleDateFormat(
+    new Date(date.getFullYear(), date.getMonth(), 1),
+    "MMMM DD, YYYY"
+  );
+
+  currentDate.value.month = handleDateFormat(date, "MMMM");
+};
+
+const fetchUserBestArticles = async () => {
+  try {
+    const { data: articles = [] } = await getUserBestPerformingArticles(
+      user.value.id
+    );
+
+    const updatedArticles = await Promise.all(
+      articles.map(async (article) => {
+        if (!article.id) return article;
+
+        const { data: analytics } = await getArticleAnalytics(article.id);
+
+        return {
+          ...article,
+          ...analytics,
+          readRatio: calculateReadRatio(analytics.reads, analytics.views),
+          published: handleDateFormat(article.publish_date, "MMM DD, YYYY"),
+          route: slugify(article.title),
+        };
+      })
+    );
+
+    storyData.value = updatedArticles;
+    console.log(storyData.value);
+  } catch (error) {
+    console.error("Failed to fetch article stats:", error);
+  }
+};
+
+const calculateReadRatio = (reads, views) => {
+  if (!views || views === 0) return "0%";
+  const ratio = (reads / views) * 100;
+  return `${Math.round(ratio)}%`;
+};
+
+onMounted(async () => {
+  const { getUser } = userStore();
+  user.value = await getUser();
+  startOfMonth();
+  await fetchUserStatistics("30 days");
+  await fetchUserBestArticles();
+});
 </script>
 
-<style scoped>
-/* Scoped styles can be used here for any necessary fine-tuning or to include the google material icons (if you didn't add the font links globally) */
+<style>
+.title-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 </style>

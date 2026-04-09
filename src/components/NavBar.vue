@@ -9,10 +9,11 @@
         <router-link :to="{ name: 'landing-page' }">
           <span class="font-black text-2xl">Carrie</span>
         </router-link>
-        <IconField id="search">
+        <!-- <IconField v-if="!writeMode" id="search">
           <InputIcon class="pi pi-search text-sm" />
           <InputText class="py-1 rounded-full" placeholder="Search" />
-        </IconField>
+        </IconField> -->
+        <Search />
       </div>
     </template>
 
@@ -61,7 +62,7 @@
         <div id="write" v-if="!writeMode">
           <router-link :to="{ name: 'write' }">
             <Button
-              class="py-1 text-sm"
+              class="py-1 text-xs"
               severity="secondary"
               variant="outlined"
               rounded
@@ -112,6 +113,7 @@ import { cookiesStore } from "@/stores";
 import { ref, onMounted, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import SideBar from "@/components/SideBar.vue";
+import Search from "./search/Search.vue";
 
 const router = useRouter();
 const route = useRoute();

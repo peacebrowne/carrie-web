@@ -1,16 +1,20 @@
 <template>
   <Toast />
 
-  <div class="flex flex-col gap-4 p-8 rounded-xl bg-[#FBFBFB] shadow-lg">
+  <div
+    class="flex flex-col gap-4 p-6 md:p-8 rounded-xl bg-[#FBFBFB] shadow-lg w-full max-w-sm mx-auto"
+  >
     <div class="flex flex-col gap-1 mb-3">
-      <span class="text-3xl font-black">Welcome Back</span>
-      <span class="text-sm">Please enter your account details</span>
+      <span class="text-2xl md:text-3xl font-black">Welcome Back</span>
+      <span class="text-sm text-gray-600"
+        >Please enter your account details</span
+      >
     </div>
 
     <Form
       :resolver="resolver"
       @submit="onFormSubmit"
-      class="flex flex-col gap-4 w-full sm:w-80"
+      class="flex flex-col gap-4 w-full"
     >
       <FormField
         v-slot="$field"
@@ -19,8 +23,8 @@
         initialValue=""
         class="flex flex-col gap-2 text-sm"
       >
-        <label for="username">Username</label>
-        <InputText type="text" />
+        <label for="username" class="font-medium">Username</label>
+        <InputText type="text" class="w-full" />
         <Message
           v-if="$field?.invalid"
           severity="error"
@@ -29,10 +33,11 @@
           >{{ $field.error?.message }}</Message
         >
       </FormField>
+
       <FormField v-slot="$field" asChild name="password" initialValue="">
         <section class="flex flex-col gap-2 text-sm">
-          <label for="password">Password</label>
-          <Password type="text" :feedback="false" toggleMask fluid />
+          <label for="password" class="font-medium">Password</label>
+          <Password :feedback="false" toggleMask fluid />
           <Message
             v-if="$field?.invalid"
             severity="error"
@@ -47,7 +52,7 @@
         as="section"
         name="forgot_password"
         initialValue=""
-        class="flex justify-between items-center gap-2"
+        class="flex flex-wrap justify-between items-center gap-2"
       >
         <div class="flex items-center gap-2">
           <Checkbox
@@ -57,11 +62,15 @@
             value="Small"
             size="small"
           />
-          <label for="remember_me" class="text-xs">Remember me</label>
+          <label for="size_small" class="text-xs cursor-pointer"
+            >Remember me</label
+          >
         </div>
 
         <router-link class="cursor-pointer" :to="{ name: 'register' }">
-          <span class="text-xs underline">Forgot Password</span>
+          <span class="text-xs underline text-blue-600 hover:text-blue-800"
+            >Forgot Password?</span
+          >
         </router-link>
       </FormField>
 
@@ -71,24 +80,24 @@
         severity="warn"
         label="Login"
         :loading="loading"
+        class="w-full"
         raised
       />
 
       <FormField
         as="section"
-        name="forgot_password"
+        name="signup_link"
         initialValue=""
-        class="flex justify-center items-center gap-2"
+        class="flex justify-center items-center gap-2 mt-2"
       >
         <span class="text-xs">Don't have an account?</span>
         <router-link class="cursor-pointer" :to="{ name: 'register' }">
-          <span class="text-xs underline">Sign Up</span>
+          <span class="text-xs underline font-bold">Sign Up</span>
         </router-link>
       </FormField>
     </Form>
   </div>
 </template>
-
 <script setup>
 import { ref } from "vue";
 import { zodResolver } from "@primevue/forms/resolvers/zod";

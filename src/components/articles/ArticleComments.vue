@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-10 w-full">
     <!-- COMMENTS -->
     <div class="flex flex-col gap-6">
-      <h3 class="text-lg md:text-2xl font-light">
+      <h3 class="text-sm md:text-lg font-light">
         Comments ({{ commentData.comments }})
       </h3>
 
@@ -61,6 +61,7 @@ const props = defineProps({
   },
 });
 
+const totalComments = ref(0);
 const initialValues = ref({
   comment: "",
 });
@@ -69,13 +70,17 @@ const content = defineModel("content");
 provide("content", content);
 const user = ref("");
 const comments = ref([]);
-const postCommentId = ref(localStorage.getItem("app-article-id"));
+const postCommentId = ref();
 const postCommentType = ref("article");
 const loading = ref(false);
+const emit = defineEmits(["update-total-comments"]);
 
 const fetchComments = async (articleId) => {
-  const enrichedComments = await getComments(articleId);
-  comments.value = await attachAuthorToComments(enrichedComments.data.values);
+  const { data } = await getComments(articleId);
+  const { total, values: enrichedComments } = data;
+  comments.value = await attachAuthorToComments(enrichedComments);
+  totalComments.value = total;
+  emit("update-total-comments", total);
 };
 
 watch(
@@ -96,31 +101,28 @@ const attachAuthorToComments = (comments) => {
   );
 };
 
-onMounted(async () => {
-  const { getUser } = userStore();
-  user.value = await getUser();
-});
-
 const onFormSubmit = async ({ valid, states, reset }) => {
   load();
 
+  postCommentId.value = props.commentData.id;
   const data = handleCommentData(
     states.comment.value,
     postCommentType.value,
     postCommentId.value
   );
+
   if (valid) {
     const { ok, result } = await addComment(data);
 
     if (ok) {
       fetchComments(data.articleID);
-      resetForm(states);
+      resetForm(reset);
     }
   }
 };
 
-const resetForm = (states) => {
-  reset(states.comment);
+const resetForm = (reset) => {
+  reset();
   content.value = "";
 };
 
@@ -132,7 +134,7 @@ const handleCommentData = (content, type, targetID) => {
 
   return {
     ...typeMapping[type],
-    authorID: localStorage.getItem("app-author-id"),
+    authorID: user.value.id,
     content,
   };
 };
@@ -143,6 +145,11 @@ const load = () => {
     loading.value = false;
   }, 2000);
 };
+
+onMounted(async () => {
+  const { getUser } = userStore();
+  user.value = await getUser();
+});
 </script>
 
 <style>
